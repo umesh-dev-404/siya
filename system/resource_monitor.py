@@ -9,7 +9,7 @@ Enforces:
 """
 
 import logging
-from typing import Dict, Optional
+from typing import Any, Dict, Optional
 
 try:
     import psutil
