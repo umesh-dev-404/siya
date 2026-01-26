@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Siya - Personal Assistant Platform</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #1a1a1a;
+            color: #e0e0e0;
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: #4a9eff;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .input-section {
+            margin-bottom: 30px;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        #commandInput {
+            flex: 1;
+            padding: 12px;
+            background: #2a2a2a;
+            border: 1px solid #3a3a3a;
+            border-radius: 4px;
+            color: #e0e0e0;
+            font-size: 14px;
+        }
+
+        #commandInput:focus {
+            outline: none;
+            border-color: #4a9eff;
+        }
+
+        button {
+            padding: 12px 24px;
+            background: #4a9eff;
+            border: none;
+            border-radius: 4px;
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        button:hover {
+            background: #3a8eef;
+        }
+
+        button:disabled {
+            background: #3a3a3a;
+            cursor: not-allowed;
+        }
+
+        .output-section {
+            background: #2a2a2a;
+            border: 1px solid #3a3a3a;
+            border-radius: 4px;
+            padding: 20px;
+            min-height: 200px;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .output-line {
+            margin-bottom: 10px;
+            padding: 8px;
+            border-left: 3px solid #4a9eff;
+            padding-left: 12px;
+        }
+
+        .output-line.error {
+            border-left-color: #ff4444;
+            color: #ff8888;
+        }
+
+        .output-line.success {
+            border-left-color: #44ff44;
+            color: #88ff88;
+        }
+
+        .status {
+            text-align: center;
+            padding: 10px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+            background: #2a2a2a;
+        }
+
+        .status.connected {
+            background: #2a4a2a;
+            color: #88ff88;
+        }
+
+        .status.disconnected {
+            background: #4a2a2a;
+            color: #ff8888;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Siya - Personal Assistant Platform</h1>
+        
+        <div id="status" class="status disconnected">Disconnected</div>
+
+        <div class="input-section">
+            <div class="input-group">
+                <input 
+                    type="text" 
+                    id="commandInput" 
+                    placeholder="Enter command..."
+                    autocomplete="off"
+                />
+                <button id="submitButton" onclick="submitCommand()">Submit</button>
+            </div>
+        </div>
+
+        <div class="output-section" id="output">
+            <div class="output-line">Welcome to Siya. Enter a command above.</div>
+        </div>
+    </div>
+
+    <script>
+        // API base URL - will be set from environment or use Pi IP
+        // For deployment, set SIYA_API_BASE_URL environment variable
+        // or update this to use the Pi's IP address
+        const API_BASE_URL = window.location.hostname === 'localhost' 
+            ? 'http://localhost:8080' 
+            : `http://${window.location.hostname}:8080`;
+        let isConnected = false;
+
+        // Check connection status
+        async function checkConnection() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/health`);
+                const data = await response.json();
+                
+                if (data.status === 'healthy') {
+                    isConnected = true;
+                    document.getElementById('status').textContent = 'Connected';
+                    document.getElementById('status').className = 'status connected';
+                } else {
+                    isConnected = false;
+                    document.getElementById('status').textContent = 'Disconnected';
+                    document.getElementById('status').className = 'status disconnected';
+                }
+            } catch (error) {
+                isConnected = false;
+                document.getElementById('status').textContent = 'Disconnected';
+                document.getElementById('status').className = 'status disconnected';
+            }
+        }
+
+        // Submit command
+        async function submitCommand() {
+            const input = document.getElementById('commandInput');
+            const command = input.value.trim();
+
+            if (!command) {
+                return;
+            }
+
+            if (!isConnected) {
+                addOutput('Error: Not connected to API server', 'error');
+                return;
+            }
+
+            // Disable input while processing
+            input.disabled = true;
+            document.getElementById('submitButton').disabled = true;
+
+            // Add command to output
+            addOutput(`> ${command}`, 'info');
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/command`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ command: command }),
+                });
+
+                const data = await response.json();
+
+                if (data.status === 'success') {
+                    addOutput(data.message, 'success');
+                } else {
+                    addOutput(data.message, 'error');
+                }
+            } catch (error) {
+                addOutput(`Error: ${error.message}`, 'error');
+            } finally {
+                // Re-enable input
+                input.disabled = false;
+                document.getElementById('submitButton').disabled = false;
+                input.value = '';
+                input.focus();
+            }
+        }
+
+        // Add output line
+        function addOutput(message, type = 'info') {
+            const output = document.getElementById('output');
+            const line = document.createElement('div');
+            line.className = `output-line ${type}`;
+            line.textContent = message;
+            output.appendChild(line);
+            output.scrollTop = output.scrollHeight;
+        }
+
+        // Handle Enter key
+        document.getElementById('commandInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                submitCommand();
+            }
+        });
+
+        // Check connection on load and periodically
+        checkConnection();
+        setInterval(checkConnection, 5000);
+
+        // Focus input on load
+        document.getElementById('commandInput').focus();
+    </script>
+</body>
+</html>

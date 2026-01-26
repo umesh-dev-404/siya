@@ -1,0 +1,499 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://siya.local/system_schema.json",
+  "title": "Siya Canonical System Schema",
+  "description": "Binding JSON schema for all AI outputs, tool requests, errors, confirmations, memory writes, audit logs, and orchestration steps. This schema enforces Canonical System Laws and must be strictly followed.",
+  "version": "1.0.0",
+  "oneOf": [
+    {
+      "$ref": "#/definitions/intent_parsing_output"
+    },
+    {
+      "$ref": "#/definitions/tool_request"
+    },
+    {
+      "$ref": "#/definitions/error_response"
+    },
+    {
+      "$ref": "#/definitions/confirmation_request"
+    },
+    {
+      "$ref": "#/definitions/memory_write_suggestion"
+    },
+    {
+      "$ref": "#/definitions/audit_log_entry"
+    },
+    {
+      "$ref": "#/definitions/orchestration_step_report"
+    }
+  ],
+  "definitions": {
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 timestamp with timezone"
+    },
+    "request_id": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$",
+      "description": "UUID v4 for request correlation"
+    },
+    "confidence": {
+      "type": "number",
+      "minimum": 0.0,
+      "maximum": 1.0,
+      "description": "Confidence score from 0.0 (uncertain) to 1.0 (certain)"
+    },
+    "memory_tier": {
+      "type": "string",
+      "enum": ["L1", "L2", "L3"],
+      "description": "Memory tier: L1 (runtime/ephemeral), L2 (local SQLite), L3 (Supabase)"
+    },
+    "execution_state": {
+      "type": "string",
+      "enum": ["INIT", "VALIDATE", "EXECUTE", "VERIFY", "COMMIT", "FAIL", "ABORT"],
+      "description": "Orchestration execution lifecycle state"
+    },
+    "permission_level": {
+      "type": "string",
+      "enum": ["NONE", "READ", "WRITE", "EXECUTE"],
+      "description": "Permission level for tool execution"
+    },
+    "intent_parsing_output": {
+      "type": "object",
+      "title": "AI Intent Parsing Output",
+      "description": "Output from AI intent parser. AI may ONLY produce this format. AI never executes tools.",
+      "required": ["type", "request_id", "timestamp", "intent", "confidence"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "intent_parsing_output",
+          "description": "Discriminator for intent parsing output"
+        },
+        "request_id": {
+          "$ref": "#/definitions/request_id"
+        },
+        "timestamp": {
+          "$ref": "#/definitions/timestamp"
+        },
+        "intent": {
+          "type": "object",
+          "description": "Parsed user intent",
+          "required": ["action", "arguments"],
+          "properties": {
+            "action": {
+              "type": "string",
+              "description": "The intended action name (must match a registered tool name exactly)"
+            },
+            "arguments": {
+              "type": "object",
+              "description": "Tool arguments as key-value pairs. Values must match tool schema.",
+              "additionalProperties": true
+            },
+            "clarification_needed": {
+              "type": "boolean",
+              "default": false,
+              "description": "True if intent is ambiguous and requires user clarification"
+            },
+            "clarification_question": {
+              "type": "string",
+              "description": "Question to ask user if clarification_needed is true"
+            }
+          }
+        },
+        "confidence": {
+          "$ref": "#/definitions/confidence"
+        },
+        "raw_input": {
+          "type": "string",
+          "description": "Original user input text (for audit)"
+        },
+        "explanation": {
+          "type": "string",
+          "description": "Human-readable explanation of parsed intent (optional)"
+        }
+      },
+      "additionalProperties": false
+    },
+    "tool_request": {
+      "type": "object",
+      "title": "Tool Request",
+      "description": "Request to execute a tool. Must be validated by MCP before execution.",
+      "required": ["type", "request_id", "timestamp", "tool_name", "arguments", "requires_confirmation"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "tool_request",
+          "description": "Discriminator for tool request"
+        },
+        "request_id": {
+          "$ref": "#/definitions/request_id"
+        },
+        "timestamp": {
+          "$ref": "#/definitions/timestamp"
+        },
+        "tool_name": {
+          "type": "string",
+          "description": "Exact name of tool from tool registry. Must exist."
+        },
+        "arguments": {
+          "type": "object",
+          "description": "Tool arguments. Must conform to tool's input schema.",
+          "additionalProperties": true
+        },
+        "requires_confirmation": {
+          "type": "boolean",
+          "description": "Whether this tool requires explicit user confirmation before execution"
+        },
+        "permission_level": {
+          "$ref": "#/definitions/permission_level",
+          "description": "Required permission level for this tool"
+        },
+        "source": {
+          "type": "string",
+          "enum": ["user_direct", "user_parsed", "scheduled", "automation"],
+          "description": "Origin of the tool request"
+        },
+        "intent_parsing_output_id": {
+          "type": "string",
+          "description": "Request ID of the intent parsing output that generated this request (if applicable)"
+        }
+      },
+      "additionalProperties": false
+    },
+    "error_response": {
+      "type": "object",
+      "title": "Error Response",
+      "description": "Explicit error representation. No failure may be silent (LAW 12).",
+      "required": ["type", "request_id", "timestamp", "error_code", "error_message", "severity", "user_notified"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "error_response",
+          "description": "Discriminator for error response"
+        },
+        "request_id": {
+          "$ref": "#/definitions/request_id"
+        },
+        "timestamp": {
+          "$ref": "#/definitions/timestamp"
+        },
+        "error_code": {
+          "type": "string",
+          "description": "Machine-readable error code (e.g., 'TOOL_NOT_FOUND', 'PERMISSION_DENIED', 'VALIDATION_FAILED')"
+        },
+        "error_message": {
+          "type": "string",
+          "description": "Human-readable error message"
+        },
+        "severity": {
+          "type": "string",
+          "enum": ["LOW", "MEDIUM", "HIGH", "CRITICAL"],
+          "description": "Error severity level"
+        },
+        "user_notified": {
+          "type": "boolean",
+          "description": "Whether the user has been explicitly notified of this error (must be true for HIGH/CRITICAL)"
+        },
+        "failure_layer": {
+          "type": "string",
+          "enum": ["AI", "MCP", "ORCHESTRATOR", "TOOL", "MEMORY", "NETWORK", "SYSTEM"],
+          "description": "System layer where failure occurred"
+        },
+        "recoverable": {
+          "type": "boolean",
+          "description": "Whether this error is recoverable with retry"
+        },
+        "retry_count": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Number of retry attempts made (if recoverable)"
+        },
+        "context": {
+          "type": "object",
+          "description": "Additional context about the error",
+          "additionalProperties": true
+        },
+        "related_request_id": {
+          "type": "string",
+          "description": "Request ID of the operation that failed (if applicable)"
+        }
+      },
+      "additionalProperties": false
+    },
+    "confirmation_request": {
+      "type": "object",
+      "title": "Confirmation Request",
+      "description": "Request for explicit user confirmation before executing a tool (LAW 5).",
+      "required": ["type", "request_id", "timestamp", "tool_request_id", "confirmation_message", "requires_explicit_consent"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "confirmation_request",
+          "description": "Discriminator for confirmation request"
+        },
+        "request_id": {
+          "$ref": "#/definitions/request_id"
+        },
+        "timestamp": {
+          "$ref": "#/definitions/timestamp"
+        },
+        "tool_request_id": {
+          "type": "string",
+          "description": "Request ID of the tool request requiring confirmation"
+        },
+        "confirmation_message": {
+          "type": "string",
+          "description": "Human-readable message explaining what will happen if confirmed"
+        },
+        "requires_explicit_consent": {
+          "type": "boolean",
+          "const": true,
+          "description": "Must be true - no implicit consent allowed"
+        },
+        "tool_name": {
+          "type": "string",
+          "description": "Name of tool awaiting confirmation"
+        },
+        "tool_arguments_summary": {
+          "type": "string",
+          "description": "Summary of tool arguments (secrets must be redacted)"
+        },
+        "permission_level": {
+          "$ref": "#/definitions/permission_level",
+          "description": "Required permission level"
+        }
+      },
+      "additionalProperties": false
+    },
+    "memory_write_suggestion": {
+      "type": "object",
+      "title": "Memory Write Suggestion",
+      "description": "Suggestion to write to memory. Only orchestrator may write (LAW 8). AI may suggest.",
+      "required": ["type", "request_id", "timestamp", "memory_tier", "content", "confidence", "lineage"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "memory_write_suggestion",
+          "description": "Discriminator for memory write suggestion"
+        },
+        "request_id": {
+          "$ref": "#/definitions/request_id"
+        },
+        "timestamp": {
+          "$ref": "#/definitions/timestamp"
+        },
+        "memory_tier": {
+          "$ref": "#/definitions/memory_tier",
+          "description": "Target memory tier"
+        },
+        "content": {
+          "type": "object",
+          "description": "Memory content to write",
+          "required": ["key", "value"],
+          "properties": {
+            "key": {
+              "type": "string",
+              "description": "Memory key/identifier"
+            },
+            "value": {
+              "type": "string",
+              "description": "Memory value/content"
+            },
+            "tags": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Tags for categorization"
+            },
+            "expires_at": {
+              "type": "string",
+              "format": "date-time",
+              "description": "Optional expiration timestamp"
+            }
+          },
+          "additionalProperties": false
+        },
+        "confidence": {
+          "$ref": "#/definitions/confidence",
+          "description": "Confidence in memory accuracy"
+        },
+        "lineage": {
+          "type": "object",
+          "description": "Lineage tracking for memory (LAW 9)",
+          "required": ["source_request_id", "source_type"],
+          "properties": {
+            "source_request_id": {
+              "type": "string",
+              "description": "Request ID that generated this memory"
+            },
+            "source_type": {
+              "type": "string",
+              "enum": ["intent_parsing", "tool_execution", "user_input", "automation"],
+              "description": "Type of source that generated this memory"
+            },
+            "parent_memory_id": {
+              "type": "string",
+              "description": "ID of parent memory if this is a summary (optional)"
+            }
+          },
+          "additionalProperties": false
+        },
+        "suggested_by": {
+          "type": "string",
+          "enum": ["AI", "ORCHESTRATOR", "TOOL"],
+          "description": "Component suggesting this memory write"
+        }
+      },
+      "additionalProperties": false
+    },
+    "audit_log_entry": {
+      "type": "object",
+      "title": "Audit Log Entry",
+      "description": "Immutable audit log entry (LAW 13). Every action must be auditable.",
+      "required": ["type", "request_id", "timestamp", "event_type", "event_data", "correlation_id"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "audit_log_entry",
+          "description": "Discriminator for audit log entry"
+        },
+        "request_id": {
+          "$ref": "#/definitions/request_id"
+        },
+        "timestamp": {
+          "$ref": "#/definitions/timestamp"
+        },
+        "event_type": {
+          "type": "string",
+          "enum": [
+            "USER_INPUT",
+            "INTENT_PARSED",
+            "TOOL_REQUESTED",
+            "TOOL_EXECUTED",
+            "TOOL_FAILED",
+            "CONFIRMATION_REQUESTED",
+            "CONFIRMATION_GRANTED",
+            "CONFIRMATION_DENIED",
+            "PERMISSION_CHECKED",
+            "PERMISSION_DENIED",
+            "MEMORY_READ",
+            "MEMORY_WRITTEN",
+            "ORCHESTRATION_STARTED",
+            "ORCHESTRATION_COMPLETED",
+            "ORCHESTRATION_FAILED",
+            "ERROR_OCCURRED",
+            "AUTOMATION_TRIGGERED",
+            "SCHEDULED_EVENT"
+          ],
+          "description": "Type of auditable event"
+        },
+        "event_data": {
+          "type": "object",
+          "description": "Event-specific data. Must not contain secrets.",
+          "additionalProperties": true
+        },
+        "correlation_id": {
+          "type": "string",
+          "description": "Correlation ID linking related events across system layers"
+        },
+        "user_id": {
+          "type": "string",
+          "description": "User identifier (single-user system, but required for audit)"
+        },
+        "interface": {
+          "type": "string",
+          "enum": ["CLI", "WEB", "API", "VOICE"],
+          "description": "Interface through which action originated"
+        },
+        "layer": {
+          "type": "string",
+          "enum": ["AI", "MCP", "ORCHESTRATOR", "TOOL", "MEMORY", "INTERFACE"],
+          "description": "System layer where event occurred"
+        }
+      },
+      "additionalProperties": false
+    },
+    "orchestration_step_report": {
+      "type": "object",
+      "title": "Orchestration Step Report",
+      "description": "Report of a single orchestration step execution (LAW 11).",
+      "required": ["type", "request_id", "timestamp", "step_id", "execution_state", "tool_request_id"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "orchestration_step_report",
+          "description": "Discriminator for orchestration step report"
+        },
+        "request_id": {
+          "$ref": "#/definitions/request_id"
+        },
+        "timestamp": {
+          "$ref": "#/definitions/timestamp"
+        },
+        "step_id": {
+          "type": "string",
+          "description": "Unique identifier for this step within the orchestration"
+        },
+        "execution_state": {
+          "$ref": "#/definitions/execution_state",
+          "description": "Current state in execution lifecycle"
+        },
+        "tool_request_id": {
+          "type": "string",
+          "description": "Request ID of the tool request being executed in this step"
+        },
+        "step_number": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Sequential step number (1-based)"
+        },
+        "total_steps": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Total number of steps in this orchestration"
+        },
+        "started_at": {
+          "$ref": "#/definitions/timestamp",
+          "description": "When step execution started"
+        },
+        "completed_at": {
+          "type": ["string", "null"],
+          "format": "date-time",
+          "description": "When step execution completed (null if not completed)"
+        },
+        "success": {
+          "type": "boolean",
+          "description": "Whether step completed successfully"
+        },
+        "error": {
+          "type": ["object", "null"],
+          "description": "Error details if step failed",
+          "properties": {
+            "error_code": {
+              "type": "string"
+            },
+            "error_message": {
+              "type": "string"
+            }
+          }
+        },
+        "verification_result": {
+          "type": ["object", "null"],
+          "description": "Result of step verification (if applicable)",
+          "additionalProperties": true
+        },
+        "rollback_required": {
+          "type": "boolean",
+          "description": "Whether rollback is required due to failure"
+        },
+        "rollback_completed": {
+          "type": "boolean",
+          "description": "Whether rollback has been completed"
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}
