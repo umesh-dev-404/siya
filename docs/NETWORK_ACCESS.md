@@ -86,15 +86,45 @@ export SIYA_API_BASE_URL=http://<PI_IP>:8080  # For web interface
 3. Web interface will connect to API at `http://<PI_IP>:8080`
 
 ### API Direct Access
-```bash
-# From PC
-curl http://<PI_IP>:8080/health
 
-# Send command
-curl -X POST http://<PI_IP>:8080/command \
+**Test Health Check:**
+```bash
+# From PC (Linux/Mac/Git Bash)
+curl http://192.168.1.39:8080/health
+
+# From PC (Windows PowerShell)
+Invoke-WebRequest -Uri http://192.168.1.39:8080/health | Select-Object -ExpandProperty Content
+```
+
+**Send Commands:**
+```bash
+# From PC (Linux/Mac/Git Bash)
+curl -X POST http://192.168.1.39:8080/command \
   -H "Content-Type: application/json" \
   -d '{"command": "your command here"}'
+
+# From PC (Windows PowerShell)
+$body = @{command="your command here"} | ConvertTo-Json
+Invoke-WebRequest -Uri http://192.168.1.39:8080/command -Method POST -Body $body -ContentType "application/json" | Select-Object -ExpandProperty Content
 ```
+
+**Example Test Commands:**
+```bash
+# Test 1: Health check
+curl http://192.168.1.39:8080/health
+
+# Test 2: Simple command (replace with actual command)
+curl -X POST http://192.168.1.39:8080/command \
+  -H "Content-Type: application/json" \
+  -d '{"command": "help"}'
+
+# Test 3: Check available tools
+curl -X POST http://192.168.1.39:8080/command \
+  -H "Content-Type: application/json" \
+  -d '{"command": "list tools"}'
+```
+
+**Note:** Replace `192.168.1.39` with your Pi's current IP address.
 
 ### CLI (via SSH)
 ```bash
@@ -293,5 +323,67 @@ For production use, configure your router to assign a static IP to your Pi:
 
 ---
 
-**Last Updated:** 2026-01-26  
+---
+
+## TESTING THE API FROM PC
+
+### Available Endpoints
+
+**1. Health Check:**
+```bash
+# From PC (replace with your Pi's IP)
+curl http://192.168.1.39:8080/health
+
+# Windows PowerShell
+Invoke-WebRequest -Uri http://192.168.1.39:8080/health
+```
+
+**Expected Response:**
+```json
+{"status": "healthy", "service": "siya-api"}
+```
+
+**2. Send Commands:**
+```bash
+# From PC (Linux/Mac/Git Bash)
+curl -X POST http://192.168.1.39:8080/command \
+  -H "Content-Type: application/json" \
+  -d '{"command": "help"}'
+
+# Windows PowerShell
+$body = @{command="help"} | ConvertTo-Json
+Invoke-WebRequest -Uri http://192.168.1.39:8080/command -Method POST -Body $body -ContentType "application/json"
+```
+
+**Example Test Commands:**
+```bash
+# Test 1: Health check
+curl http://192.168.1.39:8080/health
+
+# Test 2: List tools
+curl -X POST http://192.168.1.39:8080/command \
+  -H "Content-Type: application/json" \
+  -d '{"command": "list tools"}'
+
+# Test 3: Ask a question
+curl -X POST http://192.168.1.39:8080/command \
+  -H "Content-Type: application/json" \
+  -d '{"command": "what can you do?"}'
+```
+
+### Understanding MCP
+
+**MCP (Model Control Plane) is NOT a separate server** - it's integrated into the API server. When you send commands:
+
+1. API receives command → `/command` endpoint
+2. API calls CLI → which uses Orchestrator
+3. Orchestrator uses AI → to parse intent
+4. MCP validates → tool requests and permissions
+5. Response returned → through API
+
+All MCP functionality (validation, authorization, tool registry) is accessible through the API endpoints.
+
+---
+
+**Last Updated:** 2026-01-27  
 **Status:** Ready for network access (after Pi deployment)
