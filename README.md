@@ -68,6 +68,7 @@ All authoritative documentation is in the `docs/` directory:
 - **NETWORK_ACCESS.md** — Network access configuration (✅ Configured and working)
 - **GITHUB_SETUP.md** — GitHub setup and Pi deployment
 - **EXAMPLE_COMMANDS.md** — Example commands for testing from PC
+- **NEXT_PHASES_ROADMAP.md** — Post-baseline implementation roadmap (Phases 10-15)
 
 ---
 
@@ -93,11 +94,17 @@ Implementation follows strict sequential phases (see DETAILED IMPLEMENTATION PLA
 3. **Memory & Observability** ✅ — SQLite, logging, memory governance
 4A. **Raspberry Pi Base Provisioning** ✅ — Pi setup and hardening (completed)
 4. **Pi Mirroring & Validation** — Read-only validation (hardware - optional)
-5. **AI Integration (Controlled)** ✅ — Intent parsing, schema enforcement
+5. **AI Integration (Controlled)** ✅ — Intent parsing, schema enforcement (stub)
 6. **Interfaces & UX Layer** ✅ — CLI, API, web interface
-7. **Automation & Scheduling** ✅ — Automation modules, serial execution
+7. **Automation & Scheduling** ✅ — Automation modules, serial execution (framework)
 8. **Failure Injection & Hardening** ✅ — Failure testing and recovery
 9. **Production Lock & Baseline** ✅ — Final baseline and deployment
+10. **Real AI Model Integration** ⏳ — llama.cpp integration (next phase)
+11. **Tool Implementations** ⏳ — Actual tool executions
+12. **Supabase Synchronization** ⏳ — L3 memory sync
+13. **systemd Timer Integration** ⏳ — Scheduled automations
+14. **Enhanced User Notifications** ⏳ — Notification system
+15. **Voice Interface** ⏳ — Voice input/output (optional)
 
 ---
 

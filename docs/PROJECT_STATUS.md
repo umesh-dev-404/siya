@@ -100,6 +100,46 @@
 
 ---
 
+## NEXT PHASES (POST-BASELINE)
+
+### Phase 10 — Real AI Model Integration
+- **Status:** ⏳ Next Phase
+- **Objective:** Replace stub AI with real llama.cpp integration
+- **Scope:** Model loading, inference, resource management
+- **Dependencies:** Phase 9 complete, Pi deployment complete
+
+### Phase 11 — Tool Implementations
+- **Status:** ⏳ Pending
+- **Objective:** Implement actual tool executions
+- **Scope:** Core tools, file operations, automation tools
+- **Dependencies:** Phase 10 (for AI-enhanced tool selection)
+
+### Phase 12 — Supabase Synchronization
+- **Status:** ⏳ Pending
+- **Objective:** Real L3 memory synchronization
+- **Scope:** Supabase client, sync logic, conflict resolution
+- **Dependencies:** Phase 11 (tools for sync operations)
+
+### Phase 13 — systemd Timer Integration
+- **Status:** ⏳ Pending
+- **Objective:** Scheduled automations via systemd timers
+- **Scope:** Timer configuration, automation scheduling, state persistence
+- **Dependencies:** Phase 7 (automation framework), Phase 11 (tools)
+
+### Phase 14 — Enhanced User Notifications
+- **Status:** ⏳ Pending
+- **Objective:** User notification system beyond logging
+- **Scope:** Notification delivery, channels, persistence, acknowledgment
+- **Dependencies:** Phase 6 (interfaces), Phase 8 (failure handling)
+
+### Phase 15 — Voice Interface (Optional)
+- **Status:** ⏳ Optional
+- **Objective:** Voice input and audio feedback
+- **Scope:** Speech-to-text, text-to-speech, voice command processing
+- **Dependencies:** Phase 6 (interfaces), Phase 10 (AI model)
+
+---
+
 ## SYSTEM ARCHITECTURE
 
 ### Core Components
@@ -196,7 +236,8 @@
 - `docs/SYSTEM_SCHEMA_CHECKLIST.md` — Schema verification checklist
 - `docs/SYSTEM_SCHEMA_VERIFICATION_REPORT.md` — Schema verification report
 - `docs/CANONICAL SYSTEM LAWS.md` — System laws
-- `docs/DETAILED IMPLEMENTATION PLAN.md` — Implementation plan
+- `docs/DETAILED IMPLEMENTATION PLAN.md` — Implementation plan (updated with Phases 10-15)
+- `docs/NEXT_PHASES_ROADMAP.md` — Post-baseline implementation roadmap
 
 ### Phase Reports
 - `docs/PHASE_COMPLETION_REPORTS/PHASE_0_COMPLETION_STATUS.md`
@@ -215,4 +256,5 @@
 **Baseline Version:** 1.0.0  
 **Status:** ✅ PRODUCTION BASELINE COMPLETE AND DEPLOYED  
 **Deployment Date:** 2026-01-27  
-**Deployment Status:** ✅ OPERATIONAL ON RASPBERRY PI 5
+**Deployment Status:** ✅ OPERATIONAL ON RASPBERRY PI 5  
+**Next Phase:** Phase 10 — Real AI Model Integration

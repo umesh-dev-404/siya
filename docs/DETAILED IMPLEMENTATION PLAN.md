@@ -420,7 +420,390 @@ Freeze a **known-good, reproducible baseline**.
 
 ---
 
-## 15. FINAL IMPLEMENTATION STATEMENT
+## 15. PHASE 10 — REAL AI MODEL INTEGRATION (PI)
+
+### Objective
+Replace stub AI implementation with **real llama.cpp integration** for production intent parsing.
+
+### Scope
+- llama.cpp integration
+- Model loading and lifecycle
+- Resource management
+- Performance optimization
+
+### Steps
+
+1. **Build llama.cpp on Pi**
+   - Install llama.cpp dependencies
+   - Build with CPU optimizations
+   - Verify ARM64 compatibility
+
+2. **Model Acquisition**
+   - Download Qwen 2.5 3B Instruct (Q4_K_M quantized)
+   - Verify model file integrity
+   - Store in designated model directory
+
+3. **Replace Stub Implementation**
+   - Replace `ai/model_manager.py` stub with real llama.cpp bindings
+   - Implement model loading/unloading
+   - Implement inference with timeout handling
+   - Maintain strict JSON schema enforcement
+
+4. **Resource Management**
+   - Implement load-on-demand strategy
+   - Monitor RAM usage during inference
+   - Implement graceful degradation on resource exhaustion
+   - Unload model when idle
+
+5. **Performance Optimization**
+   - Measure inference latency
+   - Optimize context window usage
+   - Implement caching where appropriate
+   - Ensure Pi memory budget respected
+
+6. **Integration Testing**
+   - Test intent parsing with real model
+   - Verify schema compliance
+   - Test resource limits
+   - Verify graceful failure handling
+
+### Rules
+- AI output remains untrusted (LAW 3)
+- All outputs validated against system_schema.json
+- Model must not exceed Pi RAM limits
+- Inference must be interruptible
+
+### Exit Criteria
+- Real AI model integrated and operational
+- Intent parsing produces valid schema-compliant output
+- RAM usage within Pi constraints
+- Inference latency acceptable (< 5 seconds for typical queries)
+
+---
+
+## 16. PHASE 11 — TOOL IMPLEMENTATIONS
+
+### Objective
+Implement **actual tool executions** replacing framework-only stubs.
+
+### Scope
+- Core system tools
+- File system tools
+- System control tools
+- Network tools (if needed)
+
+### Steps
+
+1. **Define Tool Categories**
+   - System information tools
+   - File operations tools
+   - Automation trigger tools
+   - Memory query tools
+
+2. **Implement Core Tools**
+   - System status tool
+   - Resource monitoring tool
+   - Log query tool
+   - Memory read tool
+
+3. **Implement File Operations**
+   - File read tool (with permission checks)
+   - File write tool (with confirmation)
+   - Directory listing tool
+   - File metadata tool
+
+4. **Implement Automation Tools**
+   - Trigger automation tool
+   - List automations tool
+   - Automation status tool
+
+5. **Tool Registration**
+   - Register all tools in tool registry
+   - Define permission levels
+   - Set confirmation requirements
+   - Lock registry after registration
+
+6. **Testing & Validation**
+   - Test each tool execution
+   - Verify permission enforcement
+   - Test confirmation flows
+   - Verify audit logging
+
+### Rules
+- All tools must be pre-declared (LAW 4, LAW 6)
+- Permission levels enforced (LAW 5)
+- Confirmations required where specified (LAW 1)
+- All executions logged (LAW 13)
+
+### Exit Criteria
+- Core tools implemented and operational
+- Tools registered and locked
+- Permission system working
+- All tool executions auditable
+
+---
+
+## 17. PHASE 12 — SUPABASE SYNCHRONIZATION
+
+### Objective
+Implement **real Supabase synchronization** replacing stub implementation.
+
+### Scope
+- Supabase client integration
+- L3 memory synchronization
+- Conflict resolution
+- Offline-first operation
+
+### Steps
+
+1. **Supabase Setup**
+   - Create Supabase project
+   - Configure authentication
+   - Design L3 memory schema
+   - Set up API keys (secure storage)
+
+2. **Client Integration**
+   - Install Supabase Python client
+   - Implement connection handling
+   - Implement retry logic
+   - Handle network failures gracefully
+
+3. **L3 Memory Sync**
+   - Implement sync-to-Supabase
+   - Implement sync-from-Supabase
+   - Handle conflicts (local wins, with logging)
+   - Implement incremental sync
+
+4. **Offline-First Design**
+   - Queue sync operations when offline
+   - Resume sync when online
+   - Never block execution for sync
+   - Log sync failures
+
+5. **Security**
+   - Store API keys securely (LAW 15)
+   - Encrypt sensitive data
+   - Never expose secrets in logs
+   - Implement secure authentication
+
+6. **Testing**
+   - Test online sync
+   - Test offline operation
+   - Test conflict resolution
+   - Test failure recovery
+
+### Rules
+- Sync is asynchronous (LAW 16)
+- Never required for execution (LAW 16)
+- Secrets isolated (LAW 15)
+- All sync operations logged (LAW 13)
+
+### Exit Criteria
+- Supabase sync operational
+- L3 memory synchronized
+- Offline operation works
+- Security requirements met
+
+---
+
+## 18. PHASE 13 — SYSTEMD TIMER INTEGRATION
+
+### Objective
+Integrate **systemd timers** for scheduled automations.
+
+### Scope
+- systemd timer configuration
+- Automation scheduling
+- Timer management
+- State persistence
+
+### Steps
+
+1. **Timer Framework**
+   - Design timer configuration format
+   - Implement timer generation
+   - Implement timer installation
+   - Implement timer removal
+
+2. **Automation Integration**
+   - Link automations to timers
+   - Implement timer triggers
+   - Handle timer execution
+   - Persist timer state
+
+3. **Timer Management**
+   - List active timers
+   - Enable/disable timers
+   - View timer status
+   - Handle timer failures
+
+4. **State Persistence**
+   - Persist timer configuration
+   - Restore timers on reboot
+   - Handle timer conflicts
+   - Log timer events
+
+5. **Testing**
+   - Test timer creation
+   - Test timer execution
+   - Test timer persistence
+   - Test failure handling
+
+### Rules
+- Serial execution enforced (LAW 10)
+- All timer actions logged (LAW 13)
+- User must approve timer creation (LAW 1)
+- Timers must be explicit (LAW 2)
+
+### Exit Criteria
+- systemd timers operational
+- Automations scheduled via timers
+- Timer state persists across reboots
+- All timer operations auditable
+
+---
+
+## 19. PHASE 14 — ENHANCED USER NOTIFICATIONS
+
+### Objective
+Implement **user notification system** beyond logging.
+
+### Scope
+- Notification delivery
+- Notification channels
+- Notification persistence
+- User acknowledgment
+
+### Steps
+
+1. **Notification Framework**
+   - Define notification types
+   - Implement notification queue
+   - Implement notification delivery
+   - Handle notification failures
+
+2. **Notification Channels**
+   - Web interface notifications
+   - API notification endpoint
+   - CLI notification display
+   - Email notifications (optional)
+
+3. **Notification Persistence**
+   - Store unread notifications
+   - Implement notification history
+   - Implement notification cleanup
+   - Link notifications to audit logs
+
+4. **User Interaction**
+   - Mark notifications as read
+   - Acknowledge critical notifications
+   - Filter notifications
+   - Search notification history
+
+5. **Integration**
+   - Integrate with error handling
+   - Integrate with confirmation system
+   - Integrate with automation system
+   - Integrate with failure detection
+
+### Rules
+- Critical errors must notify user (LAW 12)
+- Notifications must be explicit (LAW 1)
+- All notifications logged (LAW 13)
+- User can acknowledge notifications
+
+### Exit Criteria
+- Notification system operational
+- Critical errors notify user
+- Notifications persist and searchable
+- User can interact with notifications
+
+---
+
+## 20. PHASE 15 — VOICE INTERFACE (OPTIONAL)
+
+### Objective
+Implement **voice input interface** for hands-free interaction.
+
+### Scope
+- Voice input capture
+- Speech-to-text
+- Voice command processing
+- Audio feedback
+
+### Steps
+
+1. **Voice Input Framework**
+   - Design voice input interface
+   - Implement audio capture
+   - Handle audio processing
+   - Manage audio resources
+
+2. **Speech-to-Text**
+   - Integrate speech recognition
+   - Handle offline operation
+   - Implement wake word (optional)
+   - Handle audio quality issues
+
+3. **Command Processing**
+   - Route voice input to orchestrator
+   - Handle voice-specific errors
+   - Provide voice feedback
+   - Maintain conversation context
+
+4. **Audio Feedback**
+   - Text-to-speech integration
+   - Audio response generation
+   - Handle audio playback
+   - Manage audio resources
+
+5. **Testing**
+   - Test voice input
+   - Test speech recognition
+   - Test command processing
+   - Test audio feedback
+
+### Rules
+- Voice interface treated equally (no privilege escalation)
+- All voice commands logged (LAW 13)
+- Voice input requires confirmation for actions (LAW 1)
+- Offline operation supported (LAW 16)
+
+### Exit Criteria
+- Voice interface operational
+- Voice commands processed correctly
+- Audio feedback working
+- All voice interactions auditable
+
+**Note:** This phase is **optional** and may be deferred based on user needs.
+
+---
+
+## 21. PHASE STRUCTURE OVERVIEW (UPDATED)
+
+| Phase | Name | Primary Environment | Status |
+|---|---|---|---|
+| 0 | Foundation & Tooling | PC | ✅ Complete |
+| 1 | Core Runtime Skeleton (No AI) | PC | ✅ Complete |
+| 2 | Governance & Control Plane | PC | ✅ Complete |
+| 3 | Memory & Observability | PC | ✅ Complete |
+| 4A | Raspberry Pi Base Provisioning | Pi | ✅ Complete |
+| 4 | Pi Mirroring & Validation | Pi (read-only) | ⏭️ Optional |
+| 5 | AI Integration (Controlled) | PC + Pi | ✅ Complete (stub) |
+| 6 | Interfaces & UX Layer | PC | ✅ Complete |
+| 7 | Automation & Scheduling | PC + Pi | ✅ Complete (framework) |
+| 8 | Failure Injection & Hardening | Pi | ✅ Complete |
+| 9 | Production Lock & Baseline | Pi | ✅ Complete |
+| 10 | Real AI Model Integration | Pi | ⏳ Next |
+| 11 | Tool Implementations | Pi | ⏳ Pending |
+| 12 | Supabase Synchronization | Pi | ⏳ Pending |
+| 13 | systemd Timer Integration | Pi | ⏳ Pending |
+| 14 | Enhanced User Notifications | Pi | ⏳ Pending |
+| 15 | Voice Interface | Pi | ⏳ Optional |
+
+---
+
+## 22. FINAL IMPLEMENTATION STATEMENT
 
 This plan enforces:
 
