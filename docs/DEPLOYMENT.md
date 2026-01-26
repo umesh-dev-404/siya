@@ -147,7 +147,12 @@ pip install -e .
 
 ```bash
 # Run database initialization
-python -c "from memory import Database; db = Database('siya.db'); db.connect(); print('Database initialized')"
+python -c "from memory.database import MemoryDatabase; db = MemoryDatabase(); db.initialize(); print('Database initialized')"
+```
+
+**Note:** If you get import errors, ensure all dependencies are installed:
+```bash
+pip install -e .
 ```
 
 ### 7. Lock Production Baseline
@@ -155,8 +160,8 @@ python -c "from memory import Database; db = Database('siya.db'); db.connect(); 
 ```bash
 # Lock schema version and tool registry
 python -c "
-from system import ProductionLock
-from mcp import ModelControlPlane
+from system.production_lock import ProductionLock
+from mcp.mcp import ModelControlPlane
 
 mcp = ModelControlPlane()
 lock = ProductionLock()
@@ -167,21 +172,25 @@ print('Production lock finalized')
 "
 ```
 
+**Note:** Use full module paths (e.g., `system.production_lock` not just `system`) to avoid import issues.
+
 ### 8. Verify Installation
 
 ```bash
 # Run state consistency check
 python -c "
-from memory import Database
-from system import StateChecker
+from memory.database import MemoryDatabase
+from system.state_checker import StateChecker
 
-db = Database('siya.db')
-db.connect()
+db = MemoryDatabase()
+db.initialize()
 checker = StateChecker(db)
 result = checker.check_state_consistency()
 print(f'State consistent: {result[\"consistent\"]}')
 "
 ```
+
+**Note:** Use full module paths for imports to ensure proper module resolution.
 
 ---
 
@@ -224,11 +233,15 @@ export SIYA_API_BASE_URL=http://$(hostname -I | awk '{print $1}'):8080
 The systemd service runs the API server (`service_main.py`), which:
 - Starts the HTTP API server on port 8080
 - Runs continuously in the background
-- Automatically restarts on failure
+- Automatically restarts on failure (with 10-second delay)
 - Starts on system boot (if enabled)
 - Is accessible from your PC at `http://<PI_IP>:8080`
 
-**Note:** The service does NOT run the interactive CLI. For interactive use, SSH into the Pi and run `python -m cli.main` manually.
+**Important Notes:**
+- The service does NOT run the interactive CLI. For interactive use, SSH into the Pi and run `python -m cli.main` manually.
+- The service entry point is `service_main.py` (not `cli.main`)
+- All errors are logged to systemd journal (view with `sudo journalctl -u siya`)
+- If service fails to start, check logs first: `sudo journalctl -u siya -n 50 --no-pager`
 
 ### Create Service File
 
@@ -426,53 +439,106 @@ python3 -c "import sqlite3; print(sqlite3.sqlite_version)"
 ```
 
 **Import Errors:**
-```bash
-# Ensure virtual environment is activated
-source /opt/siya/venv/bin/activate
-# Reinstall dependencies
-pip install -e .
-```
+
+Common import errors and fixes:
+
+1. **Missing `List` import:**
+   ```bash
+   # Error: NameError: name 'List' is not defined
+   # Fix: Add to typing imports
+   # Files affected: audit/audit_logger.py
+   # Change: from typing import Any, Dict, Optional
+   # To: from typing import Any, Dict, List, Optional
+   ```
+
+2. **Missing `Any` import:**
+   ```bash
+   # Error: NameError: name 'Any' is not defined
+   # Fix: Add to typing imports
+   # Files affected: 
+   #   - api/http_handler.py
+   #   - system/resource_monitor.py
+   # Change: from typing import Optional
+   # To: from typing import Any, Optional
+   ```
+
+3. **General import errors:**
+   ```bash
+   # Ensure virtual environment is activated
+   source /opt/siya/venv/bin/activate
+   
+   # Reinstall dependencies
+   pip install -e .
+   
+   # Verify imports work
+   python -c "from api import APIServer; print('Imports OK')"
+   ```
 
 ### Service Won't Start
 
-1. **Check logs for errors:**
-   ```bash
-   sudo journalctl -u siya -n 50
-   ```
+**Step 1: Check logs for the actual error:**
+```bash
+# View recent logs
+sudo journalctl -u siya -n 50 --no-pager
 
-2. **Verify service file:**
-   ```bash
-   sudo cat /etc/systemd/system/siya.service
-   ```
-   - Ensure `User=umesh404` (or your actual username)
-   - Ensure `ExecStart` points to `/opt/siya/service_main.py`
-   - Remove any comments from the `User=` line
+# Follow logs in real-time
+sudo journalctl -u siya -f
+```
 
-3. **Verify Python environment:**
-   ```bash
-   source /opt/siya/venv/bin/activate
-   python --version
-   python /opt/siya/service_main.py  # Test manually
-   ```
+**Common errors and fixes:**
 
-4. **Check file permissions:**
-   ```bash
-   ls -la /opt/siya/service_main.py
-   sudo chown umesh404:umesh404 /opt/siya/service_main.py
-   ```
+**Error: `status=217/USER`**
+- **Cause:** Wrong username in service file
+- **Fix:** Ensure `User=YOUR_PI_USERNAME` (e.g., `User=umesh404`) with no comments on that line
 
-5. **Check database:**
-   ```bash
-   ls -la /opt/siya/siya.db
-   ```
+**Error: `NameError: name 'Any' is not defined`**
+- **Cause:** Missing `Any` import in `api/http_handler.py` or `system/resource_monitor.py`
+- **Fix:** Add `Any` to typing imports: `from typing import Any, Optional`
 
-6. **Verify API server starts manually:**
-   ```bash
-   cd /opt/siya
-   source venv/bin/activate
-   python service_main.py
-   ```
-   (Press Ctrl+C to stop, then check if it started without errors)
+**Error: `NameError: name 'List' is not defined`**
+- **Cause:** Missing `List` import in `audit/audit_logger.py`
+- **Fix:** Add `List` to typing imports: `from typing import Any, Dict, List, Optional`
+
+**Error: `status=1/FAILURE` (general failure)**
+- **Cause:** Python script error (check logs for details)
+- **Fix:** See Step 2 below
+
+**Step 2: Test service script manually:**
+```bash
+cd /opt/siya
+source venv/bin/activate
+python service_main.py
+```
+This will show the exact error. Fix any import or initialization errors.
+
+**Step 3: Verify service file:**
+```bash
+sudo cat /etc/systemd/system/siya.service
+```
+- Ensure `User=YOUR_PI_USERNAME` (replace with your actual username, e.g., `umesh404`)
+- Ensure `ExecStart=/opt/siya/venv/bin/python /opt/siya/service_main.py`
+- **Remove any comments from the `User=` line** (systemd doesn't like comments there)
+
+**Step 4: Check file permissions:**
+```bash
+ls -la /opt/siya/service_main.py
+sudo chown YOUR_PI_USERNAME:YOUR_PI_USERNAME /opt/siya/service_main.py
+sudo chown -R YOUR_PI_USERNAME:YOUR_PI_USERNAME /opt/siya
+```
+
+**Step 5: Verify Python environment:**
+```bash
+source /opt/siya/venv/bin/activate
+python --version  # Should be 3.11+
+which python  # Should point to venv
+```
+
+**Step 6: After fixing errors, restart service:**
+```bash
+sudo systemctl daemon-reload
+sudo systemctl restart siya
+sudo systemctl status siya
+```
 
 ### Database Issues
 

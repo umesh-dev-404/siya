@@ -10,7 +10,7 @@ Per DIP Phase 6: HTTP API mirrors CLI exactly.
 import json
 import logging
 from http.server import BaseHTTPRequestHandler
-from typing import Optional
+from typing import Any, Optional
 from urllib.parse import urlparse, parse_qs
 
 from api.api_server import APIServer
