@@ -2,11 +2,12 @@
 Service Entry Point
 
 Main entry point for Siya systemd service.
-Starts the API server to run as a background service.
+Starts both API server and web server to run as background services.
 """
 
 import logging
 import sys
+import threading
 from pathlib import Path
 
 # Add project root to path
@@ -20,6 +21,7 @@ from cli.cli import CLI
 from config.logging_config import setup_logging
 from mcp.mcp import ModelControlPlane
 from orchestrator.orchestrator import Orchestrator
+from web.web_server import WebServer
 
 # Setup logging first (before any other imports that might log)
 try:
@@ -32,11 +34,39 @@ except Exception as e:
 logger = logging.getLogger(__name__)
 
 
+def run_api_server(http_server: SiyaAPIServer) -> None:
+    """
+    Run API server in a separate thread.
+
+    Args:
+        http_server: API server instance
+    """
+    try:
+        http_server.serve_forever()
+    except Exception as e:
+        logger.error(f"API server error: {e}", exc_info=True)
+        raise
+
+
+def run_web_server(web_server: WebServer) -> None:
+    """
+    Run web server in a separate thread.
+
+    Args:
+        web_server: Web server instance
+    """
+    try:
+        web_server.serve_forever()
+    except Exception as e:
+        logger.error(f"Web server error: {e}", exc_info=True)
+        raise
+
+
 def main() -> int:
     """
     Main service entry point.
 
-    Starts the API server to run as a systemd service.
+    Starts both API server and web server to run as a systemd service.
 
     Returns:
         Exit code (0 for success, non-zero for error)
@@ -65,16 +95,29 @@ def main() -> int:
         print("Creating API server...", flush=True)
         api_server = APIServer(cli)
 
-        print("Starting HTTP server...", flush=True)
+        print("Starting API HTTP server...", flush=True)
         http_server = SiyaAPIServer(api_server)
         http_server.start()
 
-        print(f"Siya API server started successfully on http://{http_server._host}:{http_server._port}", flush=True)
+        print(f"Siya API server started on http://{http_server._host}:{http_server._port}", flush=True)
         logger.info("Siya API server started successfully")
         logger.info(f"API server running on http://{http_server._host}:{http_server._port}")
 
-        # Serve forever (blocking)
-        http_server.serve_forever()
+        print("Starting web server...", flush=True)
+        web_server = WebServer()
+        web_server.start()
+
+        print(f"Siya web server started on http://{web_server._host}:{web_server._port}", flush=True)
+        logger.info("Web server started successfully")
+        logger.info(f"Web server running on http://{web_server._host}:{web_server._port}")
+
+        # Start API server in a thread
+        api_thread = threading.Thread(target=run_api_server, args=(http_server,), daemon=True)
+        api_thread.start()
+
+        # Start web server in main thread (blocking)
+        # This keeps the main process alive
+        web_server.serve_forever()
 
         return 0
 

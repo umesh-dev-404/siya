@@ -230,16 +230,20 @@ export SIYA_API_BASE_URL=http://$(hostname -I | awk '{print $1}'):8080
 
 ## SERVICE SETUP (systemd)
 
-The systemd service runs the API server (`service_main.py`), which:
+The systemd service runs both API and web servers (`service_main.py`), which:
 - Starts the HTTP API server on port 8080
-- Runs continuously in the background
+- Starts the web interface server on port 3000
+- Both servers run continuously in the background
 - Automatically restarts on failure (with 10-second delay)
 - Starts on system boot (if enabled)
-- Is accessible from your PC at `http://<PI_IP>:8080`
+- Accessible from your PC:
+  - API: `http://<PI_IP>:8080`
+  - Web Interface: `http://<PI_IP>:3000`
 
 **Important Notes:**
 - The service does NOT run the interactive CLI. For interactive use, SSH into the Pi and run `python -m cli.main` manually.
 - The service entry point is `service_main.py` (not `cli.main`)
+- Both servers start automatically when the service starts
 - All errors are logged to systemd journal (view with `sudo journalctl -u siya`)
 - If service fails to start, check logs first: `sudo journalctl -u siya -n 50 --no-pager`
 
@@ -312,17 +316,108 @@ curl http://192.168.1.39:8080/health
 {"status": "healthy", "service": "siya-api"}
 ```
 
-### Verify API Server is Running
+### Test Web Interface
 
 ```bash
-# Check if port 8080 is listening
+# Test from Pi
+curl http://localhost:3000
+
+# Test from PC (replace with your Pi's IP)
+# Open in browser: http://192.168.1.39:3000
+```
+
+**Expected:** Web interface HTML page should load.
+
+### Verify Servers are Running
+
+```bash
+# Check if ports 8080 and 3000 are listening
+sudo netstat -tlnp | grep -E '8080|3000'
+
+# Or using ss
+sudo ss -tlnp | grep -E '8080|3000'
+```
+
+You should see:
+- API server listening on `0.0.0.0:8080` (or `*:8080`)
+- Web server listening on `0.0.0.0:3000` (or `*:3000`)
+
+### Troubleshooting: Service Running But Not Accessible from PC
+
+If the service shows `Active: active (running)` but you can't access it from your PC:
+
+**1. Check Firewall (Most Common Issue):**
+```bash
+# Check firewall status
+sudo ufw status
+
+# If firewall is active, allow port 8080
+sudo ufw allow 8080/tcp
+sudo ufw allow 3000/tcp  # If using web interface
+
+# Verify rules
+sudo ufw status numbered
+```
+
+**2. Verify Port is Listening:**
+```bash
+# Check if port 8080 is actually listening
 sudo netstat -tlnp | grep 8080
+# Should show: 0.0.0.0:8080 or *:8080
 
 # Or using ss
 sudo ss -tlnp | grep 8080
 ```
 
-You should see the API server listening on `0.0.0.0:8080` (or `*:8080`).
+**3. Test from Pi (Localhost):**
+```bash
+# Test API from Pi itself
+curl http://localhost:8080/health
+
+# Should return: {"status": "healthy", "service": "siya-api"}
+```
+
+**4. Check Pi's Current IP:**
+```bash
+# Get Pi's IP address
+hostname -I
+
+# Make sure you're using the correct IP from PC
+# IP may have changed if router restarted
+```
+
+**5. Test Network Connectivity from PC:**
+```bash
+# From your PC, test if you can reach the Pi
+ping 192.168.1.39  # Replace with your Pi's actual IP
+
+# Test if port 8080 is reachable
+telnet 192.168.1.39 8080
+# Or on Windows PowerShell:
+Test-NetConnection -ComputerName 192.168.1.39 -Port 8080
+```
+
+**6. Check Service Logs for Connection Attempts:**
+```bash
+# Watch logs in real-time, then try connecting from PC
+sudo journalctl -u siya -f
+
+# If you see connection attempts but they fail, check firewall
+# If you see no connection attempts, it's a network/firewall issue
+```
+
+**7. Verify Service is Binding to All Interfaces:**
+```bash
+# Check service logs to confirm it's binding to 0.0.0.0
+sudo journalctl -u siya | grep "API server started"
+# Should show: "API server started on 0.0.0.0:8080"
+```
+
+**Common Solutions:**
+- **Firewall blocking:** `sudo ufw allow 8080/tcp`
+- **Wrong IP address:** Check with `hostname -I` after router restart
+- **Network isolation:** Ensure PC and Pi are on same network
+- **Router blocking:** Some routers block inter-device communication (check router settings)
 
 ---
 
