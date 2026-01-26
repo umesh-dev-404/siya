@@ -103,8 +103,8 @@ cd /opt
 # Clone Siya repository (replace YOUR_USERNAME with your GitHub username)
 sudo git clone https://github.com/YOUR_USERNAME/siya.git
 
-# Set ownership
-sudo chown -R pi:pi /opt/siya
+# Set ownership (replace YOUR_PI_USERNAME with your actual Pi username, e.g., umesh404)
+sudo chown -R YOUR_PI_USERNAME:YOUR_PI_USERNAME /opt/siya
 
 # Navigate to project directory
 cd /opt/siya
@@ -226,7 +226,7 @@ After=network.target
 
 [Service]
 Type=simple
-User=pi
+User=YOUR_PI_USERNAME  # Replace with your actual Pi username (e.g., umesh404)
 WorkingDirectory=/opt/siya
 Environment="PATH=/opt/siya/venv/bin"
 ExecStart=/opt/siya/venv/bin/python -m cli.main
@@ -365,7 +365,7 @@ pip install -e .
 **Permission Denied:**
 ```bash
 # Fix ownership
-sudo chown -R pi:pi /opt/siya
+sudo chown -R YOUR_PI_USERNAME:YOUR_PI_USERNAME /opt/siya
 ```
 
 **Database Initialization Fails:**

@@ -6,7 +6,7 @@ readme = "README.md"
 requires-python = ">=3.11,<3.14"
 license = {text = "TBD"}
 authors = [
-    {name = "Siya Project", email = "TBD"}
+    {name = "Siya Project", email = "siya@localhost.local"}
 ]
 keywords = ["assistant", "automation", "local-first", "governance"]
 classifiers = [

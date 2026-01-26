@@ -135,8 +135,8 @@ git push origin v1.0.0-baseline
 
 ```bash
 # From your PC
-ssh pi@raspberrypi
-# Or use IP: ssh pi@192.168.1.XXX
+ssh YOUR_PI_USERNAME@raspberrypi  # Replace YOUR_PI_USERNAME with your actual Pi username (e.g., umesh404)
+# Or use IP: ssh YOUR_PI_USERNAME@192.168.1.XXX
 ```
 
 ### 4.2 Install Git (if not installed)
@@ -160,7 +160,7 @@ sudo git clone https://github.com/YOUR_USERNAME/siya.git
 # sudo git clone git@github.com:YOUR_USERNAME/siya.git
 
 # Set ownership
-sudo chown -R pi:pi /opt/siya
+sudo chown -R YOUR_PI_USERNAME:YOUR_PI_USERNAME /opt/siya  # Replace YOUR_PI_USERNAME with your actual Pi username (e.g., umesh404)
 ```
 
 ### 4.4 Verify Clone
@@ -250,7 +250,7 @@ curl http://<PI_IP>:8080/health
 **Permission Denied:**
 ```bash
 # Fix ownership
-sudo chown -R pi:pi /opt/siya
+sudo chown -R YOUR_PI_USERNAME:YOUR_PI_USERNAME /opt/siya  # Replace YOUR_PI_USERNAME with your actual Pi username (e.g., umesh404)
 ```
 
 **Git Not Found:**
@@ -287,7 +287,7 @@ git push origin main
 
 ```bash
 # SSH into Pi
-ssh pi@raspberrypi
+ssh YOUR_PI_USERNAME@raspberrypi  # Replace YOUR_PI_USERNAME with your actual Pi username
 
 # Navigate to project
 cd /opt/siya

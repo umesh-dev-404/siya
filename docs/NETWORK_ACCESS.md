@@ -61,7 +61,7 @@ Replace `<PI_IP>` with your Pi's actual IP address (e.g., `192.168.1.100`).
 ## ACCESS FROM PC
 
 ### Web Interface
-1. Find Pi's IP address: `ssh pi@raspberrypi "hostname -I"`
+1. Find Pi's IP address: `ssh YOUR_PI_USERNAME@raspberrypi "hostname -I"` (Replace YOUR_PI_USERNAME with your actual Pi username, e.g., umesh404)
 2. Open browser on PC: `http://<PI_IP>:3000`
 3. Web interface will connect to API at `http://<PI_IP>:8080`
 
@@ -79,7 +79,7 @@ curl -X POST http://<PI_IP>:8080/command \
 ### CLI (via SSH)
 ```bash
 # SSH into Pi and run CLI
-ssh pi@raspberrypi
+ssh YOUR_PI_USERNAME@raspberrypi  # Replace YOUR_PI_USERNAME with your actual Pi username (e.g., umesh404)
 cd /opt/siya
 source venv/bin/activate
 python -m cli.main
@@ -143,7 +143,7 @@ sudo systemctl start siya
 
 1. **Check Pi IP:**
    ```bash
-   ssh pi@raspberrypi "hostname -I"
+   ssh YOUR_PI_USERNAME@raspberrypi  # Replace YOUR_PI_USERNAME with your actual Pi username (e.g., umesh404) "hostname -I"
    ```
 
 2. **Check Firewall:**
