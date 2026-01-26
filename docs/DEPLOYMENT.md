@@ -138,9 +138,10 @@ pip install -e .
 ```
 
 **Note:** 
-- Python 3.11, 3.12, or 3.13 are supported
+- Python 3.11, 3.12, or 3.13 are supported (Python 3.13.5 confirmed working)
 - The venv must be created **inside** the project directory (`/opt/siya`)
 - You must clone the repository first before running `pip install -e .`
+- Replace `YOUR_PI_USERNAME` with your actual Pi username (e.g., `umesh404`) in all commands
 
 ### 6. Initialize Database
 
@@ -206,10 +207,15 @@ export SIYA_WEB_HOST=0.0.0.0
 export SIYA_WEB_PORT=3000
 
 # API base URL for web interface (use Pi's IP address)
+# IMPORTANT: Pi's IP address changes when router restarts. Find current IP with: hostname -I
 export SIYA_API_BASE_URL=http://$(hostname -I | awk '{print $1}'):8080
 ```
 
-**Note:** Setting host to `0.0.0.0` allows access from your PC on the same network. See `NETWORK_ACCESS.md` for details.
+**Important Notes:**
+- Setting host to `0.0.0.0` allows access from your PC on the same network
+- **Pi's IP address changes when router restarts** - you'll need to update `SIYA_API_BASE_URL` and reconnect from PC
+- To find current IP: `hostname -I` (first IP shown is usually the one to use)
+- See `NETWORK_ACCESS.md` for details on network access
 
 ---
 
@@ -229,7 +235,7 @@ Type=simple
 User=YOUR_PI_USERNAME  # Replace with your actual Pi username (e.g., umesh404)
 WorkingDirectory=/opt/siya
 Environment="PATH=/opt/siya/venv/bin"
-ExecStart=/opt/siya/venv/bin/python -m cli.main
+ExecStart=/opt/siya/venv/bin/python /opt/siya/service_main.py
 Restart=always
 RestartSec=10
 
@@ -358,7 +364,7 @@ python --version  # Verify in venv
 pip install -e .
 ```
 
-**Note:** Siya requires Python >= 3.11, < 3.14 (so 3.11, 3.12, and 3.13 are all supported). If your Pi only has Python 3.9 or 3.10, you must upgrade to Python 3.11+ using one of the methods above.
+**Note:** Siya requires Python >= 3.11, < 3.14 (so 3.11, 3.12, and 3.13 are all supported). Python 3.13.5 has been tested and works. If your Pi only has Python 3.9 or 3.10, you must upgrade to Python 3.11+ using one of the methods above.
 
 ### Other Common Issues
 

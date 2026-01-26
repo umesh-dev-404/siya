@@ -203,6 +203,10 @@ python -c "from memory.database import MemoryDatabase; db = MemoryDatabase(); db
 # Configure network access
 export SIYA_API_HOST=0.0.0.0
 export SIYA_WEB_HOST=0.0.0.0
+
+# IMPORTANT: Pi's IP address changes when router restarts!
+# Find current IP: hostname -I
+# Then set base URL (or use the command below to auto-detect)
 export SIYA_API_BASE_URL=http://$(hostname -I | awk '{print $1}'):8080
 ```
 

@@ -51,18 +51,38 @@ export SIYA_API_HOST=0.0.0.0      # Allow network access
 export SIYA_API_PORT=8080
 export SIYA_WEB_HOST=0.0.0.0      # Allow network access
 export SIYA_WEB_PORT=3000
+
+# IMPORTANT: Pi's IP address changes when router restarts!
+# Find current IP: hostname -I
+# Replace <PI_IP> with your Pi's current IP address (e.g., 192.168.1.39)
 export SIYA_API_BASE_URL=http://<PI_IP>:8080  # For web interface
 ```
 
-Replace `<PI_IP>` with your Pi's actual IP address (e.g., `192.168.1.100`).
+**⚠️ IP Address Changes:** Your Pi's IP address will change every time your router restarts. You must:
+1. Find the new IP: `hostname -I` (on Pi) or check router admin panel
+2. Update `SIYA_API_BASE_URL` environment variable on Pi
+3. Update the URL in your PC browser/bookmarks
 
 ---
 
 ## ACCESS FROM PC
 
 ### Web Interface
-1. Find Pi's IP address: `ssh YOUR_PI_USERNAME@raspberrypi "hostname -I"` (Replace YOUR_PI_USERNAME with your actual Pi username, e.g., umesh404)
-2. Open browser on PC: `http://<PI_IP>:3000`
+
+**⚠️ Note: Pi's IP changes when router restarts. Check IP each time before connecting.**
+
+1. **Find Pi's current IP address:**
+   ```bash
+   # From PC (if you know Pi's hostname)
+   ssh YOUR_PI_USERNAME@raspberrypi "hostname -I"
+   
+   # Or from Pi directly
+   hostname -I
+   ```
+   (Replace YOUR_PI_USERNAME with your actual Pi username, e.g., umesh404)
+
+2. **Open browser on PC:** `http://<PI_IP>:3000` (use the current IP from step 1)
+
 3. Web interface will connect to API at `http://<PI_IP>:8080`
 
 ### API Direct Access
@@ -116,7 +136,14 @@ Follow `DEPLOYMENT.md` to:
 # On Pi, set environment variables
 export SIYA_API_HOST=0.0.0.0
 export SIYA_WEB_HOST=0.0.0.0
+
+# IMPORTANT: IP address changes when router restarts!
+# Find current IP first: hostname -I
+# Then set the base URL (replace with actual current IP)
 export SIYA_API_BASE_URL=http://$(hostname -I | awk '{print $1}'):8080
+
+# Or set manually if you know the IP:
+# export SIYA_API_BASE_URL=http://192.168.1.39:8080
 ```
 
 ### 3. Start Services
@@ -141,10 +168,17 @@ sudo systemctl start siya
 
 ### Cannot Connect from PC
 
-1. **Check Pi IP:**
+1. **Check Pi IP (IP may have changed after router restart):**
    ```bash
-   ssh YOUR_PI_USERNAME@raspberrypi  # Replace YOUR_PI_USERNAME with your actual Pi username (e.g., umesh404) "hostname -I"
+   # From PC
+   ssh YOUR_PI_USERNAME@raspberrypi "hostname -I"
+   
+   # Or from Pi directly
+   hostname -I
    ```
+   (Replace YOUR_PI_USERNAME with your actual Pi username, e.g., umesh404)
+   
+   **⚠️ If router was restarted, IP has changed - update all references!**
 
 2. **Check Firewall:**
    ```bash
@@ -182,6 +216,65 @@ sudo systemctl start siya
 - HTTPS support
 - Access control
 - Rate limiting
+
+---
+
+## IP ADDRESS MANAGEMENT
+
+### ⚠️ CRITICAL: IP Address Changes
+
+**Your Raspberry Pi's IP address changes every time your router restarts.**
+
+This means you must:
+1. Find the new IP address after router restart
+2. Update `SIYA_API_BASE_URL` environment variable on Pi
+3. Update URLs/bookmarks on your PC
+4. Reconnect using the new IP
+
+### Finding Current IP Address
+
+**From Pi:**
+```bash
+hostname -I  # Usually the first IP shown is the one you need
+```
+
+**From PC (if you know Pi's hostname):**
+```bash
+ssh YOUR_PI_USERNAME@raspberrypi "hostname -I"
+```
+
+**From Router Admin Panel:**
+- Log into router (usually `192.168.1.1` or `192.168.0.1`)
+- Check "Connected Devices" or "DHCP Clients"
+- Find your Pi and note the assigned IP
+
+### Updating After IP Change
+
+**On Pi:**
+```bash
+# 1. Find new IP
+hostname -I
+
+# 2. Update environment variable (replace with actual new IP)
+export SIYA_API_BASE_URL=http://192.168.1.XXX:8080
+
+# 3. Restart service if needed
+sudo systemctl restart siya
+```
+
+**On PC:**
+- Update browser bookmarks with new IP
+- Update any scripts that connect to Pi
+- Test: `curl http://NEW_IP:8080/health`
+
+### Recommended: Static IP
+
+For production use, configure your router to assign a static IP to your Pi:
+
+1. Log into router admin panel
+2. Find "DHCP Reservations" or "Static IP Assignment"
+3. Assign fixed IP (e.g., `192.168.1.100`) to Pi's MAC address
+4. Pi will always get the same IP even after router restarts
 
 ---
 

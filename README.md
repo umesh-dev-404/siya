@@ -49,6 +49,9 @@ All authoritative documentation is in the `docs/` directory:
 - **System Prompt.md** — AI component constraints
 - **system_schema.json** — Canonical JSON schema (binding)
 - **SYSTEM_SCHEMA_VERIFICATION_REPORT.md** — Schema verification report
+- **DEPLOYMENT.md** — Raspberry Pi deployment guide
+- **NETWORK_ACCESS.md** — Network access configuration (includes IP address management)
+- **GITHUB_SETUP.md** — GitHub setup and Pi deployment
 
 ---
 
