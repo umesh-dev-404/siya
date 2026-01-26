@@ -10,7 +10,7 @@ Per DIP Phase 3: Log retention and summarization.
 import json
 import logging
 from datetime import datetime
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 from uuid import uuid4
 
 from memory.database import Database
