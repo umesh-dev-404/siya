@@ -98,12 +98,14 @@ curl -X POST http://<PI_IP>:8080/command \
 
 ### CLI (via SSH)
 ```bash
-# SSH into Pi and run CLI
+# SSH into Pi and run CLI interactively
 ssh YOUR_PI_USERNAME@raspberrypi  # Replace YOUR_PI_USERNAME with your actual Pi username (e.g., umesh404)
 cd /opt/siya
 source venv/bin/activate
 python -m cli.main
 ```
+
+**Note:** The CLI is for interactive use. The systemd service runs the API server automatically. You don't need to run the CLI manually if the service is running.
 
 ---
 
@@ -147,16 +149,29 @@ export SIYA_API_BASE_URL=http://$(hostname -I | awk '{print $1}'):8080
 ```
 
 ### 3. Start Services
+
+**Option A: Use systemd service (Recommended for production)**
 ```bash
-# Start API server
-python -m api.server
+# Start the service (runs API server on port 8080)
+sudo systemctl start siya
+
+# Check status
+sudo systemctl status siya
+
+# Enable to start on boot
+sudo systemctl enable siya
+```
+
+**Option B: Manual start (for testing)**
+```bash
+# Start API server manually
+python /opt/siya/service_main.py
 
 # Or start web server (includes API)
 python -m web.web_server
-
-# Or use systemd service (see DEPLOYMENT.md)
-sudo systemctl start siya
 ```
+
+**Note:** The systemd service runs `service_main.py` which starts the API server on port 8080. This is the recommended way for production use.
 
 ### 4. Access from PC
 - Web: `http://<PI_IP>:3000`

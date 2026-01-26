@@ -221,6 +221,15 @@ export SIYA_API_BASE_URL=http://$(hostname -I | awk '{print $1}'):8080
 
 ## SERVICE SETUP (systemd)
 
+The systemd service runs the API server (`service_main.py`), which:
+- Starts the HTTP API server on port 8080
+- Runs continuously in the background
+- Automatically restarts on failure
+- Starts on system boot (if enabled)
+- Is accessible from your PC at `http://<PI_IP>:8080`
+
+**Note:** The service does NOT run the interactive CLI. For interactive use, SSH into the Pi and run `python -m cli.main` manually.
+
 ### Create Service File
 
 Create `/etc/systemd/system/siya.service`:
@@ -243,6 +252,8 @@ RestartSec=10
 WantedBy=multi-user.target
 ```
 
+**Note:** The service runs the API server (not the interactive CLI). The API server starts on port 8080 and runs continuously. Access it from your PC at `http://<PI_IP>:8080`.
+
 ### Enable Service
 
 ```bash
@@ -261,11 +272,44 @@ sudo systemctl start siya
 sudo systemctl status siya
 ```
 
+**Expected output:** Service should show `Active: active (running)` and the API server should be listening on port 8080.
+
 ### Check Logs
 
 ```bash
+# View recent logs
+sudo journalctl -u siya -n 50
+
+# Follow logs in real-time
 sudo journalctl -u siya -f
 ```
+
+### Test API
+
+```bash
+# Test from Pi
+curl http://localhost:8080/health
+
+# Test from PC (replace with your Pi's IP)
+curl http://192.168.1.39:8080/health
+```
+
+**Expected response:**
+```json
+{"status": "healthy", "service": "siya-api"}
+```
+
+### Verify API Server is Running
+
+```bash
+# Check if port 8080 is listening
+sudo netstat -tlnp | grep 8080
+
+# Or using ss
+sudo ss -tlnp | grep 8080
+```
+
+You should see the API server listening on `0.0.0.0:8080` (or `*:8080`).
 
 ---
 
@@ -391,9 +435,44 @@ pip install -e .
 
 ### Service Won't Start
 
-1. Check logs: `sudo journalctl -u siya`
-2. Verify Python environment: `source /opt/siya/venv/bin/activate && python --version`
-3. Check database: `ls -la /opt/siya/siya.db`
+1. **Check logs for errors:**
+   ```bash
+   sudo journalctl -u siya -n 50
+   ```
+
+2. **Verify service file:**
+   ```bash
+   sudo cat /etc/systemd/system/siya.service
+   ```
+   - Ensure `User=umesh404` (or your actual username)
+   - Ensure `ExecStart` points to `/opt/siya/service_main.py`
+   - Remove any comments from the `User=` line
+
+3. **Verify Python environment:**
+   ```bash
+   source /opt/siya/venv/bin/activate
+   python --version
+   python /opt/siya/service_main.py  # Test manually
+   ```
+
+4. **Check file permissions:**
+   ```bash
+   ls -la /opt/siya/service_main.py
+   sudo chown umesh404:umesh404 /opt/siya/service_main.py
+   ```
+
+5. **Check database:**
+   ```bash
+   ls -la /opt/siya/siya.db
+   ```
+
+6. **Verify API server starts manually:**
+   ```bash
+   cd /opt/siya
+   source venv/bin/activate
+   python service_main.py
+   ```
+   (Press Ctrl+C to stop, then check if it started without errors)
 
 ### Database Issues
 
@@ -414,5 +493,6 @@ If deployment fails:
 
 ---
 
-**Last Updated:** 2026-01-26
+**Last Updated:** 2026-01-27
 **Baseline Version:** 1.0.0
+**Service Entry Point:** `service_main.py` (runs API server on port 8080)
