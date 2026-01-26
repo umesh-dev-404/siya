@@ -13,8 +13,11 @@ Siya's API and web interface are designed to be accessible over the network, all
 ## CURRENT STATUS
 
 **Code Status:** ✅ Ready  
-**Network Configuration:** ⚠️ Needs configuration  
-**Pi Deployment:** ⚠️ Not yet deployed (Phase 4A pending)
+**Network Configuration:** ✅ Configured and Working  
+**Pi Deployment:** ✅ Deployed and Operational  
+**API Server:** ✅ Running on port 8080 (accessible from network)  
+**Web Interface:** ✅ Running on port 3000 (accessible from network)  
+**CORS:** ✅ Configured (headers added to API server)
 
 ---
 
@@ -355,21 +358,32 @@ $body = @{command="help"} | ConvertTo-Json
 Invoke-WebRequest -Uri http://192.168.1.39:8080/command -Method POST -Body $body -ContentType "application/json"
 ```
 
-**Example Test Commands:**
+**Quick Test Examples:**
+
 ```bash
 # Test 1: Health check
 curl http://192.168.1.39:8080/health
 
-# Test 2: List tools
+# Test 2: Basic command
 curl -X POST http://192.168.1.39:8080/command \
   -H "Content-Type: application/json" \
-  -d '{"command": "list tools"}'
+  -d '{"command": "hello"}'
 
-# Test 3: Ask a question
+# Test 3: Natural language
 curl -X POST http://192.168.1.39:8080/command \
   -H "Content-Type: application/json" \
   -d '{"command": "what can you do?"}'
 ```
+
+**For comprehensive example commands and testing guide, see `EXAMPLE_COMMANDS.md`.**
+
+**Note:** Currently, the system has:
+- ✅ API server running
+- ✅ Intent parsing (stub mode - will parse but no tools registered yet)
+- ✅ Orchestration flow (tasks queued and processed)
+- ⚠️ Tool execution (stubbed - no tools registered in Phase 2)
+
+Commands will be parsed and queued, but tool execution is stubbed until tools are registered in later phases.
 
 ### Understanding MCP
 

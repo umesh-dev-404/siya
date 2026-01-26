@@ -16,6 +16,20 @@
 **Completed Phases:**
 - ✅ Phase 0 — Foundation & Tooling
 - ✅ Phase 1 — Core Runtime Skeleton (No AI)
+- ✅ Phase 2 — Governance & Control Plane
+- ✅ Phase 3 — Memory & Observability
+- ✅ Phase 5 — AI Integration (Controlled)
+- ✅ Phase 6 — Interfaces & UX Layer
+- ✅ Phase 7 — Automation & Scheduling
+- ✅ Phase 8 — Failure Injection & Hardening
+- ✅ Phase 9 — Production Lock & Baseline
+
+**Deployment Status:**
+- ✅ Deployed to Raspberry Pi 5
+- ✅ API server running (port 8080)
+- ✅ Web interface running (port 3000)
+- ✅ Network access configured
+- ✅ systemd service active
 
 ---
 
@@ -49,9 +63,11 @@ All authoritative documentation is in the `docs/` directory:
 - **System Prompt.md** — AI component constraints
 - **system_schema.json** — Canonical JSON schema (binding)
 - **SYSTEM_SCHEMA_VERIFICATION_REPORT.md** — Schema verification report
-- **DEPLOYMENT.md** — Raspberry Pi deployment guide
-- **NETWORK_ACCESS.md** — Network access configuration (includes IP address management)
+- **DEPLOYMENT.md** — Raspberry Pi deployment guide (✅ Deployed)
+- **DEPLOYMENT_COMPLETION_STATUS.md** — Deployment completion status and verification
+- **NETWORK_ACCESS.md** — Network access configuration (✅ Configured and working)
 - **GITHUB_SETUP.md** — GitHub setup and Pi deployment
+- **EXAMPLE_COMMANDS.md** — Example commands for testing from PC
 
 ---
 
@@ -75,21 +91,13 @@ Implementation follows strict sequential phases (see DETAILED IMPLEMENTATION PLA
 1. **Core Runtime Skeleton** ✅ — Deterministic execution backbone (no AI)
 2. **Governance & Control Plane** ✅ — MCP, permissions, law enforcement
 3. **Memory & Observability** ✅ — SQLite, logging, memory governance
-4A. **Raspberry Pi Base Provisioning** — Pi setup and hardening (hardware)
-4. **Pi Mirroring & Validation** — Read-only validation (hardware)
+4A. **Raspberry Pi Base Provisioning** ✅ — Pi setup and hardening (completed)
+4. **Pi Mirroring & Validation** — Read-only validation (hardware - optional)
 5. **AI Integration (Controlled)** ✅ — Intent parsing, schema enforcement
 6. **Interfaces & UX Layer** ✅ — CLI, API, web interface
 7. **Automation & Scheduling** ✅ — Automation modules, serial execution
 8. **Failure Injection & Hardening** ✅ — Failure testing and recovery
 9. **Production Lock & Baseline** ✅ — Final baseline and deployment
-3. **Memory & Observability** — SQLite, logging, memory governance
-4A. **Raspberry Pi Base Provisioning** — Pi setup and hardening
-4. **Pi Mirroring & Validation** — Architecture validation on Pi
-5. **AI Integration** — Controlled AI as intent parser
-6. **Interfaces & UX Layer** — CLI, API, web interface
-7. **Automation & Scheduling** — Automation modules, systemd timers
-8. **Failure Injection & Hardening** — Failure testing and recovery
-9. **Production Lock & Baseline** — Final baseline and deployment
 
 ---
 
@@ -136,10 +144,10 @@ Siya operates under 18 immutable laws (see CANONICAL SYSTEM LAWS.md):
 
 ## DEVELOPMENT ENVIRONMENT
 
-**Target Hardware:** Raspberry Pi 5 (8 GB RAM)  
+**Target Hardware:** Raspberry Pi 5 (8 GB RAM) ✅ Deployed  
 **Primary Development:** PC (Windows/Linux/Mac)  
-**Language:** Python  
-**AI Runtime:** llama.cpp (CPU-only, quantized models)
+**Language:** Python 3.13.5 (compatible with 3.11+)  
+**AI Runtime:** llama.cpp (CPU-only, quantized models) - Stub mode
 
 ---
 
@@ -165,6 +173,7 @@ Siya operates under 18 immutable laws (see CANONICAL SYSTEM LAWS.md):
 
 ---
 
-**Last Updated:** 2026-01-26  
-**Schema Version:** 1.0.0  
-**Project Status:** ✅ PRODUCTION BASELINE COMPLETE (v1.0.0)
+**Last Updated:** 2026-01-27  
+**Schema Version:** 1.0.0 (Locked)  
+**Project Status:** ✅ PRODUCTION BASELINE COMPLETE (v1.0.0)  
+**Deployment Status:** ✅ DEPLOYED AND RUNNING ON RASPBERRY PI 5

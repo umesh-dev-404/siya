@@ -91,12 +91,12 @@
 ## DEFERRED PHASES
 
 ### Phase 4A — Raspberry Pi Base Provisioning
-- **Status:** Deferred (requires hardware)
-- **Reason:** Hardware provisioning, no code changes
+- **Status:** ✅ COMPLETED (2026-01-27)
+- **Completed:** Pi setup, hardening, service deployment, network configuration
 
 ### Phase 4 — Pi Mirroring & Validation
-- **Status:** Deferred (requires hardware)
-- **Reason:** Pi-specific validation, read-only
+- **Status:** Optional (hardware validation)
+- **Reason:** Pi-specific validation, read-only (optional for production use)
 
 ---
 
@@ -133,9 +133,18 @@
 
 ---
 
-## DEPLOYMENT READINESS
+## DEPLOYMENT STATUS
 
-**Status:** ✅ READY
+**Status:** ✅ DEPLOYED AND RUNNING
+
+**Deployment Completed:**
+- ✅ Phase 4A completed — Raspberry Pi base provisioning
+- ✅ System deployed to Raspberry Pi 5
+- ✅ API server running (port 8080, accessible from network)
+- ✅ Web interface running (port 3000, accessible from network)
+- ✅ systemd service configured and active
+- ✅ Network access configured (CORS headers added)
+- ✅ Service running as background process
 
 **All Requirements Met:**
 - ✅ Schema versions locked
@@ -145,11 +154,13 @@
 - ✅ System reproducible
 - ✅ System auditable
 - ✅ System stable
+- ✅ System deployed and operational
 
-**Next Steps:**
-1. Tag release: `git tag v1.0.0-baseline`
-2. Deploy to Raspberry Pi 5 (Phase 4A)
-3. Validate on Pi (Phase 4)
+**Current Status:**
+- System is running on Raspberry Pi 5
+- Accessible from PC via network (API: port 8080, Web: port 3000)
+- Service managed by systemd
+- All core components operational
 
 ---
 
@@ -173,9 +184,12 @@
 ### Core Documentation
 - `README.md` — Project overview
 - `SETUP.md` — Development setup
-- `DEPLOYMENT.md` — Production deployment
+- `DEPLOYMENT.md` — Production deployment (✅ Completed)
+- `DEPLOYMENT_COMPLETION_STATUS.md` — Deployment completion status
 - `RECOVERY_CHECKLIST.md` — Recovery procedures
 - `RELEASE.md` — Release information
+- `NETWORK_ACCESS.md` — Network access configuration (✅ Working)
+- `EXAMPLE_COMMANDS.md` — Example commands for testing
 
 ### Technical Documentation
 - `docs/system_schema.json` — Canonical system schema
@@ -197,6 +211,8 @@
 
 ---
 
-**Last Updated:** 2026-01-26  
+**Last Updated:** 2026-01-27  
 **Baseline Version:** 1.0.0  
-**Status:** ✅ PRODUCTION BASELINE COMPLETE
+**Status:** ✅ PRODUCTION BASELINE COMPLETE AND DEPLOYED  
+**Deployment Date:** 2026-01-27  
+**Deployment Status:** ✅ OPERATIONAL ON RASPBERRY PI 5
