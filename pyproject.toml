@@ -4,7 +4,7 @@ version = "0.1.0"
 description = "Local-First Personal Governance and Assistant Operating System"
 readme = "README.md"
 requires-python = ">=3.11,<3.14"
-license = {text = "TBD"}
+license = {text = "UNLICENSED"}
 authors = [
     {name = "Siya Project", email = "siya@localhost.local"}
 ]
@@ -34,6 +34,25 @@ dev = [
 [build-system]
 requires = ["setuptools>=68.0", "wheel"]
 build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = [
+    "ai",
+    "api",
+    "audit",
+    "automations",
+    "cli",
+    "config",
+    "core",
+    "interfaces",
+    "mcp",
+    "memory",
+    "orchestrator",
+    "security",
+    "system",
+    "tools",
+    "web",
+]
 
 [tool.black]
 line-length = 100
