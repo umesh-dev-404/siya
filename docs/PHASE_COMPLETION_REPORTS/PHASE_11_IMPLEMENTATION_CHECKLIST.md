@@ -145,11 +145,25 @@ Per DIP Phase 11: Tool Implementations.
 - [ ] Update `EXAMPLE_COMMANDS.md` with tool examples
 - [ ] Create Phase 11 completion report
 
-### ⏳ 11. PC MCP CLI Client (First-Party) — PENDING
-- [ ] Implement first-party PC MCP CLI client (Claude-like MCP client behavior)
-- [ ] Support MCP lifecycle: `initialize` → `notifications/initialized`
-- [ ] Support `tools/list` and `tools/call`
-- [ ] Add selective output formatting (client-side)
+### ✅ 11. PC MCP CLI Client (First-Party) — COMPLETE
+- [x] Implement first-party PC MCP CLI client (Claude-like MCP client behavior)
+- [x] Support MCP lifecycle: `initialize` → `notifications/initialized`
+- [x] Support `tools/list` and `tools/call`
+- [x] Add selective output formatting (client-side)
+- [x] **STDIO Transport** (`pc_mcp_client/stdio_client.py`)
+  - [x] Spawns local MCP server
+  - [x] JSON-RPC 2.0 over STDIO
+  - [x] Verified locally
+- [x] **HTTP Transport** (`pc_mcp_client/http_client.py`)
+  - [x] Connects to remote Pi server over LAN
+  - [x] JSON-RPC 2.0 over HTTP POST to `/mcp`
+  - [x] Origin validation (LAW 16)
+  - [x] Optional API key header
+- [x] CLI entry: `python -m pc_mcp_client.main`
+  - [x] `--transport stdio` (default)
+  - [x] `--transport http --url http://<pi-ip>:8080`
+  - [x] `--api-key <key>` (optional)
+  - [x] `--timeout <seconds>` (default: 300)
 
 ---
 
@@ -247,4 +261,5 @@ Per DIP Phase 11: Tool Implementations.
 
 **Last Updated:** 2026-01-27  
 **Status:** ⏳ IN PROGRESS  
-**Next Step:** Create tool execution framework (`tools/tool_executor.py`)
+**Recently Completed:** PC MCP CLI client with STDIO + HTTP transport  
+**Next Step:** Implement confirmation flow for tools requiring consent

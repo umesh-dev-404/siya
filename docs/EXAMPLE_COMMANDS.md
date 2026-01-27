@@ -164,14 +164,64 @@ python -m mcp.stdio_main
 
 ---
 
-## TEST 2E: FIRST-PARTY PC MCP CLI CLIENT (COMING NEXT)
+## TEST 2E: PC MCP CLI CLIENT (COMPLETE)
 
-**Purpose:** Use Siya’s own PC MCP CLI client (Claude-like MCP client behavior) for full control.
+**Purpose:** Use Siya's first-party PC MCP CLI client (Claude-like MCP client behavior) for full control.
 
-**Status:** Planned (next implementation step). The client will:
-- Run MCP lifecycle (`initialize` → `notifications/initialized`)
-- Call `tools/list` and `tools/call`
-- Provide selective output formatting on PC
+**Status:** ✅ Complete (STDIO + HTTP transport)
+
+### STDIO Transport (Local Testing)
+
+Spawns a local MCP server process:
+
+```bash
+# List tools via STDIO (default)
+python -m pc_mcp_client.main list-tools
+
+# Call a tool via STDIO
+python -m pc_mcp_client.main call get_system_status --args "{}"
+
+# Raw JSON output
+python -m pc_mcp_client.main list-tools --raw
+```
+
+### HTTP Transport (Remote Pi Connection)
+
+Connects to Siya Pi server over LAN:
+
+```bash
+# List tools via HTTP (replace with your Pi's IP)
+python -m pc_mcp_client.main --transport http --url http://192.168.1.39:8080 list-tools
+
+# Call a tool via HTTP
+python -m pc_mcp_client.main --transport http --url http://192.168.1.39:8080 call get_system_status --args "{}"
+
+# With optional API key
+python -m pc_mcp_client.main --transport http --url http://192.168.1.39:8080 --api-key YOUR_KEY list-tools
+
+# With custom timeout (for slow AI inference)
+python -m pc_mcp_client.main --transport http --url http://192.168.1.39:8080 --timeout 600 call summarize_text --args '{"text": "..."}'
+```
+
+### Expected Output
+
+```json
+{
+  "status": "ok",
+  "count": 5,
+  "tools": [
+    {"name": "get_system_status", "description": "..."},
+    ...
+  ]
+}
+```
+
+### Configuration (Optional)
+
+Set environment variables on the Pi to configure HTTP transport:
+
+- `SIYA_MCP_ALLOWED_ORIGINS` — Comma-separated allowed origins (default: `*`)
+- `SIYA_MCP_API_KEY` — Optional API key for authentication
 
 ---
 

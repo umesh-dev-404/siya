@@ -5,15 +5,19 @@ HTTP request handler for API server.
 Uses standard library http.server for Phase 6 (simple implementation).
 
 Per DIP Phase 6: HTTP API mirrors CLI exactly.
+Per DIP Phase 11: MCP HTTP transport for PC client to Pi server.
 """
 
 import json
 import logging
 from http.server import BaseHTTPRequestHandler
-from typing import Any, Optional
+from typing import TYPE_CHECKING, Any, Optional
 from urllib.parse import urlparse, parse_qs
 
 from api.api_server import APIServer
+
+if TYPE_CHECKING:
+    from mcp.mcp_http_handler import MCPHttpHandler
 
 logger = logging.getLogger(__name__)
 
@@ -23,19 +27,26 @@ class SiyaHTTPHandler(BaseHTTPRequestHandler):
     HTTP request handler for Siya API.
 
     Per DIP Phase 6: Simple HTTP handler using standard library.
+    Per DIP Phase 11: Routes /mcp to MCP HTTP handler.
     """
 
     def __init__(
-        self, *args, api_server: Optional[APIServer] = None, **kwargs
+        self,
+        *args,
+        api_server: Optional[APIServer] = None,
+        mcp_http_handler: Optional["MCPHttpHandler"] = None,
+        **kwargs
     ) -> None:
         """
         Initialize HTTP handler.
 
         Args:
             api_server: API server instance
+            mcp_http_handler: Optional MCP HTTP handler for /mcp endpoint
             *args, **kwargs: Passed to BaseHTTPRequestHandler
         """
         self._api_server = api_server
+        self._mcp_http_handler = mcp_http_handler
         super().__init__(*args, **kwargs)
 
     def do_GET(self) -> None:
@@ -67,7 +78,7 @@ class SiyaHTTPHandler(BaseHTTPRequestHandler):
         self.send_response(200)
         self.send_header("Access-Control-Allow-Origin", "*")
         self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
-        self.send_header("Access-Control-Allow-Headers", "Content-Type")
+        self.send_header("Access-Control-Allow-Headers", "Content-Type, X-Siya-Api-Key")
         self.end_headers()
 
     def do_POST(self) -> None:
@@ -75,6 +86,11 @@ class SiyaHTTPHandler(BaseHTTPRequestHandler):
         try:
             parsed_path = urlparse(self.path)
             logger.info(f"POST request to {parsed_path.path} from {self.address_string()}")
+
+            if parsed_path.path == "/mcp":
+                # MCP HTTP transport endpoint (Phase 11)
+                self._handle_mcp_request()
+                return
 
             if parsed_path.path == "/command":
                 # Command endpoint
@@ -122,6 +138,56 @@ class SiyaHTTPHandler(BaseHTTPRequestHandler):
             except Exception:
                 logger.error("Failed to send error response", exc_info=True)
 
+    def _handle_mcp_request(self) -> None:
+        """
+        Handle MCP HTTP transport request.
+
+        Per DIP Phase 11: MCP-over-HTTP for PC client to Pi server.
+        Per LAW 16: Origin validation for network explicitness.
+        """
+        try:
+            if not self._mcp_http_handler:
+                logger.error("MCP HTTP handler not configured")
+                self._send_json_response(
+                    503, {"jsonrpc": "2.0", "id": None, "error": {"code": -32603, "message": "MCP not available"}}
+                )
+                return
+
+            content_length = int(self.headers.get("Content-Length", 0))
+            if content_length == 0:
+                self._send_json_response(
+                    400, {"jsonrpc": "2.0", "id": None, "error": {"code": -32700, "message": "Empty request body"}}
+                )
+                return
+
+            body = self.rfile.read(content_length)
+            origin = self.headers.get("Origin")
+            api_key = self.headers.get("X-Siya-Api-Key")
+
+            # Delegate to MCP HTTP handler
+            try:
+                response = self._mcp_http_handler.handle_request(
+                    body=body,
+                    origin=origin,
+                    api_key=api_key,
+                )
+                self._send_json_response(200, response)
+            except ValueError as e:
+                # Origin or API key validation failed
+                logger.warning(f"MCP request rejected: {e}")
+                self._send_json_response(
+                    403, {"jsonrpc": "2.0", "id": None, "error": {"code": -32600, "message": str(e)}}
+                )
+
+        except Exception as e:
+            logger.error(f"MCP HTTP request failed: {e}", exc_info=True)
+            try:
+                self._send_json_response(
+                    500, {"jsonrpc": "2.0", "id": None, "error": {"code": -32603, "message": "Server error"}}
+                )
+            except Exception:
+                logger.error("Failed to send MCP error response", exc_info=True)
+
     def _send_json_response(self, status_code: int, data: dict) -> None:
         """
         Send JSON response.
@@ -140,7 +206,7 @@ class SiyaHTTPHandler(BaseHTTPRequestHandler):
             # Add CORS headers to allow web interface to access API
             self.send_header("Access-Control-Allow-Origin", "*")
             self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
-            self.send_header("Access-Control-Allow-Headers", "Content-Type")
+            self.send_header("Access-Control-Allow-Headers", "Content-Type, X-Siya-Api-Key")
             self.send_header("Connection", "keep-alive")  # Keep connection alive for long requests
             self.end_headers()
             self.wfile.write(response_bytes)

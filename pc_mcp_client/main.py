@@ -1,8 +1,19 @@
+"""
+Siya first-party PC MCP CLI client.
+
+Supports two transports:
+- stdio: Spawns local MCP server (default)
+- http: Connects to remote Pi MCP server over HTTP
+
+Per DIP Phase 11: First-party PC MCP CLI client with HTTP transport.
+"""
+
 import argparse
 import json
 import sys
-from typing import Any, Dict
+from typing import Any, Dict, Union
 
+from pc_mcp_client.http_client import MCPHttpClient
 from pc_mcp_client.stdio_client import MCPStdioClient, default_stdio_server_cmd
 
 
@@ -22,8 +33,57 @@ def _parse_args_json(s: str) -> Dict[str, Any]:
     return data
 
 
+def _create_client(args: argparse.Namespace) -> Union[MCPStdioClient, MCPHttpClient]:
+    """
+    Create MCP client based on transport argument.
+
+    Args:
+        args: Parsed CLI arguments
+
+    Returns:
+        MCPStdioClient or MCPHttpClient instance
+    """
+    if args.transport == "http":
+        if not args.url:
+            raise RuntimeError("--url is required when using --transport http")
+        return MCPHttpClient(
+            base_url=args.url,
+            api_key=args.api_key,
+            timeout=args.timeout,
+        )
+    # Default: stdio transport
+    return MCPStdioClient(default_stdio_server_cmd())
+
+
 def main(argv: list[str] | None = None) -> int:
-    p = argparse.ArgumentParser(prog="siya-mcp", description="Siya first-party PC MCP CLI client (stdio).")
+    p = argparse.ArgumentParser(
+        prog="siya-mcp",
+        description="Siya first-party PC MCP CLI client.",
+    )
+
+    # Transport options
+    p.add_argument(
+        "--transport",
+        choices=["stdio", "http"],
+        default="stdio",
+        help="Transport to use: stdio (local, default) or http (remote Pi).",
+    )
+    p.add_argument(
+        "--url",
+        default=None,
+        help="URL of Siya Pi server (required for --transport http, e.g., http://192.168.1.100:8080).",
+    )
+    p.add_argument(
+        "--api-key",
+        default=None,
+        help="Optional API key for X-Siya-Api-Key header (http transport only).",
+    )
+    p.add_argument(
+        "--timeout",
+        type=int,
+        default=300,
+        help="Request timeout in seconds (default: 300, for slow AI inference).",
+    )
     p.add_argument(
         "--protocol-version",
         default="2025-03-26",
@@ -46,7 +106,13 @@ def main(argv: list[str] | None = None) -> int:
 
     args = p.parse_args(argv)
 
-    with MCPStdioClient(default_stdio_server_cmd()) as client:
+    try:
+        client = _create_client(args)
+    except RuntimeError as e:
+        _print_json({"status": "error", "message": str(e)})
+        return 1
+
+    with client:
         client.initialize(protocol_version=args.protocol_version)
 
         if args.cmd == "list-tools":
@@ -77,4 +143,3 @@ def main(argv: list[str] | None = None) -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

@@ -21,6 +21,7 @@ from api.server import SiyaAPIServer
 from cli.cli import CLI
 from config.logging_config import setup_logging
 from config.model_config import get_model_path
+from mcp.mcp_http_handler import MCPHttpContext, MCPHttpHandler
 from mcp.mcp_server import MCPServer
 from mcp.stdio_server import MCPStdioContext, MCPStdioServer
 from orchestrator.orchestrator import Orchestrator
@@ -233,11 +234,17 @@ def main() -> int:
         logger.info("CLI started (orchestrator started via CLI)")
         print("CLI started (orchestrator started)", flush=True)
         
+        # Create MCP HTTP handler for PC client HTTP transport (Phase 11)
+        print("Creating MCP HTTP handler...", flush=True)
+        mcp_http_ctx = MCPHttpContext(mcp_server=mcp, tool_executor=tool_executor)
+        mcp_http_handler = MCPHttpHandler(mcp_http_ctx)
+        logger.info("MCP HTTP handler created for /mcp endpoint")
+
         print("Creating API server...", flush=True)
         api_server = APIServer(cli)
 
         print("Starting API HTTP server...", flush=True)
-        http_server = SiyaAPIServer(api_server)
+        http_server = SiyaAPIServer(api_server, mcp_http_handler=mcp_http_handler)
         http_server.start()
 
         print(f"Siya API server started on http://{http_server._host}:{http_server._port}", flush=True)

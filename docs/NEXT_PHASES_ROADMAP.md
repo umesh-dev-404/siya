@@ -82,7 +82,10 @@ Phase 11 is designed to scale to **many tools and features** over later stages (
 4. Implement automation tools (trigger, list, status)
 5. Register all tools in tool registry
 6. Lock tool registry after registration
-7. Add first-party **PC MCP CLI client** (Claude-like MCP client behavior) for full control (stdio first; HTTP later)
+7. ✅ Add first-party **PC MCP CLI client** — COMPLETE
+   - STDIO transport (local): `python -m pc_mcp_client.main list-tools`
+   - HTTP transport (remote Pi): `python -m pc_mcp_client.main --transport http --url http://<pi>:8080 list-tools`
+8. Implement confirmation flow for tools requiring consent
 
 **Success Criteria:**
 - Core tools implemented and operational
