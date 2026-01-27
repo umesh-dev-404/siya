@@ -102,6 +102,12 @@ Maintained per dev-rules.md §8.2 (Error Correction Discipline).
 **Solution:** Changed to direct DOM query `document.getElementById('modal-overlay')` in click handlers  
 **Files Modified:** `web/static/app.js`, `web/static/index.html`
 
+### Fix: Modal Reopening After Yes Click
+**Symptom:** After clicking "Yes, Execute", modal closes briefly then reopens  
+**Cause:** `doExecuteTool()` still checked for `confirmationNeeded` response even when `confirmed=true`  
+**Solution:** Added `!confirmed` guard to skip confirmationNeeded checks when already confirmed  
+**Files Modified:** `web/static/app.js`
+
 ---
 
 ## Template for Future Entries

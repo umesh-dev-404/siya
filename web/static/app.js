@@ -405,8 +405,9 @@ async function doExecuteTool(toolName, args, confirmed = false) {
         if (response.error) {
             addOutput(`Error: ${response.error.message}`, 'error');
         } else if (response.result) {
-            // Check for confirmation needed at result level (server returns this directly)
-            if (response.result.confirmationNeeded === true) {
+            // Only check for confirmation if we haven't already confirmed
+            // This prevents the modal from reopening after user clicks "Yes, Execute"
+            if (!confirmed && response.result.confirmationNeeded === true) {
                 state.pendingConfirmation = {
                     toolName: response.result.tool || toolName,
                     args: response.result.arguments || args
@@ -425,8 +426,8 @@ async function doExecuteTool(toolName, args, confirmed = false) {
                 if (content?.text) {
                     try {
                         const parsed = JSON.parse(content.text);
-                        // Also check for confirmation inside content text
-                        if (parsed.confirmationNeeded) {
+                        // Only check for confirmation inside content if we haven't already confirmed
+                        if (!confirmed && parsed.confirmationNeeded) {
                             state.pendingConfirmation = { toolName, args };
                             showConfirmation({ name: toolName }, args, parsed.message);
                             return;
