@@ -26,7 +26,8 @@ def main():
 
     record_id = str(uuid.uuid4())
     payload = {
-        "content": "TEST_MEMORY_ENTRY_FOR_SYNC_VERIFICATION",
+        "key": "test_verification_entry",
+        "value": "TEST_MEMORY_ENTRY_FOR_SYNC_VERIFICATION",
         "created_at": datetime.datetime.now().isoformat(),
         "tags": ["test", "verification"],
         "confidence": 1.0,
