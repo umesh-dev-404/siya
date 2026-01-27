@@ -298,6 +298,29 @@ Use for:
 • editing styles and logic  
 • ensuring consistency  
 
+---
+
+### 5.6 Interface Synchronization (MANDATORY)
+
+**Rule:** When core backend logic changes, **BOTH** web interface AND CLI must be updated equivalently.
+
+**Applies to:**
+- New tools added → update CLI commands AND web tool list
+- Tool schema changes → update both CLI argument parsing AND web form generation
+- MCP protocol changes → update both pc_mcp_client AND web app.js
+- Confirmation requirements → update both CLI interactive prompts AND web modal
+
+**Enforcement:**
+- Before marking a backend change complete, verify:
+  1. CLI supports the change
+  2. Web interface supports the change
+  3. Both produce identical behavior (LAW 19)
+
+**Rationale:**  
+Per LAW 19: All interfaces must behave identically. Drift between CLI and Web creates inconsistency and user confusion.
+
+If only one interface is updated → **STOP AND COMPLETE THE OTHER**.
+
 #### cursor10x-mcp
 
 Use to recall:  

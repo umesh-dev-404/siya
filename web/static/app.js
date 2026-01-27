@@ -404,20 +404,39 @@ async function doExecuteTool(toolName, args, confirmed = false) {
 
         if (response.error) {
             addOutput(`Error: ${response.error.message}`, 'error');
-        } else if (response.result?.content) {
-            // Check for confirmation needed
-            const content = response.result.content[0];
-            if (content?.text) {
-                try {
-                    const parsed = JSON.parse(content.text);
-                    if (parsed.confirmationNeeded) {
-                        state.pendingConfirmation = { toolName, args };
-                        showConfirmation({ name: toolName }, args);
-                        return;
+        } else if (response.result) {
+            // Check for confirmation needed at result level (server returns this directly)
+            if (response.result.confirmationNeeded === true) {
+                state.pendingConfirmation = {
+                    toolName: response.result.tool || toolName,
+                    args: response.result.arguments || args
+                };
+                showConfirmation(
+                    { name: response.result.tool || toolName },
+                    response.result.arguments || args,
+                    response.result.message
+                );
+                return;
+            }
+
+            // Check for content array (standard MCP response)
+            if (response.result.content) {
+                const content = response.result.content[0];
+                if (content?.text) {
+                    try {
+                        const parsed = JSON.parse(content.text);
+                        // Also check for confirmation inside content text
+                        if (parsed.confirmationNeeded) {
+                            state.pendingConfirmation = { toolName, args };
+                            showConfirmation({ name: toolName }, args, parsed.message);
+                            return;
+                        }
+                        addOutput(JSON.stringify(parsed, null, 2), 'success');
+                    } catch {
+                        addOutput(content.text, 'success');
                     }
-                    addOutput(JSON.stringify(parsed, null, 2), 'success');
-                } catch {
-                    addOutput(content.text, 'success');
+                } else {
+                    addOutput(JSON.stringify(response.result, null, 2), 'success');
                 }
             } else {
                 addOutput(JSON.stringify(response.result, null, 2), 'success');
@@ -436,7 +455,7 @@ async function doExecuteTool(toolName, args, confirmed = false) {
 }
 
 // ===== CONFIRMATION MODAL =====
-function showConfirmation(tool, args) {
+function showConfirmation(tool, args, serverMessage = null) {
     state.pendingConfirmation = { toolName: tool.name, args };
 
     if (elements.modalTitle) {
@@ -446,14 +465,19 @@ function showConfirmation(tool, args) {
     if (elements.modalBody) {
         elements.modalBody.innerHTML = `
             <p style="margin-bottom: var(--space-md)">
-                <strong>This action requires your confirmation.</strong>
+                <strong>⚠️ This action requires your explicit confirmation.</strong>
             </p>
+            ${serverMessage ? `
+                <p style="margin-bottom: var(--space-md); padding: var(--space-sm) var(--space-md); background: var(--accent-warning); border: 2px solid var(--border-color);">
+                    ${serverMessage}
+                </p>
+            ` : ''}
             <p style="margin-bottom: var(--space-md)">
-                You are about to execute <code>${tool.name}</code> with the following arguments:
+                You are about to execute <code style="background: var(--bg-primary); padding: 2px 6px; border: 1px solid var(--border-color);">${tool.name}</code> with:
             </p>
-            <pre style="background: var(--bg-primary); padding: var(--space-md); border: 2px solid var(--border-color); font-family: var(--font-mono); font-size: 0.875rem; overflow-x: auto;">${JSON.stringify(args, null, 2)}</pre>
-            <p style="margin-top: var(--space-md); color: var(--accent-error);">
-                ⚠ Per LAW 1: Human must explicitly approve this action.
+            <pre style="background: var(--bg-dark); color: #E0E0E0; padding: var(--space-md); border: 3px solid var(--border-color); font-family: var(--font-mono); font-size: 0.875rem; overflow-x: auto; box-shadow: var(--shadow-hard);">${JSON.stringify(args, null, 2)}</pre>
+            <p style="margin-top: var(--space-md); padding: var(--space-sm) var(--space-md); background: var(--accent-error); color: white; border: 2px solid var(--border-color); font-weight: 700;">
+                LAW 1: Human must explicitly approve this action.
             </p>
         `;
     }
