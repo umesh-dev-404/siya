@@ -487,7 +487,8 @@ function showConfirmation(tool, args, serverMessage = null) {
 
 function cancelConfirmation() {
     state.pendingConfirmation = null;
-    elements.modalOverlay?.classList.remove('active');
+    const overlay = document.getElementById('modal-overlay');
+    if (overlay) overlay.classList.remove('active');
     addOutput('Action cancelled by user.', 'info');
 }
 
@@ -496,7 +497,9 @@ async function confirmExecution() {
 
     const { toolName, args } = state.pendingConfirmation;
     state.pendingConfirmation = null;
-    elements.modalOverlay?.classList.remove('active');
+
+    const overlay = document.getElementById('modal-overlay');
+    if (overlay) overlay.classList.remove('active');
 
     await doExecuteTool(toolName, args, true);
 }

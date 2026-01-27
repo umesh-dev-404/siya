@@ -97,10 +97,10 @@ Maintained per dev-rules.md §8.2 (Error Correction Discipline).
 **Files Modified:** `web/static/app.js`
 
 ### Fix: Modal Button Click Handlers
-**Symptom:** Modal buttons (Cancel/Yes, Execute) not responding to clicks  
-**Cause:** Event listeners bound via getElementById not firing reliably  
-**Solution:** Added inline `onclick` handlers to all interactive buttons  
-**Files Modified:** `web/static/index.html`
+**Symptom:** Modal buttons (Cancel/Yes, Execute) not closing the modal  
+**Cause:** Cached `elements.modalOverlay` reference was null; optional chaining silently failed  
+**Solution:** Changed to direct DOM query `document.getElementById('modal-overlay')` in click handlers  
+**Files Modified:** `web/static/app.js`, `web/static/index.html`
 
 ---
 
