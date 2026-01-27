@@ -77,11 +77,23 @@ class WebHandler(BaseHTTPRequestHandler):
 
             # Determine content type
             if filename.endswith(".html"):
-                content_type = "text/html"
+                content_type = "text/html; charset=utf-8"
             elif filename.endswith(".css"):
-                content_type = "text/css"
+                content_type = "text/css; charset=utf-8"
             elif filename.endswith(".js"):
-                content_type = "application/javascript"
+                content_type = "application/javascript; charset=utf-8"
+            elif filename.endswith(".json"):
+                content_type = "application/json; charset=utf-8"
+            elif filename.endswith(".png"):
+                content_type = "image/png"
+            elif filename.endswith(".svg"):
+                content_type = "image/svg+xml"
+            elif filename.endswith(".ico"):
+                content_type = "image/x-icon"
+            elif filename.endswith(".woff2"):
+                content_type = "font/woff2"
+            elif filename.endswith(".woff"):
+                content_type = "font/woff"
             else:
                 content_type = "application/octet-stream"
 
