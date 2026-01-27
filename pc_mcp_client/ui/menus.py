@@ -71,6 +71,7 @@ def show_main_menu(tools: List[Dict[str, Any]]) -> Optional[str]:
             qmark="?",
             amark="✓",
             instruction="(Use arrow keys, type to filter)",
+            height=15,  # Limit height to preserve scroll history
         ).execute()
         
         return result
@@ -111,6 +112,7 @@ def show_tool_select(tools: List[Dict[str, Any]], category: Optional[str] = None
             choices=choices,
             pointer="❯",
             qmark="🔧",
+            height=15,  # Limit height
         ).execute()
         
         return result

@@ -55,10 +55,10 @@ def _prompt_for_property(name: str, prop: Dict[str, Any], required: bool) -> Any
     default = prop.get("default")
     enum = prop.get("enum")
     
-    # Format label
+    # Format label - no Rich markup since InquirerPy shows it literally
     label = _format_label(name)
     if required:
-        label += " [bold red]*[/bold red]"
+        label += " *"  # Simple asterisk for required
     if description:
         console.print(f"[dim]{description}[/dim]")
     

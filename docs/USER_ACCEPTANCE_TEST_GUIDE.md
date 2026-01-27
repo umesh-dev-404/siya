@@ -175,3 +175,21 @@ The Neo-Brutalism web interface runs on port 3000 and provides full CLI parity.
    - Status badges with colors (CONNECTED=green, ERROR=red)
    - Boolean values as ✓ Yes / ✗ No
    - Nested objects formatted inline
+
+### 5. Interactive CLI Tests (Phase 18)
+Test 11: Interactive Mode Launch
+- Run `siya` in terminal
+- Verify ASCII "SIYA" banner appears
+- Verify menu navigation with arrow keys
+
+Test 12: Tool Execution (Interactive)
+- Select `get_system_status` from menu
+- Verify spinner appears during execution
+- Verify rich-formatted output panel appears visible ABOVE the menu after execution
+- Verify menu reappears below output
+
+Test 13: Interactive Confirmation (LAW 1)
+- Select `trigger_sync`
+- Verify styled confirmation dialog appears
+- Select "No" -> Verify cancellation
+- Select "Yes" -> Verify execution

@@ -100,28 +100,33 @@ siya-cli --transport http --url http://192.168.1.39:8080 call summarize_text --a
 ---
 
 ## 6. WEB INTERFACE (Phase 17)
+- **URL**: `http://<pi-ip>:3000`
+- **Features**: Dashboard, tool browser, notifications, mobile support
 
-The Neo-Brutalism web interface provides full CLI parity at port 3000.
+## 7. INTERACTIVE CLI (Phase 18)
+Interactive terminal mode with menus and rich output.
 
-### Access Web UI
-```
-http://192.168.1.39:3000
+### Basic Usage
+```bash
+# Auto-connect (after first setup)
+siya
+
+# Manual connection
+siya-cli -i --transport http --url http://192.168.1.39:8080
 ```
 
 ### Features
-- **Sidebar:** Categorized tool browser with search
-- **Tool Panel:** Dynamic forms based on tool schemas
-- **Confirmation Modal:** LAW 1 enforcement with Yes/Cancel buttons
-- **Output Panel:** Human-readable formatted results
-- **Notifications:** Slide-out panel for system notifications
+- **Arrow-key Menu**: Navigate tools by category
+- **Search**: Type to filter tools
+- **History**: Scroll up to see previous results
+- **Styled Output**: Colored panels and tables
+- **Rich Input**: Interactive prompts for arguments
 
-### Using the Web Interface
-1. Open `http://<pi-ip>:3000` in browser
-2. Select a tool from the sidebar (e.g., SYNC → Get Sync Status)
-3. Fill in any required parameters
-4. Click "EXECUTE TOOL"
-5. For confirmation-required tools → Modal appears → Click "Yes, Execute"
-6. View formatted results in Output panel
+### Using the Interactive CLI
+1. Run `siya`
+2. Select a tool using arrow keys
+3. View output (scroll up for history)
+4. Exit via menu option or Ctrl+C
 
 ---
 
