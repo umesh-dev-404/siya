@@ -93,6 +93,18 @@ siya-cli --transport http --url http://192.168.1.39:8080 call speak_text --args 
 ```
 *Expected Output: You should hear the Pi speak "System verified..."*
 
+**Note:** If no speakers are connected, you will receive:
+```json
+{
+  "status": "ok",
+  "output": {
+    "success": false,
+    "error": "TTS failed or unavailable"
+  }
+}
+```
+**This is a PASS.** It confirms the system handled the hardware failure gracefully (LAW 12).
+
 ---
 
 ### Test 5: Sync Status (Phase 13)

@@ -70,6 +70,7 @@ This installs:
 - `pyttsx3` — Text-to-Speech
 - `sounddevice` — Audio capture
 - `PyAudio` — Audio I/O (Windows)
+- `python-dotenv` — Environment variable loading
 
 ### 5. Voice Interface Prerequisites (Linux/Pi)
 

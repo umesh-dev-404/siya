@@ -275,7 +275,8 @@ print(f'State consistent: {result[\"consistent\"]}')
 
 ### Environment Variables
 
-Create `.env` file or set environment variables:
+Create `.env` file or set environment variables.
+**Note:** The system automatically loads `.env` files using `python-dotenv`.
 
 ```bash
 # Database path

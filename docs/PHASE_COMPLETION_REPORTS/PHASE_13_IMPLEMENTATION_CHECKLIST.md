@@ -28,6 +28,7 @@
 - [ ] User provides Supabase credentials
 - [ ] Run schema in Supabase SQL Editor
 - [ ] Create `.env` with credentials
+- [x] Service configured to load .env (python-dotenv)
 
 ---
 

@@ -11,6 +11,12 @@ import sys
 import threading
 from pathlib import Path
 
+try:
+    from dotenv import load_dotenv
+    load_dotenv()  # Load .env file if present
+except ImportError:
+    pass  # python-dotenv not installed, ignore
+
 # Add project root to path
 project_root = Path(__file__).parent
 sys.path.insert(0, str(project_root))

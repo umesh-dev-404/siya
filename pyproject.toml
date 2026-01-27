@@ -25,6 +25,7 @@ dependencies = [
     "pyttsx3>=2.90",  # TTS (Phase 16)
     "sounddevice>=0.4.0",  # Audio capture (Phase 16)
     "PyAudio; sys_platform == 'win32'",  # Audio I/O for Windows
+    "python-dotenv>=1.0.0",  # Environment variable loading (Phase 13)
 ]
 
 [project.scripts]
