@@ -384,19 +384,42 @@ sudo journalctl -u siya | grep -E "Model response|Parsing AI response|extracted_
 
 ### Monitor RAM Usage
 
+**Important:** The model stays loaded in RAM after startup. RAM usage should already be high (~3-4 GB total).
+
 ```bash
-# Before model load
+# Check current RAM usage
 free -h
 
-# Load model
-# (happens automatically on service start)
+# Check Python process RAM usage (more accurate)
+ps aux | grep python | grep siya
 
-# After model load
-free -h
+# Check process memory in MB
+ps aux | grep python | grep siya | awk '{print "RSS: " $6/1024 " MB, VSZ: " $5/1024 " MB"}'
 
-# Should see ~2-3 GB increase in used RAM
-# Model stays loaded in memory for faster subsequent inferences
+# Monitor RAM in real-time
+watch -n 1 free -h
+
+# Use Python to check RAM (requires psutil)
+python -c "
+from system.resource_monitor import ResourceMonitor
+monitor = ResourceMonitor()
+resources = monitor.check_resources()
+print(f'RAM Usage: {resources[\"ram_usage\"]*100:.1f}%')
+print(f'RAM Used: {resources.get(\"ram_used_mb\", 0):.0f} MB')
+print(f'RAM Available: {resources[\"ram_available_mb\"]:.0f} MB')
+print(f'Total RAM: {resources[\"ram_available_mb\"]/(1-resources[\"ram_usage\"]):.0f} MB')
+"
 ```
+
+**Expected RAM Usage:**
+- **Before model load:** ~500 MB - 1 GB (system + Python)
+- **After model load:** ~3-4 GB total (model stays in RAM)
+- **During inference:** Slight increase (~100-200 MB)
+
+**If RAM usage is < 1 GB:**
+- Model might not be loading properly
+- Check logs: `sudo journalctl -u siya | grep -i "model loaded"`
+- Verify model file exists: `ls -lh /opt/siya/models/qwen2.5-3b-q4_k_m/*.gguf`
 
 **Note:** The model remains loaded in RAM after startup for faster inference. RAM usage should be ~3-4 GB total (system + model).
 

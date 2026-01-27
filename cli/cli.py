@@ -96,7 +96,18 @@ class CLI:
 
         except ValueError as e:
             # Clarification needed or validation error
-            return f"Clarification needed: {e}"
+            error_msg = str(e)
+            # Remove duplicate "Clarification needed: " prefix if present
+            if error_msg.startswith("Clarification needed: "):
+                # Extract the actual message (remove prefix)
+                actual_msg = error_msg[len("Clarification needed: "):]
+                # If it's just "null" or empty, provide default message
+                if not actual_msg or actual_msg.strip() == "null":
+                    return "I couldn't understand your request. Could you please rephrase it or be more specific?"
+                return f"Clarification needed: {actual_msg}"
+            else:
+                # Not a clarification error, return as-is
+                return error_msg
 
         except RuntimeError as e:
             # Execution error

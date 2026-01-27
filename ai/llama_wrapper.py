@@ -109,13 +109,35 @@ class LlamaWrapper:
             logger.info("Loading model...", extra={"model_path": self._model_path})
             start_time = time.time()
 
-            self._model = Llama(
-                model_path=self._model_path,
-                n_ctx=self._n_ctx,
-                n_threads=self._n_threads,
-                n_gpu_layers=self._n_gpu_layers,
-                verbose=self._verbose,
-            )
+            # Load model with mmap disabled to force full RAM loading
+            # mmap=True uses memory-mapped files (loads on-demand, less RAM)
+            # mmap=False loads entire model into RAM (more RAM, faster inference)
+            try:
+                # Try with mmap disabled (force full RAM loading)
+                self._model = Llama(
+                    model_path=self._model_path,
+                    n_ctx=self._n_ctx,
+                    n_threads=self._n_threads,
+                    n_gpu_layers=self._n_gpu_layers,
+                    verbose=self._verbose,
+                    use_mmap=False,  # Force full RAM loading (disable memory-mapped I/O)
+                    use_mlock=True,  # Lock model in RAM (prevent swapping)
+                )
+                logger.info("Model loaded with use_mmap=False (full RAM loading)")
+            except TypeError:
+                # Parameters not supported in this version - use defaults
+                logger.warning(
+                    "use_mmap/use_mlock parameters not supported. "
+                    "Model will use default behavior (may use memory-mapped I/O). "
+                    "Upgrade llama-cpp-python for full RAM loading support."
+                )
+                self._model = Llama(
+                    model_path=self._model_path,
+                    n_ctx=self._n_ctx,
+                    n_threads=self._n_threads,
+                    n_gpu_layers=self._n_gpu_layers,
+                    verbose=self._verbose,
+                )
 
             load_time = time.time() - start_time
             logger.info(

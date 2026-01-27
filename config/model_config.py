@@ -18,11 +18,13 @@ def get_model_path() -> Optional[str]:
         Model file path, or None if not set and default doesn't exist
 
     Environment Variable:
-        SIYA_MODEL_PATH: Path to model file (e.g., /opt/siya/qwen2.5-3b-q4_k_m/qwen2.5-3b-instruct-q4_k_m.gguf)
+        SIYA_MODEL_PATH: Path to model file (e.g., /opt/siya/models/qwen2.5-3b-q4_k_m/qwen2.5-3b-instruct-q4_k_m.gguf)
 
-    Default:
-        If SIYA_MODEL_PATH is not set, checks for default location:
-        /opt/siya/qwen2.5-3b-q4_k_m/qwen2.5-3b-instruct-q4_k_m.gguf
+    Default Locations (checked in order):
+        1. Environment variable SIYA_MODEL_PATH
+        2. /opt/siya/models/qwen2.5-3b-q4_k_m/qwen2.5-3b-instruct-q4_k_m.gguf
+        3. Any .gguf file in /opt/siya/models/qwen2.5-3b-q4_k_m/
+        4. Any .gguf file in /opt/siya/models/ (searches subdirectories)
     """
     # First, check environment variable
     model_path = os.getenv("SIYA_MODEL_PATH")
@@ -38,21 +40,48 @@ def get_model_path() -> Optional[str]:
             logger.warning(f"Model path from environment does not exist: {model_path}")
         return None
     
-    # If no environment variable, check default location
-    default_path = Path("/opt/siya/qwen2.5-3b-q4_k_m/qwen2.5-3b-instruct-q4_k_m.gguf")
-    if default_path.exists():
-        return str(default_path.absolute())
+    # If no environment variable, check default locations in order
+    default_paths = [
+        Path("/opt/siya/models/qwen2.5-3b-q4_k_m/qwen2.5-3b-instruct-q4_k_m.gguf"),
+        Path("/opt/siya/models/qwen2.5-3b-q4_k_m"),  # Directory - will search for .gguf
+        Path("/opt/siya/models"),  # Root models directory - will search recursively
+    ]
     
-    # Also check for any .gguf file in the default directory
-    default_dir = Path("/opt/siya/qwen2.5-3b-q4_k_m")
-    if default_dir.exists() and default_dir.is_dir():
-        gguf_files = list(default_dir.glob("*.gguf"))
+    # Check specific file first
+    if default_paths[0].exists():
+        return str(default_paths[0].absolute())
+    
+    # Check default directory for any .gguf file
+    if default_paths[1].exists() and default_paths[1].is_dir():
+        gguf_files = list(default_paths[1].glob("*.gguf"))
         if gguf_files:
             # Prefer Q4_K_M if available, otherwise use first found
             q4_km = [f for f in gguf_files if "q4_k_m" in f.name.lower()]
             if q4_km:
                 return str(q4_km[0].absolute())
             return str(gguf_files[0].absolute())
+    
+    # Search recursively in models directory for any .gguf file
+    if default_paths[2].exists() and default_paths[2].is_dir():
+        gguf_files = list(default_paths[2].rglob("*.gguf"))
+        if gguf_files:
+            # Prefer Q4_K_M or Q4_0 quantizations, prioritize smaller models (3B over 7B)
+            q4_km = [f for f in gguf_files if "q4_k_m" in f.name.lower()]
+            q4_0 = [f for f in gguf_files if "q4_0" in f.name.lower() and "q4_k_m" not in f.name.lower()]
+            # Prefer 3B models over 7B
+            q4_km_3b = [f for f in q4_km if "3b" in f.name.lower() or "3.8b" in f.name.lower()]
+            q4_0_3b = [f for f in q4_0 if "3b" in f.name.lower() or "3.8b" in f.name.lower()]
+            
+            if q4_km_3b:
+                return str(q4_km_3b[0].absolute())
+            elif q4_0_3b:
+                return str(q4_0_3b[0].absolute())
+            elif q4_km:
+                return str(q4_km[0].absolute())
+            elif q4_0:
+                return str(q4_0[0].absolute())
+            else:
+                return str(gguf_files[0].absolute())
     
     return None
 

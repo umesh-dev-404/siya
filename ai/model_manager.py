@@ -129,32 +129,67 @@ class ModelManager:
 
         try:
             # Check resources before loading
+            ram_before_mb = None
+            ram_after_mb = None
             if self._resource_monitor:
-                resources = self._resource_monitor.check_resources()
-                ram_usage = resources.get("ram_usage", 0.0)
-                if ram_usage > 0.85:  # 85% RAM threshold
+                resources_before = self._resource_monitor.check_resources()
+                ram_usage_before = resources_before.get("ram_usage", 0.0)
+                ram_available_before = resources_before.get("ram_available_mb", 0.0)
+                # Calculate used RAM
+                ram_before_mb = ram_available_before / (1 - ram_usage_before) - ram_available_before if ram_usage_before > 0 else 0
+                
+                logger.info(
+                    f"RAM before model load: {ram_usage_before*100:.1f}% used, {ram_available_before:.0f} MB available, ~{ram_before_mb:.0f} MB used",
+                    extra={
+                        "ram_usage_before": ram_usage_before,
+                        "ram_available_before_mb": ram_available_before,
+                        "ram_used_before_mb": ram_before_mb,
+                    },
+                )
+                
+                if ram_usage_before > 0.85:  # 85% RAM threshold
                     logger.warning(
-                        f"High RAM usage before model load: {ram_usage:.1%}",
-                        extra={"ram_usage": ram_usage},
+                        f"High RAM usage before model load: {ram_usage_before:.1%}",
+                        extra={"ram_usage": ram_usage_before},
                     )
-                    # Still try to load, but warn
 
             # Real model loading
             success = self._llama_wrapper.load()
             if success:
-                # Check resources after loading
+                # Check resources after loading - wait a moment for memory allocation
+                import time
+                time.sleep(0.5)  # Give system time to allocate memory
+                
                 if self._resource_monitor:
-                    resources = self._resource_monitor.check_resources()
-                    ram_usage = resources.get("ram_usage", 0.0)
+                    resources_after = self._resource_monitor.check_resources()
+                    ram_usage_after = resources_after.get("ram_usage", 0.0)
+                    ram_available_after = resources_after.get("ram_available_mb", 0.0)
+                    ram_after_mb = ram_available_after / (1 - ram_usage_after) - ram_available_after if ram_usage_after > 0 else 0
+                    ram_increase_mb = ram_after_mb - ram_before_mb if ram_before_mb else 0
+                    
                     logger.info(
-                        "Model loaded successfully",
+                        f"RAM after model load: {ram_usage_after*100:.1f}% used, {ram_available_after:.0f} MB available, ~{ram_after_mb:.0f} MB used",
                         extra={
-                            "ram_usage_after_load": ram_usage,
+                            "ram_usage_after": ram_usage_after,
+                            "ram_available_after_mb": ram_available_after,
+                            "ram_used_after_mb": ram_after_mb,
+                            "ram_increase_mb": ram_increase_mb,
                             "model_size_mb": self._model_size_mb,
                         },
                     )
+                    
+                    # Warn if RAM didn't increase significantly
+                    if ram_increase_mb < self._model_size_mb * 0.5:  # Less than 50% of model size
+                        logger.warning(
+                            f"Model loaded but RAM only increased by {ram_increase_mb:.0f} MB (expected ~{self._model_size_mb} MB). "
+                            f"Model may be using memory-mapped I/O (mmap) instead of full RAM loading.",
+                            extra={
+                                "ram_increase_mb": ram_increase_mb,
+                                "model_size_mb": self._model_size_mb,
+                            },
+                        )
                 else:
-                    logger.info("Model loaded successfully")
+                    logger.info("Model loaded successfully (resource monitor not available)")
             return success
         except Exception as e:
             logger.error(f"Failed to load model: {e}", exc_info=True)

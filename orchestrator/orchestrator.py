@@ -188,12 +188,31 @@ class Orchestrator:
             )
             raise ValueError(f"Intent parsing failed: {e}") from e
 
-        # Check if clarification is needed
-        if intent_output.get("intent", {}).get("clarification_needed", False):
-            clarification_question = intent_output.get("intent", {}).get(
-                "clarification_question", "Clarification needed"
-            )
-            raise ValueError(f"Clarification needed: {clarification_question}")
+        # Check if action is "unknown" - this means no tool matched
+        intent = intent_output.get("intent", {})
+        action = intent.get("action", "unknown")
+        
+        if action == "unknown":
+            # No tool matched - check if clarification is needed
+            clarification_needed = intent.get("clarification_needed", True)
+            clarification_question = intent.get("clarification_question")
+            
+            if clarification_needed:
+                if clarification_question and clarification_question.strip() and clarification_question != "null":
+                    raise ValueError(f"Clarification needed: {clarification_question}")
+                else:
+                    raise ValueError("Clarification needed: I couldn't understand your request. Could you please rephrase it or be more specific?")
+            else:
+                # No clarification needed but no tool matched - return helpful message
+                raise ValueError("I couldn't understand your request. Could you please rephrase it or be more specific?")
+
+        # Check if clarification is needed for known actions
+        if intent.get("clarification_needed", False):
+            clarification_question = intent.get("clarification_question")
+            if clarification_question and clarification_question.strip() and clarification_question != "null":
+                raise ValueError(f"Clarification needed: {clarification_question}")
+            else:
+                raise ValueError("Clarification needed: Could you please provide more details?")
 
         # Convert intent parsing output to tool request
         tool_request = self._intent_to_tool_request(intent_output)
