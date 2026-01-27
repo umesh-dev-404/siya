@@ -158,9 +158,9 @@ class IntentParser:
         try:
             response_text = self._model_manager.generate(
                 prompt=prompt,
-                max_tokens=512,
+                max_tokens=256,  # Reduced for faster inference on Pi
                 temperature=0.7,
-                timeout=30.0,
+                timeout=120.0,  # Increased timeout for slower hardware (Pi)
             )
         except Exception as e:
             logger.error(f"Model inference failed: {e}", exc_info=True)

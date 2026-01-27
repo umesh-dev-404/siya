@@ -197,6 +197,9 @@
             addOutput(`> ${command}`, 'info');
 
             try {
+                // Show loading indicator
+                addOutput('Processing...', 'info');
+                
                 const response = await fetch(`${API_BASE_URL}/command`, {
                     method: 'POST',
                     headers: {
@@ -210,6 +213,12 @@
                 }
 
                 const data = await response.json();
+                
+                // Remove loading indicator (last line)
+                const output = document.getElementById('output');
+                if (output.lastChild && output.lastChild.textContent === 'Processing...') {
+                    output.removeChild(output.lastChild);
+                }
 
                 if (data.status === 'success') {
                     addOutput(data.message, 'success');
@@ -218,6 +227,11 @@
                 }
             } catch (error) {
                 console.error('Command submission error:', error);
+                // Remove loading indicator if present
+                const output = document.getElementById('output');
+                if (output.lastChild && output.lastChild.textContent === 'Processing...') {
+                    output.removeChild(output.lastChild);
+                }
                 addOutput(`Error: ${error.message || 'Failed to connect to API server'}`, 'error');
             } finally {
                 // Re-enable input
