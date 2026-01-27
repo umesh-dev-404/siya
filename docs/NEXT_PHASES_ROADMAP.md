@@ -31,9 +31,10 @@ This document outlines the **next phases of implementation** following the compl
 5. ✅ Created model configuration module (`config/model_config.py`)
 6. ✅ Implemented auto-detection of model path
 7. ✅ Added model auto-loading on service startup
-8. ✅ Acquired Qwen 2.5 3B Instruct model (Q4_K_M quantized) ✅
-9. ✅ Created comprehensive testing guide (`MODEL_TESTING_GUIDE.md`)
-10. ✅ Updated `.gitignore` to exclude model files
+8. ✅ Explicitly start Orchestrator and CLI in service_main.py (ensures proper command processing)
+9. ✅ Acquired Qwen 2.5 3B Instruct model (Q4_K_M quantized) ✅
+10. ✅ Created comprehensive testing guide (`MODEL_TESTING_GUIDE.md`)
+11. ✅ Updated `.gitignore` to exclude model files
 
 **Pending Tasks (Pi):**
 1. ⏳ Build llama-cpp-python on Raspberry Pi 5

@@ -105,6 +105,7 @@ sudo journalctl -u siya -f
 ### Issue 2: Service Entry Point
 - **Problem:** Initial service used `cli.main` which exits immediately
 - **Solution:** Created `service_main.py` to run long-lived API and web servers
+- **Update:** Service now explicitly starts Orchestrator and CLI before starting servers to ensure proper command processing
 
 ### Issue 3: Missing Type Imports
 - **Problem:** `NameError: name 'Any' is not defined` in multiple files

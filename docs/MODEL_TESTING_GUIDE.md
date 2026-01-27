@@ -19,17 +19,24 @@ This guide explains how to run and test the AI model (Qwen 2.5 3B Instruct) in S
 
 ### Architecture Flow
 
-1. **User Input** → API/CLI receives command
-2. **Orchestrator** → Submits user input to AI interface
-3. **AI Interface** → Uses IntentParser to parse intent
-4. **Intent Parser** → Checks if model is loaded
+1. **Service Startup** → `service_main.py` initializes components:
+   - Creates Orchestrator and starts it (enables task processing)
+   - Creates CLI and starts it (enables command processing)
+   - Loads AI model (if configured)
+   - Starts API and web servers
+2. **User Input** → API/CLI receives command
+3. **CLI** → Processes command through `run_single_command()`
+4. **Orchestrator** → Submits user input to AI interface (via `submit_user_input()`)
+5. **AI Interface** → Uses IntentParser to parse intent
+6. **Intent Parser** → Checks if model is loaded
    - If loaded: Uses real AI model (`_ai_parse`)
      - Loads system prompt from `docs/System Prompt.md`
      - Builds full prompt (system prompt + task prompt)
      - Calls model for inference
    - If not loaded: Falls back to stub mode (`_stub_parse`)
-5. **Model Manager** → Handles model loading/unloading
-6. **Llama Wrapper** → Interfaces with llama-cpp-python
+7. **Model Manager** → Handles model loading/unloading
+8. **Llama Wrapper** → Interfaces with llama-cpp-python
+9. **Orchestrator** → Processes task and returns response
 
 ### System Prompt Integration
 
@@ -140,13 +147,14 @@ curl -X POST http://192.168.1.39:8080/command \
 ```
 
 **What Happens:**
-1. API receives command
-2. CLI processes it
-3. Orchestrator submits to AI interface
-4. **AI model parses intent** (if loaded)
-5. Intent validated against schema
-6. Task queued and processed
-7. Response returned
+1. Service initializes: Orchestrator and CLI are started (enables command processing)
+2. API receives command
+3. CLI processes it (CLI must be started)
+4. Orchestrator submits to AI interface (Orchestrator must be started)
+5. **AI model parses intent** (if loaded)
+6. Intent validated against schema
+7. Task queued and processed
+8. Response returned
 
 ### Method 2: Via CLI (On Pi)
 

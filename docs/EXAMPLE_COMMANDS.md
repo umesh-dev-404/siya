@@ -209,35 +209,43 @@ curl -X POST http://192.168.1.39:8080/command \
 
 When you send a command:
 
-1. **API Layer** (`/command` endpoint)
+1. **Service Initialization** (on startup)
+   - `service_main.py` creates Orchestrator and calls `orchestrator.start()`
+   - `service_main.py` creates CLI and calls `cli.start()`
+   - This ensures Orchestrator and CLI are ready to process commands
+
+2. **API Layer** (`/command` endpoint)
    - Receives HTTP POST request
    - Validates JSON format
    - Calls `APIServer.handle_command()`
 
-2. **CLI Layer**
-   - `CLI.run_single_command()` processes command
+3. **CLI Layer**
+   - `CLI.run_single_command()` processes command (ensures CLI is started)
    - Calls `CLI.process_command()`
+   - Calls `Orchestrator.submit_user_input()`
 
-3. **Orchestrator**
-   - `Orchestrator.submit_user_input()` receives command
-   - Calls `AIInterface.parse_user_intent()` (stub mode)
+4. **Orchestrator**
+   - `Orchestrator.submit_user_input()` receives command (orchestrator must be started)
+   - Calls `AIInterface.parse_user_intent()` (real AI model if loaded, otherwise stub mode)
 
-4. **AI Intent Parsing** (Stub Mode)
-   - `IntentParser.parse_intent()` attempts to match tool names
+5. **AI Intent Parsing** (Real AI Model or Stub Mode)
+   - `IntentParser.parse_intent()` uses real AI model if loaded
+   - Loads system prompt from `docs/System Prompt.md`
+   - Builds prompt and calls model for inference
    - Returns intent structure (validated against schema)
-   - Since no tools exist, returns "unknown" action
+   - Falls back to stub mode if model not loaded
 
-5. **Tool Request Conversion**
+6. **Tool Request Conversion**
    - Orchestrator converts intent to tool request
-   - Checks tool registry (empty - no tools registered)
-   - Creates tool request with "unknown" tool
+   - Checks tool registry
+   - Creates tool request with parsed action
 
-6. **Task Execution**
+7. **Task Execution**
    - Task queued in `TaskQueue`
    - `Orchestrator.process_next_task()` processes task
-   - Tool execution is stubbed (no actual tools to run)
+   - Tool execution runs (if tool exists) or returns appropriate response
 
-7. **Response**
+8. **Response**
    - Success/error message returned through layers
    - All actions logged for auditability (LAW 13)
 
@@ -251,9 +259,10 @@ When you send a command:
 - Tool execution is stubbed (no tools to execute)
 
 **What Works:**
+- ✅ Service initialization (Orchestrator and CLI started automatically)
 - ✅ API server and endpoints
 - ✅ Command flow (API → CLI → Orchestrator)
-- ✅ Intent parsing (stub mode)
+- ✅ Intent parsing (real AI model if loaded, stub mode otherwise)
 - ✅ Task queue and execution flow
 - ✅ Error handling and validation
 - ✅ Complete audit logging

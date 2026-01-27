@@ -97,6 +97,7 @@
 - **Configuration:** ✅ COMPLETE (auto-detection ready)
 - **System Prompt:** ✅ INTEGRATED (auto-loaded from `docs/System Prompt.md`)
 - **Service Auto-Load:** ✅ IMPLEMENTED (model loads on startup)
+- **Service Initialization:** ✅ FIXED (Orchestrator and CLI explicitly started)
 - **Pi Testing:** ⏳ PENDING (code pull and model loading test)
 
 ---
@@ -120,6 +121,7 @@
 - **PC Code:** ✅ COMPLETE
 - **Model Download:** ✅ COMPLETE
 - **Configuration:** ✅ COMPLETE (auto-detection ready)
+- **Service Initialization:** ✅ FIXED (Orchestrator and CLI explicitly started)
 - **Pi Testing:** ⏳ PENDING
 - **Objective:** Replace stub AI with real llama.cpp integration
 - **Scope:** Model loading, inference, resource management

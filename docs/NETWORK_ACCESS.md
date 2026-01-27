@@ -390,8 +390,8 @@ Commands will be parsed and queued, but tool execution is stubbed until tools ar
 **MCP (Model Control Plane) is NOT a separate server** - it's integrated into the API server. When you send commands:
 
 1. API receives command → `/command` endpoint
-2. API calls CLI → which uses Orchestrator
-3. Orchestrator uses AI → to parse intent
+2. API calls CLI → which uses Orchestrator (both started by service_main.py)
+3. Orchestrator uses AI → to parse intent (model loaded on startup if configured)
 4. MCP validates → tool requests and permissions
 5. Response returned → through API
 

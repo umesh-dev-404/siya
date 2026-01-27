@@ -26,6 +26,7 @@ Replace stub AI implementation with **real llama.cpp integration** for productio
 - [x] Create model configuration module
 - [x] Update integration points (CLI, service)
 - [x] Add auto-load model on service startup
+- [x] Explicitly start Orchestrator and CLI in service_main.py (ensures proper initialization)
 
 ### ⏳ 2. Model Acquisition (Pi)
 - [x] Download Qwen 2.5 3B Instruct model (Q4_K_M quantized) ✅

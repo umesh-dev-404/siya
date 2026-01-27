@@ -242,6 +242,9 @@ export SIYA_API_BASE_URL=http://$(hostname -I | awk '{print $1}'):8080
 ## SERVICE SETUP (systemd)
 
 The systemd service runs both API and web servers (`service_main.py`), which:
+- Initializes all core components (MCP, AI Interface, Orchestrator, CLI)
+- Starts the Orchestrator (enables task processing)
+- Starts the CLI (enables command processing)
 - Starts the HTTP API server on port 8080
 - Starts the web interface server on port 3000
 - Both servers run continuously in the background
@@ -252,8 +255,10 @@ The systemd service runs both API and web servers (`service_main.py`), which:
   - Web Interface: `http://<PI_IP>:3000`
 
 **Important Notes:**
+- The service initializes Orchestrator and CLI components (required for command processing)
 - The service does NOT run the interactive CLI. For interactive use, SSH into the Pi and run `python -m cli.main` manually.
 - The service entry point is `service_main.py` (not `cli.main`)
+- Orchestrator and CLI are started before servers to ensure proper initialization
 - Both servers start automatically when the service starts
 - All errors are logged to systemd journal (view with `sudo journalctl -u siya`)
 - If service fails to start, check logs first: `sudo journalctl -u siya -n 50 --no-pager`
@@ -604,6 +609,10 @@ sudo journalctl -u siya -f
 **Error: `NameError: name 'List' is not defined`**
 - **Cause:** Missing `List` import in `audit/audit_logger.py`
 - **Fix:** Add `List` to typing imports: `from typing import Any, Dict, List, Optional`
+
+**Error: Commands not processing / No response from API**
+- **Cause:** Orchestrator or CLI not started before servers
+- **Fix:** Ensure `service_main.py` explicitly calls `orchestrator.start()` and `cli.start()` before starting servers (already fixed in latest code)
 
 **Error: `status=1/FAILURE` (general failure)**
 - **Cause:** Python script error (check logs for details)

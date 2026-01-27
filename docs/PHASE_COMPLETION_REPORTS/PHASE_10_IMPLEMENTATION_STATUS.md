@@ -122,7 +122,7 @@ Replace stub AI implementation with **real llama.cpp integration** for productio
 - `ai/ai_interface.py` — Model manager integration
 - `ai/__init__.py` — Updated exports
 - `cli/main.py` — Model config integration
-- `service_main.py` — Model config integration + auto-load on startup
+- `service_main.py` — Model config integration + auto-load on startup + Orchestrator/CLI startup
 - `pyproject.toml` — llama-cpp-python note
 - `.gitignore` — Added model file exclusions
 
@@ -147,6 +147,9 @@ Replace stub AI implementation with **real llama.cpp integration** for productio
 - **ResourceMonitor** → Monitors RAM during model loading
 - **ModelConfig** → Auto-detects model path from default location or environment variable
 - **ServiceMain** → Auto-loads model on service startup
+  - Starts Orchestrator (enables task processing)
+  - Starts CLI (enables command processing)
+  - Ensures all components are initialized before servers start
 
 ### Fallback Behavior
 - If llama-cpp-python not available → Stub mode
