@@ -118,6 +118,26 @@ Maintained per dev-rules.md §8.2 (Error Correction Discipline).
 - Added CSS for result cards, status badges, and value styling
 **Files Modified:** `web/static/app.js`, `web/static/styles.css`
 
+### Fix: Confirmation Flow Output
+**Symptom:** Output panel showed `confirmationNeeded` response while waiting for user input  
+**Expected:** No output until user confirms, then show command + final result  
+**Cause:** Output was logged before checking for confirmationNeeded response  
+**Solution:** Deferred all output logging until after confirmation flow completes. When confirmationNeeded is detected, only modal is shown (no output). Command and result logged only after user confirms or if no confirmation required.  
+**Files Modified:** `web/static/app.js`
+
+### Feature: Mobile Responsive Design
+**Objective:** Full mobile viewport support with hamburger menu  
+**Implementation:**
+- Added hamburger menu button (☰) in header, visible only on mobile
+- Sidebar slides out from left as drawer (85% width, max 320px)
+- Dark overlay behind sidebar, tap to close
+- Notifications section moved into sidebar for mobile
+- Sidebar auto-closes when user selects a tool
+- Desktop notifications button hidden on mobile
+- Footer simplified for mobile
+- Tool panel and output section optimized for smaller screens
+**Files Modified:** `web/static/index.html`, `web/static/styles.css`, `web/static/app.js`
+
 ---
 
 ## Template for Future Entries

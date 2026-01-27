@@ -139,3 +139,39 @@ Do you want to proceed? [y/N]:
 - **Connection Refused?** Check if `service_main.py` is running on the Pi. Check firewall (Port 8080).
 - **Tool Not Found?** Ensure `register_all_tools` was called (Phase 11 completion).
 - **Voice Error?** Ensure `pyttsx3` is installed and audio drivers are configured on the Pi.
+
+---
+
+## 4. Web Interface Tests (Phase 17)
+
+The Neo-Brutalism web interface runs on port 3000 and provides full CLI parity.
+
+### Test 7: Web Interface Connectivity
+1. Open browser: `http://192.168.1.39:3000`
+2. *Expected:* Header shows "SIYA", footer shows "● Connected"
+3. Sidebar displays tool categories (System, Files, Mail, Sync, etc.)
+
+### Test 8: Tool Execution via Web
+1. Click "SYNC" category in sidebar → Click "Get Sync Status"
+2. Click "EXECUTE TOOL"
+3. *Expected:* Human-readable output with status badges (e.g., `CONNECTED` in green)
+
+### Test 9: Confirmation Modal (LAW 1)
+1. Click "SYNC" → "Trigger Sync"
+2. Select direction: `push`
+3. Click "EXECUTE TOOL"
+4. *Expected:* Modal appears with:
+   - Warning: "This action requires your explicit confirmation"
+   - Tool name and arguments displayed
+   - LAW 1 notice in red
+   - Cancel / Yes, Execute buttons
+5. Click "Cancel" → Modal closes, output shows "Action cancelled"
+6. Click "Yes, Execute" → Modal closes, sync result displayed
+
+### Test 10: Human-Readable Output
+1. Execute any tool (e.g., `get_system_status`)
+2. *Expected:* Output formatted with:
+   - Labels on left (e.g., "Status:", "Is Connected:")
+   - Status badges with colors (CONNECTED=green, ERROR=red)
+   - Boolean values as ✓ Yes / ✗ No
+   - Nested objects formatted inline

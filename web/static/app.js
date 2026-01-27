@@ -391,8 +391,6 @@ async function doExecuteTool(toolName, args, confirmed = false) {
         executeBtn.innerHTML = '<span class="loading"></span> Executing...';
     }
 
-    addOutput(`> ${toolName}(${JSON.stringify(args)})`, 'info');
-
     try {
         // Add confirmation flag if needed
         const callArgs = confirmed ? { ...args, _confirmed: true } : args;
@@ -403,11 +401,13 @@ async function doExecuteTool(toolName, args, confirmed = false) {
         });
 
         if (response.error) {
+            // Show command and error
+            addOutput(`> ${toolName}(${JSON.stringify(args)})`, 'info');
             addOutput(`Error: ${response.error.message}`, 'error');
         } else if (response.result) {
-            // Only check for confirmation if we haven't already confirmed
-            // This prevents the modal from reopening after user clicks "Yes, Execute"
+            // Check for confirmation needed (only if not already confirmed)
             if (!confirmed && response.result.confirmationNeeded === true) {
+                // Don't output anything - just show modal and wait for user
                 state.pendingConfirmation = {
                     toolName: response.result.tool || toolName,
                     args: response.result.arguments || args
@@ -417,36 +417,43 @@ async function doExecuteTool(toolName, args, confirmed = false) {
                     response.result.arguments || args,
                     response.result.message
                 );
+                // Don't reset button - modal will handle flow
                 return;
             }
 
-            // Check for content array (standard MCP response)
+            // Also check inside content text for confirmation
             if (response.result.content) {
                 const content = response.result.content[0];
                 if (content?.text) {
                     try {
                         const parsed = JSON.parse(content.text);
-                        // Only check for confirmation inside content if we haven't already confirmed
                         if (!confirmed && parsed.confirmationNeeded) {
+                            // Don't output - show modal
                             state.pendingConfirmation = { toolName, args };
                             showConfirmation({ name: toolName }, args, parsed.message);
                             return;
                         }
-                        // Format as human-readable output
+                        // Show command and result
+                        addOutput(`> ${toolName}(${JSON.stringify(args)})`, 'info');
                         addOutput(formatResult(parsed), 'success', true);
                     } catch {
+                        addOutput(`> ${toolName}(${JSON.stringify(args)})`, 'info');
                         addOutput(content.text, 'success');
                     }
                 } else {
+                    addOutput(`> ${toolName}(${JSON.stringify(args)})`, 'info');
                     addOutput(formatResult(response.result), 'success', true);
                 }
             } else {
+                addOutput(`> ${toolName}(${JSON.stringify(args)})`, 'info');
                 addOutput(formatResult(response.result), 'success', true);
             }
         } else {
+            addOutput(`> ${toolName}(${JSON.stringify(args)})`, 'info');
             addOutput(formatResult(response), 'success', true);
         }
     } catch (error) {
+        addOutput(`> ${toolName}(${JSON.stringify(args)})`, 'info');
         addOutput(`Error: ${error.message}`, 'error');
     } finally {
         if (executeBtn) {
@@ -683,12 +690,75 @@ async function acknowledgeNotification(id) {
     }
 }
 
+// ===== MOBILE SIDEBAR =====
+function toggleMobileSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('sidebar-overlay');
+
+    const isActive = sidebar?.classList.toggle('active');
+    overlay?.classList.toggle('active', isActive);
+
+    // Load mobile notifications when opening
+    if (isActive) {
+        renderMobileNotifications();
+    }
+}
+
+function closeMobileSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('sidebar-overlay');
+
+    sidebar?.classList.remove('active');
+    overlay?.classList.remove('active');
+}
+
+function renderMobileNotifications() {
+    const mobileList = document.getElementById('mobile-notifications-list');
+    const mobileBadge = document.getElementById('mobile-notification-badge');
+
+    if (!mobileList) return;
+
+    if (state.notifications.length === 0) {
+        mobileList.innerHTML = `
+            <div style="padding: var(--space-md); text-align: center; color: var(--text-muted); font-size: 0.875rem;">
+                No notifications
+            </div>
+        `;
+    } else {
+        mobileList.innerHTML = state.notifications.slice(0, 5).map(n => `
+            <div class="notification-item ${n.read ? '' : 'unread'}" onclick="acknowledgeNotification('${n.id}')">
+                <div class="notification-title">${n.title}</div>
+                <div class="notification-message">${n.message}</div>
+            </div>
+        `).join('');
+    }
+
+    // Update mobile badge
+    const unreadCount = state.notifications.filter(n => !n.read).length;
+    if (mobileBadge) {
+        mobileBadge.textContent = unreadCount;
+        mobileBadge.style.display = unreadCount > 0 ? '' : 'none';
+    }
+}
+
+// Modify selectTool to close mobile sidebar
+const originalSelectTool = selectTool;
+window.selectTool = function (toolName) {
+    originalSelectTool(toolName);
+    // Close sidebar on mobile after selecting a tool
+    if (window.innerWidth <= 768) {
+        closeMobileSidebar();
+    }
+};
+
 // Make functions globally accessible
 window.toggleGroup = toggleGroup;
-window.selectTool = selectTool;
 window.executeTool = executeTool;
 window.cancelConfirmation = cancelConfirmation;
 window.confirmExecution = confirmExecution;
 window.clearOutput = clearOutput;
 window.toggleNotifications = toggleNotifications;
 window.acknowledgeNotification = acknowledgeNotification;
+window.toggleMobileSidebar = toggleMobileSidebar;
+window.closeMobileSidebar = closeMobileSidebar;
+

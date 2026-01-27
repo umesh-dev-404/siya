@@ -22,11 +22,14 @@
     <!-- ===== HEADER ===== -->
     <header class="header">
         <div class="header-logo">
+            <!-- Mobile menu toggle -->
+            <button class="btn btn-sm mobile-menu-btn" id="mobile-menu-btn" onclick="toggleMobileSidebar()">☰</button>
             <h1>SIYA</h1>
-            <span style="font-size: 0.75rem; opacity: 0.7;">Personal Assistant Platform</span>
+            <span class="header-subtitle">Personal Assistant Platform</span>
         </div>
         <div class="header-actions">
-            <button class="btn btn-sm" id="notifications-btn" style="position: relative;">
+            <!-- Desktop only notifications button -->
+            <button class="btn btn-sm desktop-only" id="notifications-btn" style="position: relative;">
                 🔔 Notifications
                 <span class="pill pill-error" id="notification-badge"
                     style="position: absolute; top: -8px; right: -8px; display: none;">0</span>
@@ -34,10 +37,13 @@
         </div>
     </header>
 
+    <!-- Mobile sidebar overlay -->
+    <div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleMobileSidebar()"></div>
+
     <!-- ===== MAIN LAYOUT ===== -->
     <main class="main-layout">
         <!-- Sidebar: Tool Browser -->
-        <aside class="sidebar">
+        <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
                 <input type="text" class="input sidebar-search" id="tool-search" placeholder="🔍 Search tools...">
             </div>
@@ -46,6 +52,16 @@
                 <div style="padding: var(--space-lg); text-align: center; color: var(--text-muted);">
                     <span class="loading"></span>
                     <p style="margin-top: var(--space-md)">Loading tools...</p>
+                </div>
+            </div>
+            <!-- Mobile-only notifications in sidebar -->
+            <div class="sidebar-notifications mobile-only" id="sidebar-notifications">
+                <div class="sidebar-section-header">
+                    🔔 Notifications
+                    <span class="pill pill-error" id="mobile-notification-badge" style="display: none;">0</span>
+                </div>
+                <div class="notifications-list-mobile" id="mobile-notifications-list">
+                    <!-- Rendered by JS -->
                 </div>
             </div>
         </aside>

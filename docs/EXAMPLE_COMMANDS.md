@@ -99,5 +99,31 @@ siya-cli --transport http --url http://192.168.1.39:8080 call summarize_text --a
 
 ---
 
-**Last Updated:** 2026-01-27
+## 6. WEB INTERFACE (Phase 17)
+
+The Neo-Brutalism web interface provides full CLI parity at port 3000.
+
+### Access Web UI
+```
+http://192.168.1.39:3000
+```
+
+### Features
+- **Sidebar:** Categorized tool browser with search
+- **Tool Panel:** Dynamic forms based on tool schemas
+- **Confirmation Modal:** LAW 1 enforcement with Yes/Cancel buttons
+- **Output Panel:** Human-readable formatted results
+- **Notifications:** Slide-out panel for system notifications
+
+### Using the Web Interface
+1. Open `http://<pi-ip>:3000` in browser
+2. Select a tool from the sidebar (e.g., SYNC → Get Sync Status)
+3. Fill in any required parameters
+4. Click "EXECUTE TOOL"
+5. For confirmation-required tools → Modal appears → Click "Yes, Execute"
+6. View formatted results in Output panel
+
+---
+
+**Last Updated:** 2026-01-28
 **Schema Version:** 1.0.0

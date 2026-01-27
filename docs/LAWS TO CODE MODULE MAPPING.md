@@ -48,11 +48,15 @@ The human user is the final and absolute authority.
 - `cli/cli.py`
 - `api/api_server.py`
 - `web/web_server.py`
+- `web/static/app.js` — Confirmation modal for web UI (Phase 17)
+- `pc_mcp_client/main.py` — Interactive CLI confirmation prompt
 - `orchestrator/orchestrator.py`
 
 **Enforcement Mechanisms:**
 - All actions originate from explicit user or registered triggers
 - Orchestrator requires confirmation tokens before execution
+- CLI prompts user with y/N for confirmation-required tools
+- Web UI displays modal dialog with Cancel/Yes buttons
 - No automatic override paths
 
 **Violation Handling:**
