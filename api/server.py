@@ -7,7 +7,9 @@ Per DIP Phase 11: HTTP transport for MCP (PC client to Pi server).
 """
 
 import logging
+import socket
 from http.server import HTTPServer
+from socketserver import ThreadingMixIn
 from typing import TYPE_CHECKING, Optional
 
 from api.api_server import APIServer
@@ -20,6 +22,25 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
+class ThreadingHTTPServer(ThreadingMixIn, HTTPServer):
+    """
+    Multi-threaded HTTP server.
+    
+    Handles each request in a separate thread to prevent blocking.
+    Essential for handling slow AI inference and concurrent requests.
+    """
+    daemon_threads = True  # Daemon threads die when main thread exits
+    
+    # Set a timeout on individual requests to prevent stuck connections
+    request_timeout = 60  # 60 seconds per request read
+    
+    def get_request(self):
+        """Override to set per-connection timeout."""
+        conn, addr = super().get_request()
+        conn.settimeout(self.request_timeout)
+        return conn, addr
+
+
 class SiyaAPIServer:
     """
     HTTP server for Siya API.
@@ -30,6 +51,7 @@ class SiyaAPIServer:
 
     Per DIP Phase 11:
     - MCP HTTP transport for PC client to Pi server
+    - Multi-threaded to handle concurrent requests
     """
 
     def __init__(
@@ -52,7 +74,7 @@ class SiyaAPIServer:
         self._host = host or get_api_host()
         self._port = port or get_api_port()
         self._mcp_http_handler = mcp_http_handler
-        self._server: Optional[HTTPServer] = None
+        self._server: Optional[ThreadingHTTPServer] = None
 
     def start(self) -> None:
         """Start the HTTP server."""
@@ -61,17 +83,13 @@ class SiyaAPIServer:
         def handler_factory(*args, **kwargs):
             return SiyaHTTPHandler(*args, api_server=self._api_server, mcp_http_handler=mcp_handler, **kwargs)
 
-        self._server = HTTPServer((self._host, self._port), handler_factory)
+        self._server = ThreadingHTTPServer((self._host, self._port), handler_factory)
         
-        # Set socket timeout to 5 minutes to handle slow AI inference
-        self._server.timeout = 300  # 5 minutes
-        
-        # Set socket options to keep connections alive
-        import socket
+        # Set socket options
         self._server.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self._server.socket.setsockopt(socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1)
 
-        logger.info(f"API server started on {self._host}:{self._port}")
+        logger.info(f"API server started on {self._host}:{self._port} (multi-threaded)")
         print(f"Siya API server running on http://{self._host}:{self._port}")
 
     def serve_forever(self) -> None:
