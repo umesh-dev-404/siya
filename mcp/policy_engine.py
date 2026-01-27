@@ -108,11 +108,10 @@ class PolicyEngine:
             # Phase 2: For tools that don't require confirmation, we still check permission level
             # In a real system, this would check user permissions
             # For now, we grant if permission level is NONE or READ
-            if tool_schema.permission_level in (PermissionLevel.NONE, PermissionLevel.READ):
-                decision = PermissionDecision.GRANTED
-            else:
-                # WRITE and EXECUTE always require confirmation in Phase 2
-                decision = PermissionDecision.REQUIRES_CONFIRMATION
+            # Phase 2 Updated: Respect the tool schema's requires_confirmation flag.
+            # If the tool says it doesn't need confirmation, we grant it.
+            # (In a future Multi-User phase, we would check User Context roles here).
+            decision = PermissionDecision.GRANTED
 
         result = PermissionCheck(
             tool_name=tool_schema.name,

@@ -1,0 +1,112 @@
+# USER ACCEPTANCE TEST GUIDE (UAT)
+
+**Target:** Siya System v1.0.0
+**Client:** PC (Powershell/CMD)
+**Server:** Raspberry Pi 5
+
+---
+
+## 1. Prerequisites
+
+### On the Raspberry Pi
+Ensure the server is running:
+```bash
+cd /opt/siya
+source venv/bin/activate
+# Start the server (API + Web + MCP)
+python service_main.py
+```
+*Note the IP address displayed (e.g., `192.168.1.39`).*
+
+### On the PC
+Ensure `siya-cli` is installed:
+```powershell
+siya-cli --help
+```
+
+---
+
+## 2. Test Commands
+
+Replace `http://192.168.1.39:8080` with your actual Pi IP and port.
+
+### Test 1: Connectivity & Discovery (Phase 6/11)
+Verify the PC can reach the Pi and list available tools.
+
+**Check Server Status:**
+```powershell
+siya-cli --transport http --url http://192.168.1.39:8080 server-info
+```
+*Expected Output: `✅ Connected... Server Status: Online`*
+
+**List All Tools:**
+```powershell
+siya-cli --transport http --url http://192.168.1.39:8080 list-tools
+```
+*Expected Output: A list of ~29 tools including `get_system_status`, `speak_text`, etc.*
+
+---
+
+### Test 2: Core System Status (Phase 11)
+Verify the system can read its own state.
+
+```powershell
+siya-cli --transport http --url http://192.168.1.39:8080 call get_system_status
+```
+*Expected Output: JSON showing CPU, RAM, and uptime.*
+
+---
+
+### Test 3: Notification System (Phase 15)
+Verify the notification engine is active.
+
+**PowerShell:**
+```powershell
+siya-cli --transport http --url http://192.168.1.39:8080 call send_notification --args '{"title": "UAT Test", "message": "Hello from PC!"}'
+```
+
+**Command Prompt (cmd.exe):**
+```cmd
+siya-cli --transport http --url http://192.168.1.39:8080 call send_notification --args "{\"title\": \"UAT Test\", \"message\": \"Hello from PC!\"}"
+```
+*Expected Output: `Notification sent (ID: ...)`*
+
+**Read Back Notifications:**
+```powershell
+siya-cli --transport http --url http://192.168.1.39:8080 call list_notifications
+```
+*Expected Output: Should list the "UAT Test" notification.*
+
+---
+
+### Test 4: Voice Interface (Phase 16)
+Verify audio output on the Pi.
+
+**PowerShell:**
+```powershell
+siya-cli --transport http --url http://192.168.1.39:8080 call speak_text --args '{"text": "System verified. Welcome to Siya."}'
+```
+
+**Command Prompt (cmd.exe):**
+```cmd
+siya-cli --transport http --url http://192.168.1.39:8080 call speak_text --args "{\"text\": \"System verified. Welcome to Siya.\"}"
+```
+*Expected Output: You should hear the Pi speak "System verified..."*
+
+---
+
+### Test 5: Sync Status (Phase 13)
+Verify Supabase connection.
+
+```powershell
+siya-cli --transport http --url http://192.168.1.39:8080 call get_sync_status
+```
+*Expected Output: Connection status (Online/Offline) and queue size.*
+
+---
+
+## 3. Troubleshooting
+
+- **Connection Refused?** Check if `service_main.py` is running on the Pi. Check firewall (Port 8080).
+- **Tool Not Found?** Ensure `register_all_tools` was called (Phase 11 completion).
+- **Voice Error?** Ensure `pyttsx3` is installed and audio drivers are configured on the Pi.
