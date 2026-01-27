@@ -66,12 +66,15 @@ The human user is the final and absolute authority.
 
 **Primary Enforcement Modules:**
 - `orchestrator/task_queue.py`
-- `automations/` (framework; systemd timers in later phase)
+- `automations/automation_manager.py`
+- `automations/systemd_timer.py`
+- `automations/schedule_manager.py`
 
 **Enforcement Mechanisms:**
 - Task queue only accepts registered triggers
 - Background loops forbidden
-- systemd timers must be explicitly declared
+- systemd timers call `siya-cli` → orchestrator (not direct execution)
+- Schedule manager persists to SQLite, timers trigger via MCP
 
 **Violation Handling:**
 - Task not enqueued
@@ -162,9 +165,13 @@ The human user is the final and absolute authority.
 
 **Primary Enforcement Modules:**
 - `memory/access_layer.py`
+- `core/system_context.py` (Phase 12)
+- `ai/context_manager.py` (Phase 12)
 
 **Enforcement Mechanisms:**
 - Memory is read-only to AI
+- SystemContext provides read-only snapshots to tools
+- ContextManager injects history as informational only
 - Memory cannot influence tool selection
 - No branching logic reads memory state
 
@@ -178,14 +185,19 @@ The human user is the final and absolute authority.
 
 **Primary Enforcement Modules:**
 - `memory/write_controller.py`
+- `core/system_context.py` (Phase 12)
+- `memory/tier_manager.py` (Phase 12)
 
 **Enforcement Mechanisms:**
 - Only orchestrator can write
+- SystemContext verifies caller is in authorized_writers set
+- TierManager enforces orchestrator-only retention operations
 - Write operations require explicit call
 - Memory writes logged and tagged
 
 **Violation Handling:**
-- Write rejected
+- Write rejected with PermissionError
+- LAW 8 violation logged
 - Audit event created
 
 ---
@@ -244,11 +256,12 @@ The human user is the final and absolute authority.
 **Primary Enforcement Modules:**
 - `system/failure_handler.py`
 - `audit/audit_logger.py`
+- `notifications/notification_manager.py` (Phase 15 failure notifications)
 - `cli/cli.py` / `api/http_handler.py` (surface failures)
 
 **Enforcement Mechanisms:**
 - All failures logged
-- User notification mandatory
+- User notification mandatory via Notification Manager
 - No silent retries
 
 **Violation Handling:**
@@ -260,6 +273,7 @@ The human user is the final and absolute authority.
 
 **Primary Enforcement Modules:**
 - `audit/audit_logger.py`
+- `notifications/notification_store.py` (persisted notification history)
 - `mcp/authorization_layer.py`
 - `orchestrator/orchestrator.py`
 
@@ -267,6 +281,7 @@ The human user is the final and absolute authority.
 - Immutable log entries
 - Correlated request IDs
 - End-to-end traceability
+- All user notifications persisted
 
 **Violation Handling:**
 - Action blocked
@@ -278,16 +293,17 @@ The human user is the final and absolute authority.
 
 **Primary Enforcement Modules:**
 - `audit/` (retention to be implemented; Phase 11+)
+- `notifications/notification_store.py` (cleanup_old logic)
 - `automations/` (timers in later phase)
 
 **Enforcement Mechanisms:**
 - Time-based log expiry
 - Mandatory summarization
 - Configurable retention policy
+- Notification tools enforce cleanup confirmation
 
 **Violation Handling:**
-- Logging halted
-- Maintenance alert issued
+- Storage quota exceeded alertsenance alert issued
 
 ---
 
@@ -295,11 +311,14 @@ The human user is the final and absolute authority.
 
 **Primary Enforcement Modules:**
 - `security/` (secret handling; to be expanded when integrations land)
+- `sync/supabase_client.py` (Phase 13)
 
 **Enforcement Mechanisms:**
 - Secrets loaded at runtime only
 - Never injected into prompts
 - Never logged
+- `SupabaseClient.get_connection_info()` excludes credentials
+- `test_law_15_no_secrets_in_logs` verifies API key isolation
 
 **Violation Handling:**
 - Immediate abort
@@ -312,6 +331,10 @@ The human user is the final and absolute authority.
 **Primary Enforcement Modules:**
 - `security/` (network guard; to be expanded in Phase 11)
 - `mcp/tool_schema.py` (network permission metadata; to be added)
+- `sync/supabase_client.py` (Phase 13 - explicit connection)
+- `sync/sync_queue.py` (Phase 13 - offline queue)
+- `sync/sync_manager.py` (Phase 13 - explicit sync)
+- `voice/stt_engine.py` (Phase 16 - Google Speech Recognition requires network)
 
 **Enforcement Mechanisms:**
 - Allow-list enforced
@@ -320,6 +343,9 @@ The human user is the final and absolute authority.
 - Network access declared per tool (explicit permissions)
 - Network access depends on tool functionality
 - MCP protocol transport: STDIO (local) and HTTP (remote via `pc_mcp_client`)
+- `SyncQueue` queues operations for offline-first processing
+- `SupabaseClient.connect()` is explicit, never auto-connects
+- `STTEngine` checks for network before calling Google API (graceful failover needed)
 
 **Violation Handling:**
 - Network request blocked

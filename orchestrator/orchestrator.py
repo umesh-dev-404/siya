@@ -18,6 +18,7 @@ from typing import Any, Dict, Optional
 from uuid import UUID, uuid4
 
 from ai.ai_interface import AIInterface
+from core.system_context import get_system_context
 from mcp.mcp_server import MCPServer
 from orchestrator.execution_state import ExecutionState
 from orchestrator.step_runner import StepRunner
@@ -71,6 +72,9 @@ class Orchestrator:
         # Phase 11: Confirmation flow support (LAW 1 - Human Sovereignty)
         self._pending_confirmations: Dict[UUID, Dict[str, Any]] = {}
         self._pending_tool_requests: Dict[UUID, Dict[str, Any]] = {}
+        
+        # Phase 12: SystemContext for state management (LAW 8)
+        self._context = get_system_context()
 
     def start(self) -> None:
         """
@@ -402,7 +406,22 @@ class Orchestrator:
                 if not isinstance(arguments, dict):
                     raise RuntimeError("INVALID_ARGUMENTS: tool_request.arguments must be an object")
 
+                # Phase 12: Track execution time
+                import time
+                start_time = time.monotonic()
                 execution_result = self._tool_executor.execute(tool_name, arguments)
+                execution_time_ms = int((time.monotonic() - start_time) * 1000)
+                
+                # Phase 12: Record execution in SystemContext (LAW 8 - orchestrator writes)
+                self._context.record_execution(
+                    tool_name=tool_name,
+                    arguments=arguments,
+                    result_status="ok",
+                    task_id=task.task_id,
+                    execution_time_ms=execution_time_ms,
+                    caller="orchestrator",
+                )
+                
                 self._task_results[task.task_id] = {
                     "tool_name": execution_result.tool_name,
                     "output": execution_result.output,
@@ -448,6 +467,16 @@ class Orchestrator:
                 },
                 exc_info=True,
             )
+            
+            # Phase 12: Record failed execution in SystemContext
+            if tool_request:
+                self._context.record_execution(
+                    tool_name=tool_request.get("tool_name", "unknown"),
+                    arguments=tool_request.get("arguments", {}),
+                    result_status="error",
+                    task_id=task.task_id,
+                    caller="orchestrator",
+                )
 
             # Fail the step
             try:

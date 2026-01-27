@@ -32,6 +32,7 @@ from tools.tool_executor import ToolExecutor
 from web.web_server import WebServer
 
 # Phase 11: New tool imports
+# Phase 11: New tool imports
 from tools.system.resource_monitor_tool import make_resource_monitor_tool, resource_monitor_impl
 from tools.system.log_query_tool import make_log_query_tool, log_query_impl
 from tools.memory.memory_read_tool import make_memory_read_tool, memory_read_impl
@@ -43,6 +44,16 @@ from tools.automation_tools import (
     make_trigger_automation_tool, trigger_automation_impl,
     set_automation_manager,
 )
+from tools.tool_registration import (
+    register_sync_tools,
+    register_timer_tools,
+    register_notification_tools,
+    register_voice_tools,
+)
+from tools.sync_tools import SYNC_TOOL_SCHEMAS
+from tools.timer_tools import TIMER_TOOL_SCHEMAS
+from tools.notification_tools import NOTIFICATION_TOOL_SCHEMAS
+from tools.voice_tools import VOICE_TOOL_SCHEMAS
 
 # Setup logging first (before any other imports that might log)
 try:
@@ -117,6 +128,14 @@ def main() -> int:
         # Initialize components
         print("Initializing Siya components...", flush=True)
         logger.info("Initializing Siya components...")
+        
+        # Phase 12: Initialize SystemContext session (LAW 8 - service_main is authorized)
+        from core.system_context import get_system_context
+        from uuid import uuid4
+        context = get_system_context()
+        session_id = f"siya-{uuid4().hex[:8]}"
+        context.start_session(session_id, caller="service_main")
+        logger.info(f"SystemContext session started: {session_id}")
         
         print("Creating MCPServer...", flush=True)
         mcp = MCPServer()
@@ -211,6 +230,41 @@ def main() -> int:
         tool_registry.register(make_trigger_automation_tool())
         print("Phase 11 tools registered (8 new tools)", flush=True)
 
+        # Register Phase 13-16 tools (Schema + Handler)
+        new_tool_schemas = [
+            *SYNC_TOOL_SCHEMAS,
+            *TIMER_TOOL_SCHEMAS,
+            *NOTIFICATION_TOOL_SCHEMAS,
+            *VOICE_TOOL_SCHEMAS,
+        ]
+
+        for schema_dict in new_tool_schemas:
+            # Register schema
+            tool_schema = ToolSchema(
+                name=schema_dict["name"],
+                description=schema_dict["description"],
+                input_schema=schema_dict.get("parameters", {}), # Adapt parameters to input_schema
+                output_schema={"type": "object"},
+                permission_level=PermissionLevel[schema_dict["permission_level"]],
+                requires_confirmation=schema_dict["requires_confirmation"],
+            )
+            # Fix: input_schema in ToolSchema expects JSON Schema overlay, 
+            # but schema_dict["parameters"] is likely a properties dict?
+            # Let's check format.
+            # VOICE_TOOL_SCHEMAS parameters looks like properties dict.
+            # ToolSchema input_schema expects {"type": "object", "properties": ...}
+            if "input_schema" not in schema_dict:
+                 tool_schema.input_schema = {
+                    "type": "object",
+                    "properties": schema_dict.get("parameters", {}),
+                    "required": [k for k, v in schema_dict.get("parameters", {}).items() if v.get("required")]
+                 }
+            
+            tool_registry.register(tool_schema)
+            
+            # Register implementation likely happens later? 
+            # service_main separates registry and executor.
+            
         # Tool implementations
         tool_executor = ToolExecutor()
         tool_executor.register("get_system_status", get_system_status)
@@ -225,6 +279,12 @@ def main() -> int:
         tool_executor.register("directory_list", directory_list_impl)
         tool_executor.register("list_automations", list_automations_impl)
         tool_executor.register("trigger_automation", trigger_automation_impl)
+
+        # Register Phase 13-16 implementations
+        for schema_dict in new_tool_schemas:
+            if "handler" in schema_dict:
+                tool_executor.register(schema_dict["name"], lambda args, h=schema_dict["handler"]: h(**args))
+
         
         print("Getting model path...", flush=True)
         model_path = get_model_path()

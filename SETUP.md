@@ -65,6 +65,19 @@ This installs:
 - `pytest` — Test framework
 - `pytest-cov` — Coverage reporting
 - `mypy` — Static type checker
+- `supabase` — Cloud synchronization
+- `SpeechRecognition` — Speech-to-Text
+- `pyttsx3` — Text-to-Speech
+- `sounddevice` — Audio capture
+- `PyAudio` — Audio I/O (Windows)
+
+### 5. Voice Interface Prerequisites (Linux/Pi)
+
+If running on Linux/Raspberry Pi, you need system audio libraries:
+```bash
+sudo apt-get update
+sudo apt-get install python3-pyaudio portaudio19-dev
+```
 
 ### 5. Verify Setup
 
@@ -305,4 +318,44 @@ siya-cli --transport http --url http://192.168.1.39:8080 call get_system_status
 
 ---
 
+## SUPABASE CONFIGURATION (PHASE 13)
+
+Phase 13 adds cloud synchronization via Supabase for L3 memory tier.
+
+### 1. Create Supabase Project
+
+1. Go to [supabase.com](https://supabase.com) and create a free account
+2. Create a new project
+3. Wait for the project to initialize
+
+### 2. Run Database Schema
+
+1. In Supabase Dashboard → **SQL Editor** → **New Query**
+2. Copy content from `scripts/supabase_schema.sql`
+3. Run the query to create all tables
+
+### 3. Get API Credentials
+
+From Supabase Dashboard → **Settings** → **API**:
+- Copy **Project URL** (e.g., `https://abc123.supabase.co`)
+- Copy **anon/public key** (safe for client-side)
+
+### 4. Configure Environment
+
+1. Copy `.env.example` to `.env`:
+   ```bash
+   cp .env.example .env
+   ```
+
+2. Edit `.env` and add your credentials:
+   ```
+   SUPABASE_URL=https://your-project.supabase.co
+   SUPABASE_ANON_KEY=your-anon-key
+   ```
+
+> **⚠️ IMPORTANT (LAW 15):** Never commit `.env` to version control!
+
+---
+
 **Last Updated:** 2026-01-27
+

@@ -18,6 +18,7 @@ from typing import Any, Dict, Optional
 from uuid import uuid4
 
 from mcp.request_validator import RequestValidator, ValidationError
+from ai.context_manager import get_context_manager
 
 logger = logging.getLogger(__name__)
 
@@ -249,17 +250,31 @@ Your output is data only - execution is handled by deterministic system componen
 
         Note:
             System prompt is loaded from docs/System Prompt.md and prepended.
+            Phase 12: Context is injected from ContextManager (LAW 7 - informational only).
             This ensures the AI follows Siya's canonical constraints (LAW 3).
         """
         # Get system prompt (cached after first load)
         system_prompt = self._get_system_prompt()
         
         tools_list = "\n".join([f"- {tool}" for tool in available_tools]) if available_tools else "No tools available"
+        
+        # Phase 12: Get context from ContextManager (LAW 7 - read-only, informational)
+        context_manager = get_context_manager()
+        context_str = ""
+        try:
+            # Inject recent execution history for context awareness
+            context_manager.inject_from_system_context(limit=3)
+            context_str = context_manager.get_context_for_ai()
+            if context_str:
+                context_str = f"\n\nRecent Context (informational only - do not base decisions on this):\n{context_str}\n"
+        except Exception as e:
+            logger.debug(f"Context injection skipped: {e}")
+            context_str = ""
 
         # Ultra-simplified prompt with explicit JSON example
         tools_str = ', '.join(available_tools) if available_tools else 'none'
         task_prompt = f"""Parse this user input: "{user_input}"
-Available tools: {tools_str}
+Available tools: {tools_str}{context_str}
 
 Respond with ONLY this JSON format (no other text):
 {{"action":"unknown","arguments":{{}},"clarification_needed":false,"clarification_question":null}}"""
