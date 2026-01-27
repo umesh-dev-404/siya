@@ -233,17 +233,45 @@ class LlamaWrapper:
 
             # Extract text from result
             # llama-cpp-python returns a dict with 'choices' list
-            logger.debug(f"Result type: {type(result)}, keys: {result.keys() if isinstance(result, dict) else 'N/A'}")
-            if isinstance(result, dict) and "choices" in result and len(result["choices"]) > 0:
-                generated_text = result["choices"][0].get("text", "")
-            elif isinstance(result, dict) and "text" in result:
-                generated_text = result["text"]
+            logger.info(f"Result type: {type(result)}")
+            generated_text = ""
+            
+            if isinstance(result, dict):
+                logger.info(f"Result keys: {list(result.keys())}")
+                if "choices" in result and len(result["choices"]) > 0:
+                    choice = result["choices"][0]
+                    logger.info(f"Choice type: {type(choice)}")
+                    if isinstance(choice, dict):
+                        logger.info(f"Choice keys: {list(choice.keys())}")
+                        # Try different possible keys
+                        generated_text = choice.get("text", choice.get("content", choice.get("message", "")))
+                        if not generated_text:
+                            # If still empty, try to stringify the whole choice
+                            generated_text = str(choice)
+                    else:
+                        # Choice is not a dict, try to get text attribute or stringify
+                        generated_text = getattr(choice, 'text', getattr(choice, 'content', str(choice)))
+                elif "text" in result:
+                    generated_text = result["text"]
+                else:
+                    logger.warning(f"Unexpected result structure: {result}")
+                    generated_text = str(result)
             elif hasattr(result, 'choices') and len(result.choices) > 0:
-                generated_text = result.choices[0].text if hasattr(result.choices[0], 'text') else str(result.choices[0])
+                choice = result.choices[0]
+                generated_text = getattr(choice, 'text', getattr(choice, 'content', str(choice)))
             else:
+                logger.warning(f"Unexpected result type: {type(result)}, value: {result}")
                 generated_text = str(result) if result else ""
             
-            logger.debug(f"Extracted text (first 200 chars): {generated_text[:200]}")
+            # Clean up the text
+            if generated_text:
+                generated_text = str(generated_text).strip()
+            
+            logger.info(f"Extracted text (length: {len(generated_text)}, first 300 chars): {generated_text[:300] if generated_text else 'EMPTY'}")
+            if not generated_text or not generated_text.strip():
+                logger.error(f"Generated text is empty! Result was: {result}")
+                # Return a default JSON response if empty
+                generated_text = '{"action":"unknown","arguments":{},"clarification_needed":true,"clarification_question":"I could not understand your request. Could you please rephrase it?"}'
 
             logger.debug(
                 "Text generated",

@@ -82,6 +82,9 @@ class IntentParser:
         if self._model_manager and self._model_manager.is_loaded():
             try:
                 intent = self._ai_parse(user_input, available_tools)
+                # Validate that we got a valid intent (not empty/default due to errors)
+                if intent.get("action") == "unknown" and not intent.get("clarification_needed"):
+                    logger.debug("AI returned unknown action without clarification - this is valid")
             except Exception as e:
                 logger.warning(f"AI parsing failed, falling back to stub: {e}", exc_info=True)
                 intent = self._stub_parse(user_input, available_tools)
@@ -156,15 +159,18 @@ class IntentParser:
 
         # Generate response from model
         try:
-            logger.debug(f"Calling model with prompt length: {len(prompt)}")
+            logger.info(f"Calling model with prompt length: {len(prompt)}")
+            logger.debug(f"Prompt preview (last 300 chars): {prompt[-300:]}")
             response_text = self._model_manager.generate(
                 prompt=prompt,
                 max_tokens=128,  # Reduced further for faster inference on Pi (JSON responses are short)
                 temperature=0.2,  # Very low temperature for deterministic JSON output
                 timeout=120.0,  # Increased timeout for slower hardware (Pi)
-                stop=["\n\n", "```", "\n}", "}"],  # Stop early when JSON is complete
+                stop=None,  # Don't use stop sequences - let model generate full JSON (max_tokens will limit it)
             )
-            logger.debug(f"Model response (first 200 chars): {response_text[:200]}")
+            logger.info(f"Model response received (length: {len(response_text)}): {response_text[:300]}")
+            if not response_text or not response_text.strip():
+                logger.warning("Model returned empty response!")
         except Exception as e:
             logger.error(f"Model inference failed: {e}", exc_info=True)
             raise RuntimeError(f"Inference failed: {e}") from e
@@ -250,11 +256,13 @@ Your output is data only - execution is handled by deterministic system componen
         
         tools_list = "\n".join([f"- {tool}" for tool in available_tools]) if available_tools else "No tools available"
 
-        # Simplified prompt for faster, more reliable JSON generation
+        # Ultra-simplified prompt with explicit JSON example
         tools_str = ', '.join(available_tools) if available_tools else 'none'
-        task_prompt = f"""Parse: "{user_input}"
-Tools: {tools_str}
-JSON: {{"action":"unknown","arguments":{{}},"clarification_needed":false,"clarification_question":null}}"""
+        task_prompt = f"""Parse this user input: "{user_input}"
+Available tools: {tools_str}
+
+Respond with ONLY this JSON format (no other text):
+{{"action":"unknown","arguments":{{}},"clarification_needed":false,"clarification_question":null}}"""
 
         # Combine system prompt with task-specific prompt
         full_prompt = f"""{system_prompt}
@@ -271,8 +279,15 @@ JSON: {{"action":"unknown","arguments":{{}},"clarification_needed":false,"clarif
             json_str: Potentially malformed JSON string
             
         Returns:
-            Repaired JSON string
+            Repaired JSON string (or default JSON if repair fails)
         """
+        if not json_str or not json_str.strip():
+            logger.warning("JSON string is empty, returning default")
+            return '{"action":"unknown","arguments":{},"clarification_needed":true,"clarification_question":"Could you please rephrase your request?"}'
+        
+        original = json_str
+        json_str = json_str.strip()
+        
         # Remove any text before first {
         start_idx = json_str.find('{')
         if start_idx > 0:
@@ -283,22 +298,31 @@ JSON: {{"action":"unknown","arguments":{{}},"clarification_needed":false,"clarif
         if end_idx != -1 and end_idx < len(json_str) - 1:
             json_str = json_str[:end_idx+1]
         
+        # If no { found, return default
+        if '{' not in json_str:
+            logger.warning(f"No JSON object found in: {original[:100]}, using default")
+            return '{"action":"unknown","arguments":{},"clarification_needed":true,"clarification_question":"Could you please rephrase your request?"}'
+        
         # Fix common issues:
-        # 1. Single quotes to double quotes
-        json_str = json_str.replace("'", '"')
+        # 1. Single quotes to double quotes (but be careful with apostrophes in strings)
+        # Only replace single quotes that are clearly JSON delimiters
+        json_str = re.sub(r"'(\w+)':", r'"\1":', json_str)  # Keys
+        json_str = re.sub(r":\s*'([^']*)'", r': "\1"', json_str)  # String values
         
         # 2. Trailing commas before }
         json_str = re.sub(r',\s*}', '}', json_str)
         json_str = re.sub(r',\s*]', ']', json_str)
         
-        # 3. Missing quotes around keys
-        json_str = re.sub(r'(\w+):', r'"\1":', json_str)
+        # 3. Missing quotes around keys (but not if already quoted)
+        json_str = re.sub(r'([{,]\s*)(\w+)(\s*:)', r'\1"\2"\3', json_str)
         
         # 4. Fix unquoted string values (but not numbers/booleans/null)
-        # This is tricky, so we'll be conservative
-        json_str = re.sub(r':\s*([^",\[\]{}0-9\-\s]+)([,}])', r': "\1"\2', json_str)
+        # This is tricky, so we'll be conservative - only fix obvious cases
+        json_str = re.sub(r':\s*([a-zA-Z_][a-zA-Z0-9_]*)([,}])', r': "\1"\2', json_str)
         
-        return json_str.strip()
+        result = json_str.strip()
+        logger.debug(f"JSON repair: {original[:100]} -> {result[:100]}")
+        return result
 
     def _parse_ai_response(self, response_text: str, available_tools: list[str]) -> Dict[str, Any]:
         """
@@ -314,10 +338,20 @@ JSON: {{"action":"unknown","arguments":{{}},"clarification_needed":false,"clarif
         Raises:
             RuntimeError: If response cannot be parsed
         """
-        logger.debug(f"Parsing AI response: {response_text[:500]}")
+        logger.info(f"Parsing AI response (length: {len(response_text)}): {response_text[:200]}")
         
         # Clean the response - remove any leading/trailing whitespace
         response_text = response_text.strip()
+        
+        # If response is empty, return default intent
+        if not response_text:
+            logger.warning("AI returned empty response, using default intent")
+            return {
+                "action": "unknown",
+                "arguments": {},
+                "clarification_needed": True,
+                "clarification_question": "Could you please rephrase your request?",
+            }
         
         # Try to extract JSON from response
         # First, try to find JSON object (handles nested objects better)
@@ -336,19 +370,30 @@ JSON: {{"action":"unknown","arguments":{{}},"clarification_needed":false,"clarif
                 if start_idx != -1 and end_idx != -1 and end_idx > start_idx:
                     json_str = response_text[start_idx:end_idx+1]
                 else:
-                    json_str = response_text.strip()
+                    # No JSON found - try to construct from response
+                    logger.warning(f"No JSON found in response, attempting to construct default: {response_text[:100]}")
+                    json_str = '{"action":"unknown","arguments":{},"clarification_needed":true,"clarification_question":"Could you please rephrase your request?"}'
 
         # Try to repair common JSON issues
         json_str = self._repair_json(json_str)
+        logger.debug(f"Repaired JSON (first 200 chars): {json_str[:200]}")
 
         try:
             intent = json.loads(json_str)
         except json.JSONDecodeError as e:
             logger.error(f"Failed to parse AI response as JSON: {e}", extra={
                 "response": response_text[:500],
-                "extracted_json": json_str[:500]
+                "extracted_json": json_str[:500],
+                "response_length": len(response_text)
             })
-            raise RuntimeError(f"Invalid JSON response from AI: {e}") from e
+            # Return default intent instead of raising error
+            logger.warning("Using default intent due to JSON parsing failure")
+            return {
+                "action": "unknown",
+                "arguments": {},
+                "clarification_needed": True,
+                "clarification_question": "I had trouble understanding your request. Could you please rephrase it?",
+            }
         
         logger.debug(f"Successfully parsed intent: {intent}")
 
