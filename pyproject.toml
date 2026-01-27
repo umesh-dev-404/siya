@@ -24,6 +24,7 @@ dependencies = [
     "SpeechRecognition>=3.10.0",  # Voice input (Phase 16)
     "pyttsx3>=2.90",  # TTS (Phase 16)
     "sounddevice>=0.4.0",  # Audio capture (Phase 16)
+    "PyAudio; sys_platform == 'win32'",  # Audio I/O for Windows
 ]
 
 [project.scripts]
@@ -50,10 +51,6 @@ build-backend = "setuptools.build_meta"
 packages = [
     "ai",
     "pc_mcp_client",
-    "SpeechRecognition",
-    "pyttsx3",
-    "sounddevice",
-    "pyaudio; sys_platform == 'win32'",
     "api",
     "audit",
     "automations",
