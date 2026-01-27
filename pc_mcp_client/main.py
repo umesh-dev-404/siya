@@ -90,8 +90,13 @@ def main(argv: list[str] | None = None) -> int:
         default="2025-03-26",
         help=argparse.SUPPRESS, # Hide this advanced option from normal help
     )
+    p.add_argument(
+        "-i", "--interactive",
+        action="store_true",
+        help="Launch interactive mode with arrow-key menus and styled output.",
+    )
 
-    sub = p.add_subparsers(dest="cmd", required=True, title="Available Commands")
+    sub = p.add_subparsers(dest="cmd", required=False, title="Available Commands")
 
     # Friendlier command help
     sub.add_parser(
@@ -119,6 +124,11 @@ def main(argv: list[str] | None = None) -> int:
 
     args = p.parse_args(argv)
 
+    # Validate: either interactive mode or a command must be specified
+    if not args.interactive and not args.cmd:
+        p.print_help()
+        return 1
+
     try:
         client = _create_client(args)
     except RuntimeError as e:
@@ -127,6 +137,11 @@ def main(argv: list[str] | None = None) -> int:
 
     with client:
         client.initialize(protocol_version=args.protocol_version)
+
+        # Interactive mode
+        if args.interactive:
+            from pc_mcp_client.interactive import interactive_main
+            return interactive_main(client, server_url=args.url)
 
         if args.cmd == "server-info":
             print(f"✅ Connected to MCP Server via {args.transport}")

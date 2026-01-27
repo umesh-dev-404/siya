@@ -22,11 +22,15 @@ dependencies = [
     "psutil>=5.9.0",  # Resource monitoring (Phase 8)
     "supabase>=2.0.0",  # Cloud sync (Phase 13)
     "python-dotenv>=1.0.0",  # Environment variable loading (Phase 13)
+    "rich>=13.0.0",  # Styled terminal output (Phase 18)
+    "InquirerPy>=0.3.4",  # Interactive CLI menus (Phase 18)
+    "pyfiglet>=0.8",  # ASCII art banners (Phase 18)
 ]
 
 
 
 [project.scripts]
+siya = "pc_mcp_client.wake:main"
 siya-cli = "pc_mcp_client.main:main"
 
 # llama-cpp-python is optional and requires building on target platform
