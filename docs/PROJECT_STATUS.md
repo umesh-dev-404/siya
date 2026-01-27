@@ -198,23 +198,6 @@
   - ✅ Graceful degradation (audio hardware checking)
   - ✅ 6 unit tests passing
 
-### Phase 18: Interactive CLI (COMPLETE)
-**Goal:** Interactive terminal application with arrow-key menus and rich output.
-- **Status:** ✅ COMPLETE
-- **Deliverables:**
-  - `siya` wake command with auto-connect
-  - `pc_mcp_client/ui/` package (Menu, Banner, Output)
-  - Interactive Mode (`siya-cli -i`)
-  - LAW 1 Confirmation styled dialogs
-- **Validation:**
-  - Verified menu navigation and scrollback history
-  - Verified Rich markup removal for clean labeling
-  - Verified confirmation flow
-
-### Phase 19: Desktop GUI (Future)
-**Goal:** Native desktop GUI using Webview/Electron or similar.
-- **Status:** ⏳ PENDING
-
 ### Phase 17 — Web Interface Redesign
 - **Status:** ✅ COMPLETE (2026-01-28)
 - **Objective:** Full CLI parity via Neo-Brutalism themed web interface

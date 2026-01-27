@@ -141,7 +141,7 @@ class ExecutionSpinner:
     
     def __enter__(self):
         spinner = Spinner("dots", text=f" {self.message}", style="cyan")
-        self.live = Live(spinner, console=console, refresh_per_second=10, transient=True)
+        self.live = Live(spinner, console=console, refresh_per_second=10)
         self.live.__enter__()
         return self
     
