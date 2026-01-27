@@ -274,7 +274,8 @@ class SupabaseClient:
             f"{type(last_error).__name__}"
         )
         self._status = ConnectionStatus.ERROR
-        return False, None
+        # Return the error message so callers can propagate (LAW 5: Explicit feedback)
+        return False, str(last_error) if last_error else f"{operation} failed"
 
     # ==========================================
     # L3 Memory Operations

@@ -212,21 +212,21 @@ class SyncManager:
             payload = op.payload.copy()
             payload["device_id"] = self.device_id
             payload["synced_at"] = datetime.now(timezone.utc).isoformat()
-            success, _ = self.supabase.insert_memory(payload)
+            success, error_or_id = self.supabase.insert_memory(payload)
             if not success:
-                raise RuntimeError("Insert failed")
+                raise RuntimeError(f"Insert failed: {error_or_id}")
 
         elif op.operation_type == OperationType.UPDATE:
             payload = op.payload.copy()
             payload["synced_at"] = datetime.now(timezone.utc).isoformat()
-            success, _ = self.supabase.update_memory(op.record_id, payload)
+            success, error_or_id = self.supabase.update_memory(op.record_id, payload)
             if not success:
-                raise RuntimeError("Update failed")
+                raise RuntimeError(f"Update failed: {error_or_id}")
 
         elif op.operation_type == OperationType.DELETE:
-            success, _ = self.supabase.delete_memory(op.record_id)
+            success, error_or_id = self.supabase.delete_memory(op.record_id)
             if not success:
-                raise RuntimeError("Delete failed")
+                raise RuntimeError(f"Delete failed: {error_or_id}")
 
     # ==========================================
     # Pull Operations (L3 → L2)
