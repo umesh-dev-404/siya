@@ -248,6 +248,7 @@ class MCPHttpHandler:
         auth = self._ctx.mcp_server.validate_and_authorize(tool_request)
         
         # Check for confirmation (LAW 1)
+        # Check for confirmation (LAW 1)
         if auth.requires_confirmation:
             is_confirmed = params.get("_confirmed", False)
             if not is_confirmed:
@@ -262,7 +263,13 @@ class MCPHttpHandler:
                         "message": f"Tool '{name}' requires explicit confirmation.",
                     },
                 }
-        if not auth.authorized:
+            # If confirmed, we proceed.
+            # Note: auth.authorized is False here because the policy engine returned REQUIRES_CONFIRMATION
+            # But since we have the confirmation bit, we override this specific check to allow execution.
+            pass
+            
+        elif not auth.authorized:
+            # Only block if it wasn't a confirmation requirement that we just satisfied
             return self._error(
                 msg_id, -32602, auth.error_message or "Tool request denied"
             )
