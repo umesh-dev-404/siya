@@ -53,10 +53,12 @@ Redesign the web interface (port 3000) to provide full CLI parity with a profess
 
 ### Confirmation Modal (LAW 1)
 - ✅ Modal dialog for tools with `requires_confirmation: true`
-- ✅ Displays tool name and arguments
-- ✅ Clear YES/NO buttons
-- ✅ LAW 1 notice displayed
+- ✅ Detects `confirmationNeeded` response from server at result level
+- ✅ Displays tool name, arguments, and server message
+- ✅ Clear YES/NO buttons with inline onclick handlers
+- ✅ LAW 1 notice displayed prominently
 - ✅ Re-sends request with `_confirmed: true` flag
+- ✅ Modal auto-closes on button click
 
 ### Notifications Panel
 - ✅ Slide-out panel from right

@@ -90,6 +90,18 @@ Maintained per dev-rules.md §8.2 (Error Correction Discipline).
 - `web/static/app.js` — New 540+ line MCP client
 - `web/web_server.py` — Extended MIME types (JSON, PNG, SVG, ICO, fonts)
 
+### Fix: Confirmation Modal Detection
+**Symptom:** Confirmation modal not appearing; raw JSON displayed instead  
+**Cause:** Server returns `confirmationNeeded` at `response.result` level, not inside `content[0].text`  
+**Solution:** Updated `doExecuteTool()` to check `response.result.confirmationNeeded` first  
+**Files Modified:** `web/static/app.js`
+
+### Fix: Modal Button Click Handlers
+**Symptom:** Modal buttons (Cancel/Yes, Execute) not responding to clicks  
+**Cause:** Event listeners bound via getElementById not firing reliably  
+**Solution:** Added inline `onclick` handlers to all interactive buttons  
+**Files Modified:** `web/static/index.html`
+
 ---
 
 ## Template for Future Entries
