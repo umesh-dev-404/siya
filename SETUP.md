@@ -76,7 +76,7 @@ This installs:
 If running on Linux/Raspberry Pi, you need system audio libraries:
 ```bash
 sudo apt-get update
-sudo apt-get install python3-pyaudio portaudio19-dev
+sudo apt-get install python3-pyaudio portaudio19-dev espeak alsa-utils
 ```
 
 ### 5. Verify Setup

@@ -43,6 +43,7 @@ class TTSEngine:
                 logger.info("TTS Engine initialized (pyttsx3)")
             except Exception as e:
                 logger.error(f"Failed to initialize pyttsx3: {e}")
+                logger.error("HINT: On Linux/Pi, ensure 'espeak' and 'alsa-utils' are installed: 'sudo apt-get install espeak alsa-utils'")
                 self._engine = None
         else:
             logger.warning("pyttsx3 not installed, TTS disabled")

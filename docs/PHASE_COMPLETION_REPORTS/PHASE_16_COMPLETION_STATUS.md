@@ -26,4 +26,4 @@
 
 ## 4. Notes
 - Voice dependencies are optional in `pyproject.toml` but recommended for full experience.
-- On Linux/Pi, requires system-level `portaudio` (documented in `SETUP.md`).
+- On Linux/Pi, requires system-level packages: `portaudio19-dev`, `espeak`, `alsa-utils` (documented in `SETUP.md`).
