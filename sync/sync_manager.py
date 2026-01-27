@@ -488,6 +488,11 @@ class SyncManager:
 
     def get_sync_status(self) -> dict[str, Any]:
         """Get comprehensive sync status."""
+        # If configured but disconnected, try a quick health check to verify connection
+        if self.supabase.is_configured and not self.supabase.is_connected:
+            # This ensures status is accurate ("CONNECTED" vs "ERROR") rather than just "DISCONNECTED"
+            self.supabase.health_check()
+
         queue_stats = self.queue.get_stats()
 
         return {
