@@ -3,7 +3,7 @@ name = "siya"
 version = "0.1.0"
 description = "Local-First Personal Governance and Assistant Operating System"
 readme = "README.md"
-requires-python = ">=3.11,<3.14"
+requires-python = ">=3.11,<3.15"
 license = {text = "UNLICENSED"}
 authors = [
     {name = "Siya Project", email = "siya@localhost.local"}
@@ -21,6 +21,9 @@ classifiers = [
 dependencies = [
     "psutil>=5.9.0",  # Resource monitoring (Phase 8)
 ]
+
+[project.scripts]
+siya-cli = "pc_mcp_client.main:main"
 
 # llama-cpp-python is optional and requires building on target platform
 # Install with: pip install llama-cpp-python
@@ -42,6 +45,7 @@ build-backend = "setuptools.build_meta"
 [tool.setuptools]
 packages = [
     "ai",
+    "pc_mcp_client",
     "api",
     "audit",
     "automations",

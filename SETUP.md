@@ -5,7 +5,7 @@
 
 ## PREREQUISITES
 
-- Python 3.11 or 3.12 (locked to 3.11.9 in `.python-version`)
+- Python 3.11 through 3.14
 - Git
 - pip (Python package manager)
 
@@ -244,8 +244,57 @@ siya/
 - No application logic exists yet (per Phase 0 requirements)
 - Only `__init__.py` files and placeholder test exist
 - All dependencies are development-only (no runtime deps in Phase 0)
-- Python version is locked to 3.11.9 (compatible with 3.11-3.12)
+- Python version is consistent with 3.11-3.14
 
 ---
 
-**Last Updated:** 2026-01-26
+---
+
+## RUNNING THE PC MCP CLIENT (GLOBAL CLI)
+
+To make the CLI accessible from anywhere (not just the project root), install the package in editable mode:
+
+### 1. Install CLI Globally
+```powershell
+# From project root
+pip install -e .
+```
+This registers the `siya-cli` command in your environment.
+
+### ⚠️ Troubleshooting: Command Not Found?
+If you see a warning about the script directory not being on PATH, or if `siya-cli` is not recognized, add the Python Scripts directory to your PATH.
+
+**Windows (PowerShell) - Add Permanently:**
+```powershell
+[Environment]::SetEnvironmentVariable("Path", $env:Path + ";$env:APPDATA\Python\Python314\Scripts", "User")
+```
+*Restart your terminal after running this command.*
+
+**Temporary Fix (Current Session):**
+```powershell
+$env:PATH += ";$env:APPDATA\Python\Python314\Scripts"
+```
+
+### 2. Usage (From Anywhere)
+Now you can run commands from any folder:
+
+**Check Connectivity:**
+```powershell
+siya-cli --transport http --url http://192.168.1.39:8080 server-info
+```
+
+**List Tools:**
+```powershell
+siya-cli --transport http --url http://192.168.1.39:8080 list-tools
+```
+
+**Call a Tool:**
+```powershell
+siya-cli --transport http --url http://192.168.1.39:8080 call get_system_status
+```
+
+*Note: You can still use `python -m pc_mcp_client.main ...` from the project root if preferred.*
+
+---
+
+**Last Updated:** 2026-01-27

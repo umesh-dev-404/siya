@@ -92,6 +92,8 @@ def main(argv: list[str] | None = None) -> int:
 
     sub = p.add_subparsers(dest="cmd", required=True)
 
+    sub.add_parser("server-info", help="Check connection and server status.")
+
     sub_list = sub.add_parser("list-tools", help="Initialize and list tools.")
     sub_list.add_argument("--raw", action="store_true", help="Print raw MCP response JSON.")
 
@@ -114,6 +116,24 @@ def main(argv: list[str] | None = None) -> int:
 
     with client:
         client.initialize(protocol_version=args.protocol_version)
+
+        if args.cmd == "server-info":
+            print(f"✅ Connected to MCP Server via {args.transport}")
+            if args.url:
+                print(f"URL: {args.url}")
+            
+            try:
+                # Use tools/list as a ping
+                resp = client.tools_list()
+                tools = resp.get("tools", [])
+                print(f"Server Status: Online")
+                print(f"Available Tools: {len(tools)}")
+                for tool in tools:
+                    print(f" - {tool['name']}: {tool.get('description', '')[:50]}...")
+            except Exception as e:
+                print(f"❌ Server check failed: {e}")
+                return 1
+            return 0
 
         if args.cmd == "list-tools":
             resp = client.tools_list()

@@ -36,7 +36,7 @@ This guide covers everything about the AI model in Siya:
 ### Prerequisites
 
 - Raspberry Pi 5 with 8 GB RAM
-- Python 3.11, 3.12, or 3.13
+- Python 3.11 through 3.14
 - Siya project cloned and installed
 - At least 4 GB free disk space
 

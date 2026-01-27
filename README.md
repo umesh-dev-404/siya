@@ -64,7 +64,7 @@ All authoritative documentation is in the `docs/` directory:
 
 Siya can be governed remotely from your PC via the **PC MCP Client**:
 ```bash
-python -m pc_mcp_client.main --transport http --url http://<PI_IP>:8080 list-tools
+siya-cli --transport http --url http://<PI_IP>:8080 list-tools
 ```
 
 ---

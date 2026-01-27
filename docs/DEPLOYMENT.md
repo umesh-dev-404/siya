@@ -37,7 +37,7 @@ This document describes the complete deployment process for Siya on Raspberry Pi
 
 ### Software
 - Raspberry Pi OS Lite (64-bit)
-- Python 3.11, 3.12, or 3.13
+- Python 3.11 through 3.14
 - Git
 
 ---
@@ -215,7 +215,7 @@ pip install -e .
 ```
 
 **Note:** 
-- Python 3.11, 3.12, or 3.13 are supported (Python 3.13.5 confirmed working)
+- Python 3.11 through 3.14 are supported (Python 3.13.5 confirmed working)
 - The venv must be created **inside** the project directory (`/opt/siya`)
 - You must clone the repository first before running `pip install -e .`
 - Replace `YOUR_PI_USERNAME` with your actual Pi username (e.g., `umesh404`) in all commands
@@ -667,7 +667,7 @@ python --version  # Verify in venv
 pip install -e .
 ```
 
-**Note:** Siya requires Python >= 3.11, < 3.14 (so 3.11, 3.12, and 3.13 are all supported). Python 3.13.5 has been tested and works. If your Pi only has Python 3.9 or 3.10, you must upgrade to Python 3.11+ using one of the methods above.
+**Note:** Siya requires Python >= 3.11, < 3.15 (so 3.11, 3.12, 3.13, and 3.14 are all supported). Python 3.13.5 and 3.14.0 are confirmed working. If your Pi only has Python 3.9 or 3.10, you must upgrade to Python 3.11+ using one of the methods above.
 
 ### Other Common Issues
 
