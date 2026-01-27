@@ -24,13 +24,7 @@ dependencies = [
     "python-dotenv>=1.0.0",  # Environment variable loading (Phase 13)
 ]
 
-[project.optional-dependencies]
-voice = [
-    "SpeechRecognition>=3.10.0",
-    "pyttsx3>=2.90",
-    "sounddevice>=0.4.0",
-    "PyAudio; sys_platform == 'win32'",
-]
+
 
 [project.scripts]
 siya-cli = "pc_mcp_client.main:main"
@@ -40,6 +34,12 @@ siya-cli = "pc_mcp_client.main:main"
 # Or build from source on Raspberry Pi
 
 [project.optional-dependencies]
+voice = [
+    "SpeechRecognition>=3.10.0",
+    "pyttsx3>=2.90",
+    "sounddevice>=0.4.0",
+    "PyAudio; sys_platform == 'win32'",
+]
 dev = [
     "black>=24.0.0",
     "ruff>=0.1.0",
