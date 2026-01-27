@@ -2,97 +2,204 @@
 Model Manager
 
 Manages AI model lifecycle (load/unload on demand).
-Stub implementation for Phase 5 (PC only, no real model).
+Per DIP Phase 10: Real AI Model Integration.
 
-Per DIP Phase 5: Model lifecycle management.
+Per DIP Phase 5: Model lifecycle management (stub).
+Per DIP Phase 10: Real llama.cpp integration.
 """
 
 import logging
 from pathlib import Path
-from typing import Optional
+from typing import Any, Dict, Optional
+
+from ai.llama_wrapper import LlamaWrapper, is_llama_available
 
 logger = logging.getLogger(__name__)
+
+# Try to import resource monitor for RAM checking
+try:
+    from system.resource_monitor import ResourceMonitor
+
+    RESOURCE_MONITOR_AVAILABLE = True
+except ImportError:
+    RESOURCE_MONITOR_AVAILABLE = False
+    ResourceMonitor = None  # type: ignore
 
 
 class ModelManager:
     """
     Model manager for AI model lifecycle.
 
-    Per DIP Phase 5:
-    - Stub llama.cpp on PC
-    - Implement load/unload on demand
-    - Measure RAM, CPU, latency (in later phases)
+    Per DIP Phase 10:
+    - Real llama.cpp integration
+    - Load/unload on demand
+    - Resource monitoring
+    - Performance optimization
 
-    Phase 5: Stub only (no real model loading).
+    Falls back to stub mode if llama-cpp-python is not available.
     """
 
-    def __init__(self, model_path: Optional[str] = None) -> None:
+    def __init__(
+        self,
+        model_path: Optional[str] = None,
+        n_ctx: int = 4096,
+        n_threads: Optional[int] = None,
+    ) -> None:
         """
         Initialize model manager.
 
         Args:
-            model_path: Path to model file (ignored in Phase 5 stub)
+            model_path: Path to model file
+            n_ctx: Context window size (max 4096 for Qwen 2.5 3B)
+            n_threads: Number of threads (None = auto)
         """
         self._model_path = Path(model_path) if model_path else None
-        self._model_loaded = False
-        self._model_size_mb = 0  # Stub: no actual model
+        self._n_ctx = n_ctx
+        self._n_threads = n_threads
 
-        logger.info(
-            "Model manager initialized (stub mode - no real model)",
-            extra={"model_path": str(model_path) if model_path else None},
-        )
+        # Check if llama-cpp-python is available
+        self._llama_available = is_llama_available()
+
+        # Initialize resource monitor if available
+        self._resource_monitor: Optional[Any] = None
+        if RESOURCE_MONITOR_AVAILABLE and ResourceMonitor:
+            try:
+                self._resource_monitor = ResourceMonitor(ram_threshold=0.85)  # 85% RAM threshold
+            except Exception as e:
+                logger.warning(f"Failed to initialize resource monitor: {e}")
+
+        if self._llama_available and model_path:
+            # Real llama.cpp integration
+            try:
+                self._llama_wrapper: Optional[LlamaWrapper] = LlamaWrapper(
+                    model_path=str(self._model_path),
+                    n_ctx=n_ctx,
+                    n_threads=n_threads,
+                    n_gpu_layers=0,  # CPU-only for Pi
+                    verbose=False,
+                )
+                self._model_size_mb = self._llama_wrapper.get_model_size_mb()
+                logger.info(
+                    "Model manager initialized (real llama.cpp)",
+                    extra={
+                        "model_path": str(model_path),
+                        "model_size_mb": self._model_size_mb,
+                        "n_ctx": n_ctx,
+                    },
+                )
+            except Exception as e:
+                logger.error(f"Failed to initialize llama wrapper: {e}", exc_info=True)
+                self._llama_wrapper = None
+                self._model_size_mb = 0
+                self._llama_available = False
+        else:
+            # Stub mode (no model path or llama-cpp-python not available)
+            self._llama_wrapper = None
+            self._model_size_mb = 0
+            if not model_path:
+                logger.info("Model manager initialized (stub mode - no model path)")
+            else:
+                logger.warning(
+                    "Model manager initialized (stub mode - llama-cpp-python not available)",
+                    extra={"model_path": str(model_path)},
+                )
 
     def load_model(self) -> bool:
         """
         Load AI model.
 
         Returns:
-            True if load would succeed (always True in stub mode)
+            True if model loaded successfully
+
+        Raises:
+            RuntimeError: If model loading fails
 
         Note:
-            Phase 5: This is a stub. No actual model loading occurs.
-            In later phases, this will:
-            1. Check if model is already loaded
-            2. Load model using llama.cpp
-            3. Measure RAM usage
-            4. Return success/failure
+            Phase 10: Real llama.cpp integration.
+            Falls back to stub mode if llama-cpp-python not available.
         """
-        if self._model_loaded:
-            logger.debug("Model already loaded (stub)")
+        if self.is_loaded():
+            logger.debug("Model already loaded")
             return True
 
-        # Phase 5: Stub implementation
-        logger.info("Would load model (stub mode)", extra={"model_path": str(self._model_path)})
-        self._model_loaded = True
-        return True
+        if not self._llama_available or self._llama_wrapper is None:
+            # Stub mode
+            logger.info("Would load model (stub mode)", extra={"model_path": str(self._model_path)})
+            return True
+
+        try:
+            # Check resources before loading
+            if self._resource_monitor:
+                resources = self._resource_monitor.check_resources()
+                ram_usage = resources.get("ram_usage", 0.0)
+                if ram_usage > 0.85:  # 85% RAM threshold
+                    logger.warning(
+                        f"High RAM usage before model load: {ram_usage:.1%}",
+                        extra={"ram_usage": ram_usage},
+                    )
+                    # Still try to load, but warn
+
+            # Real model loading
+            success = self._llama_wrapper.load()
+            if success:
+                # Check resources after loading
+                if self._resource_monitor:
+                    resources = self._resource_monitor.check_resources()
+                    ram_usage = resources.get("ram_usage", 0.0)
+                    logger.info(
+                        "Model loaded successfully",
+                        extra={
+                            "ram_usage_after_load": ram_usage,
+                            "model_size_mb": self._model_size_mb,
+                        },
+                    )
+                else:
+                    logger.info("Model loaded successfully")
+            return success
+        except Exception as e:
+            logger.error(f"Failed to load model: {e}", exc_info=True)
+            raise RuntimeError(f"Model loading failed: {e}") from e
 
     def unload_model(self) -> bool:
         """
         Unload AI model.
 
         Returns:
-            True if unload would succeed (always True in stub mode)
+            True if model unloaded successfully
 
         Note:
-            Phase 5: This is a stub. No actual model unloading occurs.
+            Phase 10: Real llama.cpp integration.
+            Falls back to stub mode if llama-cpp-python not available.
         """
-        if not self._model_loaded:
-            logger.debug("Model not loaded (stub)")
+        if not self.is_loaded():
+            logger.debug("Model not loaded")
             return True
 
-        # Phase 5: Stub implementation
-        logger.info("Would unload model (stub mode)")
-        self._model_loaded = False
-        return True
+        if not self._llama_available or self._llama_wrapper is None:
+            # Stub mode
+            logger.info("Would unload model (stub mode)")
+            return True
+
+        try:
+            # Real model unloading
+            success = self._llama_wrapper.unload()
+            if success:
+                logger.info("Model unloaded successfully")
+            return success
+        except Exception as e:
+            logger.error(f"Failed to unload model: {e}", exc_info=True)
+            return False
 
     def is_loaded(self) -> bool:
         """
         Check if model is loaded.
 
         Returns:
-            True if model is loaded (or would be in stub mode)
+            True if model is loaded
         """
-        return self._model_loaded
+        if not self._llama_available or self._llama_wrapper is None:
+            return False
+        return self._llama_wrapper.is_loaded()
 
     def get_model_size_mb(self) -> int:
         """
@@ -104,7 +211,11 @@ class ModelManager:
         return self._model_size_mb
 
     def generate(
-        self, prompt: str, max_tokens: int = 512, temperature: float = 0.7
+        self,
+        prompt: str,
+        max_tokens: int = 512,
+        temperature: float = 0.7,
+        timeout: float = 30.0,
     ) -> str:
         """
         Generate text from prompt.
@@ -112,29 +223,41 @@ class ModelManager:
         Args:
             prompt: Input prompt
             max_tokens: Maximum tokens to generate
-            temperature: Sampling temperature
+            temperature: Sampling temperature (0.0-1.0)
+            timeout: Maximum time in seconds for inference
 
         Returns:
-            Generated text (stub response in Phase 5)
+            Generated text
 
         Raises:
-            RuntimeError: If model is not loaded
+            RuntimeError: If model is not loaded or inference fails
+            TimeoutError: If inference exceeds timeout
 
         Note:
-            Phase 5: This is a stub. Returns placeholder JSON.
-            In later phases, this will call llama.cpp inference.
+            Phase 10: Real llama.cpp inference.
+            Falls back to stub mode if llama-cpp-python not available.
         """
-        if not self._model_loaded:
+        if not self.is_loaded():
             raise RuntimeError("Model not loaded. Call load_model() first.")
 
-        # Phase 5: Stub implementation
-        # Return a stub JSON response that matches intent_parsing_output schema
-        logger.debug(
-            "Generating text (stub mode)",
-            extra={"prompt_length": len(prompt), "max_tokens": max_tokens},
-        )
+        if not self._llama_available or self._llama_wrapper is None:
+            # Stub mode
+            logger.debug(
+                "Generating text (stub mode)",
+                extra={"prompt_length": len(prompt), "max_tokens": max_tokens},
+            )
+            stub_response = '{"action": "unknown", "arguments": {}, "clarification_needed": true}'
+            return stub_response
 
-        # Stub: Return a basic JSON structure
-        # In real implementation, this would be llama.cpp inference
-        stub_response = '{"action": "unknown", "arguments": {}, "clarification_needed": true}'
-        return stub_response
+        try:
+            # Real inference
+            generated_text = self._llama_wrapper.generate(
+                prompt=prompt,
+                max_tokens=max_tokens,
+                temperature=temperature,
+                timeout=timeout,
+            )
+            return generated_text
+        except Exception as e:
+            logger.error(f"Inference failed: {e}", exc_info=True)
+            raise RuntimeError(f"Inference failed: {e}") from e

@@ -19,6 +19,7 @@ from api.api_server import APIServer
 from api.server import SiyaAPIServer
 from cli.cli import CLI
 from config.logging_config import setup_logging
+from config.model_config import get_model_path
 from mcp.mcp import ModelControlPlane
 from orchestrator.orchestrator import Orchestrator
 from web.web_server import WebServer
@@ -83,8 +84,15 @@ def main() -> int:
         tool_registry = mcp.get_tool_registry()
         request_validator = mcp.get_request_validator()
         
+        print("Getting model path...", flush=True)
+        model_path = get_model_path()
+        if model_path:
+            print(f"Model path: {model_path}", flush=True)
+        else:
+            print("No model path configured - will use stub mode", flush=True)
+        
         print("Creating AI interface...", flush=True)
-        ai_interface = AIInterface(tool_registry, request_validator)
+        ai_interface = AIInterface(tool_registry, request_validator, model_path=model_path)
         
         print("Creating orchestrator...", flush=True)
         orchestrator = Orchestrator(mcp=mcp, ai_interface=ai_interface)

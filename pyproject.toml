@@ -22,6 +22,10 @@ dependencies = [
     "psutil>=5.9.0",  # Resource monitoring (Phase 8)
 ]
 
+# llama-cpp-python is optional and requires building on target platform
+# Install with: pip install llama-cpp-python
+# Or build from source on Raspberry Pi
+
 [project.optional-dependencies]
 dev = [
     "black>=24.0.0",

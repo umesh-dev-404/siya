@@ -15,6 +15,7 @@ sys.path.insert(0, str(project_root))
 from ai.ai_interface import AIInterface
 from cli.cli import CLI
 from config.logging_config import setup_logging
+from config.model_config import get_model_path
 from mcp.mcp import ModelControlPlane
 from orchestrator.orchestrator import Orchestrator
 
@@ -34,7 +35,8 @@ def main() -> int:
         mcp = ModelControlPlane()
         tool_registry = mcp.get_tool_registry()
         request_validator = mcp.get_request_validator()
-        ai_interface = AIInterface(tool_registry, request_validator)
+        model_path = get_model_path()
+        ai_interface = AIInterface(tool_registry, request_validator, model_path=model_path)
         orchestrator = Orchestrator(mcp=mcp, ai_interface=ai_interface)
 
         # Create CLI

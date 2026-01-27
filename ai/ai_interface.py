@@ -49,7 +49,7 @@ class AIInterface:
         self._tool_registry = tool_registry
         self._request_validator = request_validator
         self._model_manager = ModelManager(model_path)
-        self._intent_parser = IntentParser(request_validator)
+        self._intent_parser = IntentParser(request_validator, model_manager=self._model_manager)
 
     def parse_user_intent(self, user_input: str) -> Dict[str, Any]:
         """
@@ -104,7 +104,7 @@ class AIInterface:
             True if model loaded successfully
 
         Note:
-            Phase 5: Stub only. No actual model loading.
+            Phase 10: Real model loading if llama-cpp-python available.
         """
         return self._model_manager.load_model()
 
@@ -116,6 +116,6 @@ class AIInterface:
             True if model unloaded successfully
 
         Note:
-            Phase 5: Stub only. No actual model unloading.
+            Phase 10: Real model unloading if llama-cpp-python available.
         """
         return self._model_manager.unload_model()

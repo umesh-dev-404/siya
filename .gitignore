@@ -72,6 +72,11 @@ secrets/
 automation_state/
 production_lock.json
 
+# AI Model files (large, should not be in git)
+qwen2.5-3b-q4_k_m/
+*.gguf
+models/
+
 # OS
 Thumbs.db
 .DS_Store

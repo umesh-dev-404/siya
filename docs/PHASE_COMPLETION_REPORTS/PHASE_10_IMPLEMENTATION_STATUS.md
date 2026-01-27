@@ -1,0 +1,240 @@
+# PHASE 10 — REAL AI MODEL INTEGRATION — IMPLEMENTATION STATUS
+## Project: Siya
+## Date: 2026-01-27
+## Status: ⏳ CODE COMPLETE (PC), PENDING PI SETUP
+
+---
+
+## PHASE 10 OBJECTIVE
+
+Replace stub AI implementation with **real llama.cpp integration** for production intent parsing.
+
+---
+
+## IMPLEMENTATION STATUS
+
+### ✅ CODE CHANGES (PC) — COMPLETE
+
+#### 1. llama.cpp Integration Module
+- [x] Created `ai/llama_wrapper.py` — Wrapper for llama-cpp-python
+- [x] Handles model loading/unloading
+- [x] Implements inference with timeout
+- [x] Error handling and resource management
+- [x] Graceful fallback if llama-cpp-python not available
+
+#### 2. Model Manager Updates
+- [x] Updated `ai/model_manager.py` to use real llama.cpp
+- [x] Integrated LlamaWrapper
+- [x] Added resource monitoring (RAM usage)
+- [x] Maintains backward compatibility (stub mode fallback)
+- [x] Load/unload on demand
+
+#### 3. Intent Parser Updates
+- [x] Updated `ai/intent_parser.py` to use real model
+- [x] Added `_ai_parse()` method for real inference
+- [x] Added `_build_intent_prompt()` for prompt engineering
+- [x] Added `_parse_ai_response()` for JSON extraction
+- [x] Improved JSON extraction (handles markdown, nested objects)
+- [x] Maintains stub fallback
+
+#### 4. Configuration
+- [x] Created `config/model_config.py` for model configuration
+- [x] Environment variable support (`SIYA_MODEL_PATH`)
+- [x] Default model path auto-detection (`/opt/siya/qwen2.5-3b-q4_k_m/`)
+- [x] Automatic .gguf file discovery in default directory
+- [x] Q4_K_M file preference when multiple files found
+- [x] Context size configuration (`SIYA_MODEL_CTX`)
+- [x] Thread configuration (`SIYA_MODEL_THREADS`)
+
+#### 5. Integration Points
+- [x] Updated `cli/main.py` to use model config
+- [x] Updated `service_main.py` to use model config
+- [x] Updated `ai/ai_interface.py` to pass model manager to parser
+- [x] Updated `ai/__init__.py` exports
+
+#### 6. Documentation
+- [x] Created `PHASE_10_IMPLEMENTATION_CHECKLIST.md`
+- [x] Created `PHASE_10_MODEL_SETUP.md` (Pi setup guide)
+- [x] Updated `pyproject.toml` with llama-cpp-python note
+- [x] Updated `.gitignore` to exclude model files
+
+#### 7. Git Configuration
+- [x] Updated `.gitignore` to exclude `qwen2.5-3b-q4_k_m/` directory
+- [x] Added `*.gguf` pattern to ignore all model files
+- [x] Added `models/` directory to ignore list
+
+---
+
+## PENDING TASKS (PI)
+
+### ⏳ 1. Build llama.cpp on Pi
+- [ ] Install build dependencies
+- [ ] Install llama-cpp-python (build from source)
+- [ ] Verify installation
+
+### ⏳ 2. Download Model ✅ COMPLETE
+- [x] Download Qwen 2.5 3B Instruct (Q4_K_M) ✅
+- [ ] Verify model file integrity (pending)
+- [x] Store in `/opt/siya/qwen2.5-3b-q4_k_m/` ✅
+
+### ⏳ 3. Configure Model Path ✅ READY (Default Auto-Detection)
+- [x] Default path configuration implemented ✅
+- [x] Auto-detection of model files in `/opt/siya/qwen2.5-3b-q4_k_m/` ✅
+- [ ] Pull latest code changes on Pi
+- [ ] Reinstall package (`pip install -e .`)
+- [ ] Test model loading (will auto-detect model path)
+- [ ] Optional: Set `SIYA_MODEL_PATH` if custom path needed
+- [ ] Optional: Update systemd service file if custom path needed
+
+### ⏳ 4. Integration Testing
+- [ ] Test model loading
+- [ ] Test inference
+- [ ] Test intent parsing
+- [ ] Verify schema compliance
+- [ ] Test resource limits
+- [ ] Test error recovery
+
+### ⏳ 5. Performance Optimization
+- [ ] Measure inference latency
+- [ ] Optimize context window
+- [ ] Test with various inputs
+- [ ] Verify RAM usage (< 4GB total)
+
+---
+
+## CODE CHANGES SUMMARY
+
+### New Files
+- `ai/llama_wrapper.py` — llama.cpp integration wrapper
+- `config/model_config.py` — Model configuration with default path support
+- `docs/PHASE_10_IMPLEMENTATION_CHECKLIST.md` — Implementation checklist
+- `docs/PHASE_10_MODEL_SETUP.md` — Pi setup guide
+
+### Modified Files
+- `ai/model_manager.py` — Real llama.cpp integration
+- `ai/intent_parser.py` — Real AI inference
+- `ai/ai_interface.py` — Model manager integration
+- `ai/__init__.py` — Updated exports
+- `cli/main.py` — Model config integration
+- `service_main.py` — Model config integration
+- `pyproject.toml` — llama-cpp-python note
+- `.gitignore` — Added model file exclusions
+
+---
+
+## TECHNICAL DETAILS
+
+### Model Specifications
+- **Model:** Qwen 2.5 3B Instruct
+- **Quantization:** Q4_K_M
+- **Context Window:** 4096 tokens (max)
+- **Expected Size:** ~2-3 GB
+- **Expected RAM Usage:** ~3-4 GB when loaded
+
+### Integration Points
+- **ModelManager** → Uses LlamaWrapper for real model operations
+- **IntentParser** → Uses ModelManager.generate() for inference
+- **AIInterface** → Coordinates model and parser
+- **ResourceMonitor** → Monitors RAM during model loading
+- **ModelConfig** → Auto-detects model path from default location or environment variable
+
+### Fallback Behavior
+- If llama-cpp-python not available → Stub mode
+- If model not loaded → Stub mode
+- If inference fails → Falls back to stub parsing
+- All fallbacks are logged and transparent
+
+---
+
+## LAW COMPLIANCE
+
+### ✅ LAW 3 — LLM IS NOT AN AGENT
+- AI output is untrusted (validated against schema)
+- AI cannot execute tools (parser only)
+- AI cannot write memory (orchestrator-only)
+- AI only produces intent_parsing_output
+
+### ✅ LAW 12 — FAILURE TRANSPARENCY
+- Model loading failures logged
+- Inference failures logged
+- Resource exhaustion warnings
+- All errors propagate with context
+
+### ✅ LAW 13 — COMPLETE AUDITABILITY
+- All model operations logged
+- Inference requests logged
+- Resource usage logged
+- Error conditions logged
+
+---
+
+## NEXT STEPS
+
+### Immediate (Pi Setup)
+1. Update `.gitignore` on Pi (remove model dir from tracking if needed)
+2. Pull latest code changes (`git pull`)
+3. Reinstall package (`pip install -e .`)
+4. Build llama-cpp-python on Pi (if not already done)
+5. Model already downloaded in `/opt/siya/qwen2.5-3b-q4_k_m/` ✅
+6. Test model loading (auto-detects model path)
+
+### After Pi Setup
+1. Test intent parsing with real model
+2. Verify schema compliance
+3. Monitor resource usage
+4. Optimize performance
+5. Complete Phase 10 testing
+
+---
+
+## KNOWN LIMITATIONS
+
+### Current (Expected)
+- Model must be manually downloaded (not automated)
+- llama-cpp-python must be built on Pi (no pre-built wheels for ARM64)
+- Model loading takes time (30-60 seconds)
+- RAM usage significant (~3-4 GB when loaded)
+
+### Future Enhancements
+- Automatic model download
+- Model caching/versioning
+- Load-on-demand optimization
+- Performance tuning
+
+---
+
+## TESTING STATUS
+
+### PC Testing
+- ✅ Code compiles without errors
+- ✅ No linter errors
+- ✅ Stub mode works (backward compatible)
+- ⏳ Real model testing pending (requires Pi)
+
+### Pi Testing (Pending)
+- ⏳ Model loading
+- ⏳ Inference
+- ⏳ Intent parsing
+- ⏳ Schema validation
+- ⏳ Resource monitoring
+- ⏳ Error handling
+
+---
+
+## SUCCESS CRITERIA
+
+- [x] Code changes complete (PC)
+- [x] Documentation complete
+- [ ] llama-cpp-python built on Pi
+- [ ] Model downloaded and verified
+- [ ] Model loads successfully
+- [ ] Intent parsing works with real model
+- [ ] Schema compliance verified
+- [ ] RAM usage acceptable (< 4GB total)
+- [ ] Inference latency acceptable (< 5 seconds)
+
+---
+
+**Last Updated:** 2026-01-27  
+**Status:** ⏳ CODE COMPLETE (PC), MODEL DOWNLOADED ✅, CONFIGURATION READY ✅  
+**Next Step:** Pull latest code on Pi, reinstall package, test model loading

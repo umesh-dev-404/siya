@@ -10,10 +10,13 @@ Enforces:
 
 from ai.ai_interface import AIInterface
 from ai.intent_parser import IntentParser
+from ai.llama_wrapper import LlamaWrapper, is_llama_available
 from ai.model_manager import ModelManager
 
 __all__ = [
     "AIInterface",
     "IntentParser",
+    "LlamaWrapper",
     "ModelManager",
+    "is_llama_available",
 ]
