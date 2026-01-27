@@ -113,15 +113,12 @@ def main() -> int:
         
         print("Creating orchestrator...", flush=True)
         orchestrator = Orchestrator(mcp=mcp, ai_interface=ai_interface)
-        orchestrator.start()  # Start orchestrator to enable task processing
-        logger.info("Orchestrator started")
-        print("Orchestrator started", flush=True)
 
         print("Creating CLI...", flush=True)
         cli = CLI(orchestrator, mcp, ai_interface)
-        cli.start()  # Start CLI (which also ensures orchestrator is started)
-        logger.info("CLI started")
-        print("CLI started", flush=True)
+        cli.start()  # Start CLI (which also starts the orchestrator)
+        logger.info("CLI started (orchestrator started via CLI)")
+        print("CLI started (orchestrator started)", flush=True)
         
         print("Creating API server...", flush=True)
         api_server = APIServer(cli)
