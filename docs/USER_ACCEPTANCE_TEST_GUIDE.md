@@ -113,7 +113,24 @@ Verify Supabase connection.
 ```powershell
 siya-cli --transport http --url http://192.168.1.39:8080 call get_sync_status
 ```
+siya-cli --transport http --url http://192.168.1.39:8080 call get_sync_status
+```
 *Expected Output: Connection status (Online/Offline) and queue size.*
+
+### Test 6: Interactive Confirmation (LAW 1)
+Verify that sensitive tools prompt for confirmation.
+
+```powershell
+siya-cli --transport http --url http://192.168.1.39:8080 call trigger_sync --args "{\"direction\": \"push\"}"
+```
+*Expected Output:*
+```text
+⚠️  CONFIRMATION REQUIRED (LAW 1)
+Tool: trigger_sync
+...
+Do you want to proceed? [y/N]:
+```
+*Type `y` to confirm and execute.*
 
 ---
 

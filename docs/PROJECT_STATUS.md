@@ -270,7 +270,7 @@
 ### By Design (Per DIP)
 - AI model integration in progress (Phase 10: code complete, Pi testing pending)
 - Supabase sync is stubbed (no real network)
-- Confirmation UX is not implemented end-to-end yet (requires_confirmation path)
+- ✅ Confirmation UX implemented (CLI interactive mode supported)
 - User notification is logging only (full notification in later phases)
 - systemd timers not implemented (automation framework ready)
 

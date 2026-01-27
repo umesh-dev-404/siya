@@ -17,6 +17,7 @@ This report details the enforcement of Siya Canonical Laws through **Phase 13 (S
 ### LAW 1 — HUMAN SOVEREIGNTY
 - **Objective**: Prevent AI from triggering sensitive actions without consent.
 - **Enforcement**: Orchestrator logic in `orchestrator/orchestrator.py` detects `requires_confirmation=True` in tool schemas.
+- ✅ Confirmation UX implemented (CLI interactive mode supported)
 - **Verification**: `file_write` and `trigger_automation` verified to suspend execution and enter `_pending_confirmations` state. `confirm_execution()` successfully resumes task.
 
 ### LAW 6 — NO FREE-FORM COMPUTATION

@@ -158,6 +158,34 @@ def main(argv: list[str] | None = None) -> int:
         if args.cmd == "call":
             tool_args = _parse_args_json(args.args)
             resp = client.tools_call(args.tool_name, tool_args)
+            
+            # Check for confirmation requirement (LAW 1)
+            result = resp.get("result", {}) if not args.raw else resp.get("result", {})
+            # Handle both raw response wrappers and direct result access depending on client impl
+            # For HTTP client, resp IS the result object already extracted in _request
+            # But let's be robust
+            
+            # If "confirmationNeeded" is in resp (since http_client returns 'result' key from JSON-RPC)
+            if resp.get("confirmationNeeded"):
+                # Confirmation Loop
+                print("\n⚠️  CONFIRMATION REQUIRED (LAW 1)")
+                print(f"Tool: {resp.get('tool')}")
+                print(f"Args: {json.dumps(resp.get('arguments'), indent=2)}")
+                print(f"Message: {resp.get('message')}")
+                
+                try:
+                    choice = input("\nDo you want to proceed? [y/N]: ").strip().lower()
+                except KeyboardInterrupt:
+                    print("\nAborted.")
+                    return 1
+                
+                if choice == 'y':
+                    print("Confirming execution...")
+                    resp = client.tools_call(args.tool_name, tool_args, confirmed=True)
+                else:
+                    print("Execution cancelled.")
+                    return 1
+            
             if args.raw:
                 _print_json(resp)
                 return 0

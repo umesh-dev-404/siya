@@ -41,6 +41,10 @@ Implement specific tools with actual execution logic (no longer placeholders) an
 - **Actions:**
   - `confirm_execution(task_id)`: Proceeds with execution.
   - `reject_execution(task_id)`: Aborts execution.
+- **Interactive CLI:**
+  - Server returns `confirmationNeeded` payload.
+  - CLI prompts user `[y/N]` interactively.
+  - User confirmation re-sends request with `_confirmed=True`.
 - **Compliance:** Enforces **LAW 1 — HUMAN SOVEREIGNTY**.
 
 ### ✅ 4. PC MCP CLI Client

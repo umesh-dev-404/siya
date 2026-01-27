@@ -246,17 +246,22 @@ class MCPHttpHandler:
         }
 
         auth = self._ctx.mcp_server.validate_and_authorize(tool_request)
+        
+        # Check for confirmation (LAW 1)
         if auth.requires_confirmation:
-            return {
-                "jsonrpc": "2.0",
-                "id": msg_id,
-                "result": {
-                    "content": [
-                        {"type": "text", "text": "Confirmation required (not implemented yet)."}
-                    ],
-                    "isError": True,
-                },
-            }
+            is_confirmed = params.get("_confirmed", False)
+            if not is_confirmed:
+                # Return confirmation request to client
+                return {
+                    "jsonrpc": "2.0",
+                    "id": msg_id,
+                    "result": {
+                        "confirmationNeeded": True,
+                        "tool": name,
+                        "arguments": arguments,
+                        "message": f"Tool '{name}' requires explicit confirmation.",
+                    },
+                }
         if not auth.authorized:
             return self._error(
                 msg_id, -32602, auth.error_message or "Tool request denied"

@@ -82,20 +82,25 @@ class MCPHttpClient:
         """
         return self._request(method="tools/list", params={})
 
-    def tools_call(self, name: str, arguments: Dict[str, Any]) -> Dict[str, Any]:
+    def tools_call(self, name: str, arguments: Dict[str, Any], confirmed: bool = False) -> Dict[str, Any]:
         """
         Call a tool.
 
         Args:
             name: Tool name
             arguments: Tool arguments
+            confirmed: Whether the user has explicitly confirmed this action (LAW 1)
 
         Returns:
             Tool execution result
         """
+        params = {"name": name, "arguments": arguments}
+        if confirmed:
+            params["_confirmed"] = True
+            
         return self._request(
             method="tools/call",
-            params={"name": name, "arguments": arguments},
+            params=params,
         )
 
     def _notify(self, method: str, params: Dict[str, Any]) -> None:
