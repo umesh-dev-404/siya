@@ -51,6 +51,7 @@ class SiyaHTTPHandler(BaseHTTPRequestHandler):
 
     def do_GET(self) -> None:
         """Handle GET requests."""
+        logger.info(f"do_GET called for path: {self.path}")
         try:
             parsed_path = urlparse(self.path)
 
@@ -83,6 +84,7 @@ class SiyaHTTPHandler(BaseHTTPRequestHandler):
 
     def do_POST(self) -> None:
         """Handle POST requests."""
+        logger.info(f"do_POST called for path: {self.path}")
         try:
             parsed_path = urlparse(self.path)
             logger.info(f"POST request to {parsed_path.path} from {self.address_string()}")
@@ -145,6 +147,7 @@ class SiyaHTTPHandler(BaseHTTPRequestHandler):
         Per DIP Phase 11: MCP-over-HTTP for PC client to Pi server.
         Per LAW 16: Origin validation for network explicitness.
         """
+        logger.info("_handle_mcp_request called")
         try:
             if not self._mcp_http_handler:
                 logger.error("MCP HTTP handler not configured")
