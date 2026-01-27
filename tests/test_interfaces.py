@@ -9,7 +9,7 @@ import pytest
 from ai import AIInterface
 from api import APIServer
 from cli import CLI
-from mcp import ModelControlPlane, ToolRegistry, RequestValidator
+from mcp import MCPServer, ToolRegistry, RequestValidator
 from mcp.tool_schema import PermissionLevel, ToolSchema
 from orchestrator import Orchestrator
 
@@ -19,7 +19,7 @@ class TestCLI:
 
     def test_cli_initialization(self):
         """Test CLI initialization."""
-        mcp = ModelControlPlane()
+        mcp = MCPServer()
         tool_registry = mcp.get_tool_registry()
         request_validator = mcp.get_request_validator()
         ai_interface = AIInterface(tool_registry, request_validator)
@@ -30,7 +30,7 @@ class TestCLI:
 
     def test_cli_start_stop(self):
         """Test CLI start/stop."""
-        mcp = ModelControlPlane()
+        mcp = MCPServer()
         tool_registry = mcp.get_tool_registry()
         request_validator = mcp.get_request_validator()
         ai_interface = AIInterface(tool_registry, request_validator)
@@ -45,7 +45,7 @@ class TestCLI:
 
     def test_cli_process_command(self):
         """Test CLI command processing."""
-        mcp = ModelControlPlane()
+        mcp = MCPServer()
         tool_registry = mcp.get_tool_registry()
 
         # Register a test tool
@@ -78,7 +78,7 @@ class TestAPI:
 
     def test_api_initialization(self):
         """Test API initialization."""
-        mcp = ModelControlPlane()
+        mcp = MCPServer()
         tool_registry = mcp.get_tool_registry()
         request_validator = mcp.get_request_validator()
         ai_interface = AIInterface(tool_registry, request_validator)
@@ -90,7 +90,7 @@ class TestAPI:
 
     def test_api_handle_command(self):
         """Test API command handling."""
-        mcp = ModelControlPlane()
+        mcp = MCPServer()
         tool_registry = mcp.get_tool_registry()
 
         # Register a test tool
@@ -121,7 +121,7 @@ class TestAPI:
 
     def test_api_handle_command_missing_field(self):
         """Test API command handling with missing field."""
-        mcp = ModelControlPlane()
+        mcp = MCPServer()
         tool_registry = mcp.get_tool_registry()
         request_validator = mcp.get_request_validator()
         ai_interface = AIInterface(tool_registry, request_validator)
@@ -137,7 +137,7 @@ class TestAPI:
 
     def test_api_health_check(self):
         """Test API health check."""
-        mcp = ModelControlPlane()
+        mcp = MCPServer()
         tool_registry = mcp.get_tool_registry()
         request_validator = mcp.get_request_validator()
         ai_interface = AIInterface(tool_registry, request_validator)
@@ -156,7 +156,7 @@ class TestIdenticalBehavior:
 
     def test_cli_and_api_identical_behavior(self):
         """Test that CLI and API produce identical results."""
-        mcp = ModelControlPlane()
+        mcp = MCPServer()
         tool_registry = mcp.get_tool_registry()
 
         # Register a test tool

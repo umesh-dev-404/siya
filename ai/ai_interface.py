@@ -119,3 +119,27 @@ class AIInterface:
             Phase 10: Real model unloading if llama-cpp-python available.
         """
         return self._model_manager.unload_model()
+
+    def generate_text(
+        self,
+        prompt: str,
+        max_tokens: int = 256,
+        temperature: float = 0.2,
+        timeout: float = 120.0,
+        stop: Optional[list[str]] = None,
+    ) -> str:
+        """
+        Generate text for content processing inside tool execution flows.
+
+        LAW 3 (updated): AI may process content when explicitly invoked by tools.
+        This does NOT execute tools and produces no side effects by itself.
+        """
+        if not self._model_manager.is_loaded():
+            raise RuntimeError("AI model not loaded. Start Siya service with model configured.")
+        return self._model_manager.generate(
+            prompt=prompt,
+            max_tokens=max_tokens,
+            temperature=temperature,
+            timeout=timeout,
+            stop=stop,
+        )

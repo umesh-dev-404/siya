@@ -6,6 +6,7 @@ Starts both API server and web server to run as background services.
 """
 
 import logging
+import os
 import sys
 import threading
 from pathlib import Path
@@ -20,8 +21,13 @@ from api.server import SiyaAPIServer
 from cli.cli import CLI
 from config.logging_config import setup_logging
 from config.model_config import get_model_path
-from mcp.mcp import ModelControlPlane
+from mcp.mcp_server import MCPServer
+from mcp.stdio_server import MCPStdioContext, MCPStdioServer
 from orchestrator.orchestrator import Orchestrator
+from tools.builtins import get_system_status
+from tools.mail_tools import make_fetch_mails_tool, make_summarize_mails_tool
+from tools.text_tools import make_summarize_text_tool
+from tools.tool_executor import ToolExecutor
 from web.web_server import WebServer
 
 # Setup logging first (before any other imports that might log)
@@ -70,6 +76,20 @@ def run_web_server(web_server: WebServer) -> None:
         raise
 
 
+def run_mcp_stdio_server(stdio_server: MCPStdioServer) -> None:
+    """
+    Run MCP STDIO server (optional) in a thread.
+
+    Note: STDIO MCP is primarily intended to be launched by an MCP client.
+    In systemd service mode, stdin may be closed; so this is opt-in via env var.
+    """
+    try:
+        logger.info("MCP STDIO server thread starting")
+        stdio_server.run_forever()
+    except Exception as e:
+        logger.error(f"MCP STDIO server error: {e}", exc_info=True)
+
+
 def main() -> int:
     """
     Main service entry point.
@@ -84,12 +104,92 @@ def main() -> int:
         print("Initializing Siya components...", flush=True)
         logger.info("Initializing Siya components...")
         
-        print("Creating ModelControlPlane...", flush=True)
-        mcp = ModelControlPlane()
+        print("Creating MCPServer...", flush=True)
+        mcp = MCPServer()
         
         print("Getting tool registry...", flush=True)
         tool_registry = mcp.get_tool_registry()
         request_validator = mcp.get_request_validator()
+
+        # Register initial built-in tools (schemas + implementations)
+        # Note: "summarize mails" is an initial example tool; Siya will scale to many tools later.
+        from mcp.tool_schema import PermissionLevel, ToolSchema
+        tool_registry.register(
+            tool_schema=ToolSchema(
+                name="get_system_status",
+                description="[system] Get current system resource status (CPU/RAM/disk).",
+                input_schema={"type": "object", "properties": {}, "required": []},
+                output_schema={"type": "object"},
+                permission_level=PermissionLevel.READ,
+                requires_confirmation=False,
+            )
+        )
+        tool_registry.register(
+            tool_schema=ToolSchema(
+                name="tools_list",
+                description="[system] List all available tools.",
+                input_schema={"type": "object", "properties": {}, "required": []},
+                output_schema={"type": "object"},
+                permission_level=PermissionLevel.READ,
+                requires_confirmation=False,
+            )
+        )
+        tool_registry.register(
+            tool_schema=ToolSchema(
+                name="summarize_text",
+                description="[content] Summarize a block of text (local AI).",
+                input_schema={
+                    "type": "object",
+                    "properties": {
+                        "text": {"type": "string"},
+                        "style": {"type": "string"},
+                        "max_bullets": {"type": "integer"},
+                    },
+                    "required": ["text"],
+                },
+                output_schema={"type": "object"},
+                permission_level=PermissionLevel.READ,
+                requires_confirmation=False,
+            )
+        )
+        tool_registry.register(
+            tool_schema=ToolSchema(
+                name="fetch_mails",
+                description="[integration:mails] Fetch mails from local mail store (offline-first).",
+                input_schema={
+                    "type": "object",
+                    "properties": {"store_path": {"type": "string"}, "limit": {"type": "integer"}},
+                    "required": [],
+                },
+                output_schema={"type": "object"},
+                permission_level=PermissionLevel.READ,
+                requires_confirmation=False,
+            )
+        )
+        tool_registry.register(
+            tool_schema=ToolSchema(
+                name="summarize_mails",
+                description="[integration:mails] Summarize mails from local store (uses local AI).",
+                input_schema={
+                    "type": "object",
+                    "properties": {
+                        "store_path": {"type": "string"},
+                        "limit": {"type": "integer"},
+                        "max_items": {"type": "integer"},
+                        "fields": {"type": "array", "items": {"type": "string"}},
+                    },
+                    "required": [],
+                },
+                output_schema={"type": "object"},
+                permission_level=PermissionLevel.READ,
+                requires_confirmation=False,
+            )
+        )
+
+        # Tool implementations
+        tool_executor = ToolExecutor()
+        tool_executor.register("get_system_status", get_system_status)
+        tool_executor.register("tools_list", lambda _args: {"status": "ok", "tools": tool_registry.list_tools()})
         
         print("Getting model path...", flush=True)
         model_path = get_model_path()
@@ -117,9 +217,15 @@ def main() -> int:
         else:
             print("No model path configured - using stub mode", flush=True)
             logger.info("No model path configured - using stub mode")
+
+        # Tools that need AI (content processing) or local integrations
+        tool_executor.register("summarize_text", make_summarize_text_tool(ai_interface))
+        mail_store_default = str(Path(project_root) / "data" / "mails.json")
+        tool_executor.register("fetch_mails", make_fetch_mails_tool(mail_store_default))
+        tool_executor.register("summarize_mails", make_summarize_mails_tool(ai_interface, mail_store_default))
         
         print("Creating orchestrator...", flush=True)
-        orchestrator = Orchestrator(mcp=mcp, ai_interface=ai_interface)
+        orchestrator = Orchestrator(mcp=mcp, ai_interface=ai_interface, tool_executor=tool_executor)
 
         print("Creating CLI...", flush=True)
         cli = CLI(orchestrator, mcp, ai_interface)
@@ -149,6 +255,18 @@ def main() -> int:
         # Start API server in a thread
         api_thread = threading.Thread(target=run_api_server, args=(http_server,), daemon=True)
         api_thread.start()
+
+        # Optional: Start MCP STDIO server in a thread (env-gated)
+        # Set SIYA_ENABLE_MCP_STDIO=1 to enable.
+        if str(os.getenv("SIYA_ENABLE_MCP_STDIO", "0")).strip() == "1":
+            stdio_server = MCPStdioServer(MCPStdioContext(mcp_server=mcp, tool_executor=tool_executor))
+            stdio_thread = threading.Thread(
+                target=run_mcp_stdio_server,
+                args=(stdio_server,),
+                daemon=True,
+            )
+            stdio_thread.start()
+            logger.info("MCP STDIO server enabled (SIYA_ENABLE_MCP_STDIO=1)")
         
         # Give API server thread a moment to start
         import time

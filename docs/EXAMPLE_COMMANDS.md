@@ -10,12 +10,13 @@ This document provides example commands you can test from your PC while Siya run
 **Current System Status:**
 - ✅ API server running (port 8080)
 - ✅ Web interface running (port 3000)
-- ✅ Intent parsing (Phase 10: Real AI model integration in progress)
+- ✅ Intent parsing (Phase 10: Real AI model operational - 10-30s response time)
 - ✅ System prompt integrated (from `docs/System Prompt.md`)
 - ✅ Orchestration flow (task queue working)
-- ⚠️ Tool execution (stubbed - no tools registered yet)
+- ✅ Natural language input supported
+- ✅ Tool execution (starter tools registered)
 
-**Note:** Commands will be parsed and queued, but actual tool execution is stubbed until tools are registered in later implementation phases.
+**Note:** This is only the initial starter set. Siya will scale to many more tools and features in later phases.
 
 ---
 
@@ -60,7 +61,7 @@ curl http://192.168.1.39:8080/health
 
 ## TEST 2: BASIC COMMAND FLOW
 
-**Purpose:** Test the full command flow (API → CLI → Orchestrator → AI Intent Parsing).
+**Purpose:** Test the full command flow (API → CLI → Orchestrator → AI Intent Parsing → Tool Execution).
 
 **Windows PowerShell:**
 ```powershell
@@ -79,7 +80,7 @@ curl -X POST http://192.168.1.39:8080/command \
 ```json
 {
   "status": "success",
-  "message": "Command processed. Task ID: <uuid>"
+  "message": "OK: { ...tool output... }"
 }
 ```
 
@@ -87,9 +88,90 @@ curl -X POST http://192.168.1.39:8080/command \
 1. API receives command
 2. CLI processes it
 3. Orchestrator submits user input
-4. AI parses intent (stub mode)
-5. Task queued and processed
-6. Response returned
+4. AI parses intent (real model if loaded)
+5. Tool request validated/authorized
+6. Tool executes (starter tools)
+7. Response returned
+
+---
+
+## TEST 2A: RUN A STARTER TOOL (SYSTEM STATUS)
+
+**Purpose:** Verify tool execution is real.
+
+```bash
+curl -X POST http://192.168.1.39:8080/command \
+  -H "Content-Type: application/json" \
+  -d '{"command": "get system status"}'
+```
+
+**Expected:** Response includes `get_system_status` output (resources JSON).
+
+---
+
+## TEST 2B: LIST TOOLS
+
+```bash
+curl -X POST http://192.168.1.39:8080/command \
+  -H "Content-Type: application/json" \
+  -d '{"command": "list tools"}'
+```
+
+**Expected:** Response includes a tool list containing `get_system_status`, `tools_list`, `summarize_text`, `fetch_mails`, `summarize_mails`.
+
+---
+
+## TEST 2D: MAILS (OFFLINE-FIRST LOCAL STORE)
+
+**Purpose:** Test the example “mails” integration without any network setup.
+
+**Default mail store path (created in repo):** `data/mails.json`
+
+**Format:** JSON array of objects; recommended fields:
+- `id`, `from`, `to`, `subject`, `date`, `snippet`, `body`
+
+**Fetch mails:**
+```bash
+curl -X POST http://192.168.1.39:8080/command \
+  -H "Content-Type: application/json" \
+  -d '{"command": "fetch mails"}'
+```
+
+**Summarize mails:**
+```bash
+curl -X POST http://192.168.1.39:8080/command \
+  -H "Content-Type: application/json" \
+  -d '{"command": "summarize mails"}'
+```
+
+**Note:** Network-based mail fetching (IMAP/Gmail API) will be added later with LAW 16 enforcement.
+
+---
+
+## TEST 2C: MCP STDIO (OPTIONAL)
+
+**Purpose:** Run Siya as an MCP STDIO server (for MCP clients).
+
+On the Pi:
+```bash
+cd /opt/siya
+source venv/bin/activate
+python -m mcp.stdio_main
+```
+
+**Note:** You can also enable STDIO inside the systemd runtime by setting:
+`SIYA_ENABLE_MCP_STDIO=1` (advanced; typically STDIO servers are launched by the client).
+
+---
+
+## TEST 2E: FIRST-PARTY PC MCP CLI CLIENT (COMING NEXT)
+
+**Purpose:** Use Siya’s own PC MCP CLI client (Claude-like MCP client behavior) for full control.
+
+**Status:** Planned (next implementation step). The client will:
+- Run MCP lifecycle (`initialize` → `notifications/initialized`)
+- Call `tools/list` and `tools/call`
+- Provide selective output formatting on PC
 
 ---
 
@@ -253,13 +335,10 @@ When you send a command:
 
 ## CURRENT LIMITATIONS
 
-**Phase 10 Status:**
-- Tool registry framework exists but no tools registered
+**Current Status:**
 - Intent parsing uses real AI model (Qwen 2.5 3B Instruct)
-- Model optimized for Pi: max_tokens=128, temperature=0.2, timeout=120s
-- JSON repair function handles malformed AI responses
-- Natural language input supported (not just commands)
-- Tool execution is stubbed (no tools to execute yet)
+- Natural language input supported
+- Starter tools are registered and execute (system/status, list_tools, summarize_text, mails demo)
 
 **What Works:**
 - ✅ Service initialization (Orchestrator and CLI started automatically)
@@ -271,8 +350,7 @@ When you send a command:
 - ✅ Complete audit logging
 
 **What's Stubbed:**
-- ⚠️ AI model (using stub intent parser)
-- ⚠️ Tool execution (no tools registered)
+- ⚠️ Confirmation UX (requires_confirmation path not implemented end-to-end yet)
 - ⚠️ Memory operations (Phase 3)
 - ⚠️ Scheduling (Phase 7)
 

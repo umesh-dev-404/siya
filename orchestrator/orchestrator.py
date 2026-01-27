@@ -18,10 +18,11 @@ from typing import Any, Dict, Optional
 from uuid import UUID, uuid4
 
 from ai.ai_interface import AIInterface
-from mcp.mcp import ModelControlPlane
+from mcp.mcp_server import MCPServer
 from orchestrator.execution_state import ExecutionState
 from orchestrator.step_runner import StepRunner
 from orchestrator.task_queue import Task, TaskQueue, TaskSource
+from tools.tool_executor import ToolExecutor, ToolExecutionResult
 
 logger = logging.getLogger(__name__)
 
@@ -48,14 +49,15 @@ class Orchestrator:
 
     def __init__(
         self,
-        mcp: Optional[ModelControlPlane] = None,
+        mcp: Optional[MCPServer] = None,
         ai_interface: Optional[AIInterface] = None,
+        tool_executor: Optional[ToolExecutor] = None,
     ) -> None:
         """
         Initialize the orchestrator.
 
         Args:
-            mcp: Optional Model Control Plane (for tool authorization)
+            mcp: Optional MCP Server (for tool authorization)
             ai_interface: Optional AI Interface (for intent parsing)
         """
         self._task_queue = TaskQueue()
@@ -63,6 +65,8 @@ class Orchestrator:
         self._running = False
         self._mcp = mcp
         self._ai_interface = ai_interface
+        self._tool_executor = tool_executor or ToolExecutor()
+        self._task_results: Dict[UUID, Dict[str, Any]] = {}
 
     def start(self) -> None:
         """
@@ -366,12 +370,23 @@ class Orchestrator:
                 logger.debug(f"Step {step_id} validated (no tool request)")
 
             self._step_runner.transition_to(ExecutionState.EXECUTE)
-            # Phase 5: Execution is still a no-op (no actual tool execution yet)
-            # Tool execution will be implemented in later phases
+            # Execute tool (Phase 11+): orchestration executes, MCP only validates/authorizes
+            execution_result: Optional[ToolExecutionResult] = None
             if tool_request:
-                logger.debug(
-                    f"Step {step_id} executed (tool: {tool_request.get('tool_name')})",
-                    extra={"tool_name": tool_request.get("tool_name")},
+                tool_name = tool_request.get("tool_name")
+                arguments = tool_request.get("arguments", {})
+                if not isinstance(arguments, dict):
+                    raise RuntimeError("INVALID_ARGUMENTS: tool_request.arguments must be an object")
+
+                execution_result = self._tool_executor.execute(tool_name, arguments)
+                self._task_results[task.task_id] = {
+                    "tool_name": execution_result.tool_name,
+                    "output": execution_result.output,
+                }
+
+                logger.info(
+                    f"Step {step_id} executed tool",
+                    extra={"tool_name": tool_name, "task_id": str(task.task_id)},
                 )
             else:
                 logger.debug(f"Step {step_id} executed (no tool)")
@@ -423,6 +438,14 @@ class Orchestrator:
 
             self._task_queue.mark_failed()
             return True
+
+    def get_task_result(self, task_id: UUID) -> Optional[Dict[str, Any]]:
+        """
+        Get the latest execution result for a task (if available).
+
+        Used by interfaces to show tool outputs.
+        """
+        return self._task_results.get(task_id)
 
     def is_running(self) -> bool:
         """

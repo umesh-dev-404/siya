@@ -10,7 +10,7 @@ from uuid import uuid4
 
 import pytest
 from mcp.authorization_layer import AuthorizationLayer, AuthorizationResult
-from mcp.mcp import ModelControlPlane
+from mcp.mcp_server import MCPServer
 from mcp.policy_engine import PermissionCheck, PermissionDecision, PolicyEngine
 from mcp.request_validator import RequestValidator, ValidationError
 from mcp.tool_registry import ToolRegistry
@@ -299,19 +299,19 @@ class TestAuthorizationLayer:
         assert result.confirmation_request_id is not None
 
 
-class TestModelControlPlane:
-    """Tests for ModelControlPlane (MCP)."""
+class TestMCPServer:
+    """Tests for MCPServer (MCP)."""
 
     def test_mcp_initialization(self):
         """Test MCP initialization."""
-        mcp = ModelControlPlane()
+        mcp = MCPServer()
         assert mcp.get_tool_registry() is not None
         assert mcp.get_request_validator() is not None
         assert mcp.get_policy_engine() is not None
 
     def test_mcp_authorizes_request(self):
         """Test that MCP authorizes valid requests."""
-        mcp = ModelControlPlane()
+        mcp = MCPServer()
 
         # Register a tool
         schema = ToolSchema(
@@ -338,7 +338,7 @@ class TestModelControlPlane:
 
     def test_mcp_rejects_invalid_request(self):
         """Test that MCP rejects invalid requests."""
-        mcp = ModelControlPlane()
+        mcp = MCPServer()
 
         request = {
             "type": "tool_request",

@@ -169,18 +169,21 @@ Create the **deterministic execution backbone** without intelligence.
 Enforce **authority, permissions, and Canonical Law compliance**.
 
 ### Scope
-- MCP
+- MCP Server (Model Context Protocol)
 - Permission model
 - Tool schema framework (no tools yet)
+- MCP protocol implementation (STDIO transport initially)
 
 ### Steps
 
-1. Implement MCP as a **pure gatekeeper**
+1. Implement MCP Server as **Model Context Protocol Server**
 2. Define strict tool schema format
 3. Implement permission enforcement
 4. Implement confirmation gating
 5. Reject malformed or unauthorized requests
 6. Log every decision
+7. Implement MCP protocol primitives (tools, resources)
+8. Ensure CLI/API/Web connect to MCP Server internally (LAW 19)
 
 ### Explicit Exclusions
 - No real tools
@@ -188,9 +191,10 @@ Enforce **authority, permissions, and Canonical Law compliance**.
 - No memory writes
 
 ### Exit Criteria
-- No execution bypasses MCP
+- No execution bypasses MCP Server
 - All decisions are explainable
 - Laws-to-code mapping holds
+- MCP Server exposes tools and resources to clients
 
 ---
 
@@ -320,49 +324,72 @@ Validate architecture against **real Pi constraints** without modifying design.
 ## 10. PHASE 5 — AI INTEGRATION (CONTROLLED)
 
 ### Objective
-Introduce AI **strictly as an intent parser**.
+Introduce AI **as an intent parser and content processor** (within tool execution flows).
 
 ### Scope
 - llama.cpp
 - Model lifecycle
 - JSON schema enforcement
+- Content processing capabilities (for tool execution flows)
 
 ### Steps
 
 1. Stub llama.cpp on PC
 2. Implement intent parsing interface
 3. Enforce strict JSON schema
-4. Integrate model on Pi
-5. Measure RAM, CPU, latency
-6. Implement load/unload on demand
+4. Implement content processing interface (for tool execution flows)
+5. Integrate model on Pi
+6. Measure RAM, CPU, latency
+7. Implement load/unload on demand
 
 ### Rules
 - AI output is untrusted
-- AI cannot execute tools
+- AI cannot execute tools autonomously
 - AI cannot write memory
+- AI may process content within explicit tool execution flows
+- Content processing must be logged and auditable (LAW 13)
+- AI model runs locally only (no cloud inference for security)
 
 ### Exit Criteria
 - Deterministic JSON output
 - Pi memory budget respected
+- Content processing operational within tool execution flows
 
 ---
 
 ## 11. PHASE 6 — INTERFACES & UX LAYER (PC)
 
 ### Scope
-- CLI
-- HTTP API
-- Local web interface
+- MCP Server (core interface layer)
+- MCP Clients:
+  - **Siya PC MCP CLI client (first-party, Claude-like behavior)**
+  - Optional external clients (Claude Desktop / Claude Code) for compatibility testing
+- CLI (connects to MCP Server internally)
+- HTTP API (connects to MCP Server internally)
+- Local web interface (connects to MCP Server internally)
 
 ### Rules
+- MCP Server is the core interface layer
+- CLI, API, and Web interface connect to MCP Server internally (LAW 19)
+- All interfaces expose identical functionality (LAW 19)
 - CLI is primary debugging surface
 - API mirrors CLI exactly
 - Web UI is client-rendered
 - Explicit confirmations only
+- No interface drift allowed
 
 ### Exit Criteria
-- Identical behavior across interfaces
+- Identical behavior across all interfaces
 - No privilege escalation
+- MCP Server operational
+- CLI/API/Web synchronized with MCP Server
+
+**Additional Exit Criteria (PC MCP client):**
+- First-party PC MCP CLI client can:
+  - Complete MCP initialization lifecycle (`initialize` → `notifications/initialized`)
+  - List tools (`tools/list`)
+  - Call tools (`tools/call`)
+  - Display selective output consistently
 
 ---
 
@@ -484,13 +511,18 @@ Replace stub AI implementation with **real llama.cpp integration** for productio
 ## 16. PHASE 11 — TOOL IMPLEMENTATIONS
 
 ### Objective
-Implement **actual tool executions** replacing framework-only stubs.
+Implement **actual tool executions** replacing framework-only stubs, integrated with MCP Server.
 
 ### Scope
 - Core system tools
 - File system tools
 - System control tools
-- Network tools (if needed)
+- Network tools (with explicit permissions)
+- Content processing tools (AI-powered summarization, extraction, transformation)
+- Third-party integration tools (mails, APIs)
+
+**Important:** Tools like **"summarize mails"** are **only initial example tools** to validate end-to-end flow.  
+Phase 11 is intentionally designed to scale to **many tools and features** over time (new tool categories, new resources, new integrations) without changing the core governance/laws.
 
 ### Steps
 
@@ -499,6 +531,9 @@ Implement **actual tool executions** replacing framework-only stubs.
    - File operations tools
    - Automation trigger tools
    - Memory query tools
+   - Content processing tools (AI-powered)
+   - Third-party integration tools (mails, APIs)
+   - Remote execution tools (PC agent/client, future)
 
 2. **Implement Core Tools**
    - System status tool
@@ -511,35 +546,64 @@ Implement **actual tool executions** replacing framework-only stubs.
    - File write tool (with confirmation)
    - Directory listing tool
    - File metadata tool
+   - Remote file operations (PC agent/client, future)
 
-4. **Implement Automation Tools**
+4. **Implement Content Processing Tools**
+   - Summarize text tool (AI-powered)
+   - Extract information tool (AI-powered)
+   - Transform data tool (AI-powered)
+   - Selective output formatting (filtered/processed results)
+
+5. **Implement Third-Party Integration Tools**
+   - Fetch mails tool (with explicit network permissions)
+   - Summarize mails tool (fetches + AI processes)
+   - Other third-party API tools (with explicit permissions)
+
+6. **Implement Automation Tools**
    - Trigger automation tool
    - List automations tool
    - Automation status tool
 
-5. **Tool Registration**
-   - Register all tools in tool registry
+7. **Tool Registration**
+   - Register all tools in MCP Server tool registry
    - Define permission levels
    - Set confirmation requirements
+   - Set network access requirements (LAW 16)
    - Lock registry after registration
 
-6. **Testing & Validation**
+8. **MCP Server Integration**
+   - Expose tools via MCP protocol
+   - Expose resources (mail content, third-party data)
+   - Implement selective output formatting
+   - Ensure CLI/API/Web connect to MCP Server internally (LAW 19)
+
+9. **Testing & Validation**
    - Test each tool execution
    - Verify permission enforcement
    - Test confirmation flows
+   - Test content processing flows
+   - Test third-party integrations
    - Verify audit logging
+   - Verify interface consistency (LAW 19)
 
 ### Rules
 - All tools must be pre-declared (LAW 4, LAW 6)
 - Permission levels enforced (LAW 5)
 - Confirmations required where specified (LAW 1)
 - All executions logged (LAW 13)
+- Content processing occurs within tool execution flows (LAW 3)
+- Network access is explicit and permission-based (LAW 16)
+- Tools exposed via MCP Server protocol
 
 ### Exit Criteria
 - Core tools implemented and operational
-- Tools registered and locked
+- Content processing tools operational
+- Third-party integration tools operational
+- Tools registered and locked in MCP Server
 - Permission system working
 - All tool executions auditable
+- MCP Server exposes tools and resources
+- Interface consistency maintained (LAW 19)
 
 ---
 
@@ -789,13 +853,13 @@ Implement **voice input interface** for hands-free interaction.
 | 3 | Memory & Observability | PC | ✅ Complete |
 | 4A | Raspberry Pi Base Provisioning | Pi | ✅ Complete |
 | 4 | Pi Mirroring & Validation | Pi (read-only) | ⏭️ Optional |
-| 5 | AI Integration (Controlled) | PC + Pi | ✅ Complete (stub) |
+| 5 | AI Integration (Controlled) | PC + Pi | ✅ Complete |
 | 6 | Interfaces & UX Layer | PC | ✅ Complete |
 | 7 | Automation & Scheduling | PC + Pi | ✅ Complete (framework) |
 | 8 | Failure Injection & Hardening | Pi | ✅ Complete |
 | 9 | Production Lock & Baseline | Pi | ✅ Complete |
-| 10 | Real AI Model Integration | Pi | ⏳ Next |
-| 11 | Tool Implementations | Pi | ⏳ Pending |
+| 10 | Real AI Model Integration | Pi | ✅ Complete |
+| 11 | Tool Implementations | Pi | ⏳ In Progress |
 | 12 | Supabase Synchronization | Pi | ⏳ Pending |
 | 13 | systemd Timer Integration | Pi | ⏳ Pending |
 | 14 | Enhanced User Notifications | Pi | ⏳ Pending |

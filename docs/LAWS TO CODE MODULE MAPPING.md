@@ -45,8 +45,10 @@ Enforcement must be **structural**.
 The human user is the final and absolute authority.
 
 **Primary Enforcement Modules:**
-- `interfaces/*`
-- `core/orchestrator/decision_gate.py`
+- `cli/cli.py`
+- `api/api_server.py`
+- `web/web_server.py`
+- `orchestrator/orchestrator.py`
 
 **Enforcement Mechanisms:**
 - All actions originate from explicit user or registered triggers
@@ -63,8 +65,8 @@ The human user is the final and absolute authority.
 ### LAW 2 — NO AUTONOMOUS EXECUTION
 
 **Primary Enforcement Modules:**
-- `core/orchestrator/task_queue.py`
-- `system/timers/`
+- `orchestrator/task_queue.py`
+- `automations/` (framework; systemd timers in later phase)
 
 **Enforcement Mechanisms:**
 - Task queue only accepts registered triggers
@@ -77,34 +79,42 @@ The human user is the final and absolute authority.
 
 ---
 
-### LAW 3 — LLM IS NOT AN AGENT
+### LAW 3 — LLM IS A CONTROLLED PROCESSOR
 
 **Primary Enforcement Modules:**
-- `core/ai/intent_parser.py`
-- `core/mcp/request_validator.py`
+- `ai/intent_parser.py`
+- `ai/ai_interface.py`
+- `mcp/request_validator.py`
+- `ai/model_manager.py` (content processing runtime, when used by tools)
 
 **Enforcement Mechanisms:**
 - LLM outputs are data-only
-- No execution hooks exist in AI layer
-- AI process runs in isolated subprocess
+- No autonomous execution hooks exist in AI layer
+- AI runs in-process (current baseline); isolation can be added later if required
+- Content processing occurs only within tool execution contexts
+- All content processing is logged and auditable
+- AI model runs locally only (no cloud inference)
 
 **Violation Handling:**
 - Output rejected
 - Clarification requested
 - AI restarted if necessary
+- Content processing outside tool context blocked
 
 ---
 
 ### LAW 4 — TOOL-ONLY EXECUTION
 
 **Primary Enforcement Modules:**
-- `core/tools/registry.py`
-- `core/mcp/authorization_layer.py`
+- `mcp/tool_registry.py`
+- `mcp/authorization_layer.py`
+- `orchestrator/orchestrator.py` (enforces tool-only execution path)
 
 **Enforcement Mechanisms:**
 - Only registered tools callable
 - Tool registry is static
 - No direct OS access outside tools
+- Tools may invoke AI content processing within execution flows
 
 **Violation Handling:**
 - Execution blocked
@@ -115,8 +125,10 @@ The human user is the final and absolute authority.
 ### LAW 5 — EXPLICIT PERMISSIONS
 
 **Primary Enforcement Modules:**
-- `core/mcp/policy_engine.py`
-- `interfaces/*/confirmation_handler.py`
+- `mcp/policy_engine.py`
+- `mcp/authorization_layer.py`
+- `mcp/tool_schema.py` (permission metadata)
+- `cli/cli.py` / `api/api_server.py` / `web/static/index.html` (confirmation UX; expanded later)
 
 **Enforcement Mechanisms:**
 - Permission metadata per tool
@@ -132,7 +144,7 @@ The human user is the final and absolute authority.
 ### LAW 6 — NO FREE-FORM COMPUTATION
 
 **Primary Enforcement Modules:**
-- `core/security/execution_guard.py`
+- `security/` (guardrails; to be expanded in Phase 11)
 
 **Enforcement Mechanisms:**
 - No shell passthrough functions exist
@@ -149,7 +161,7 @@ The human user is the final and absolute authority.
 ### LAW 7 — MEMORY IS NON-AUTHORITATIVE
 
 **Primary Enforcement Modules:**
-- `core/memory/access_layer.py`
+- `memory/access_layer.py`
 
 **Enforcement Mechanisms:**
 - Memory is read-only to AI
@@ -165,7 +177,7 @@ The human user is the final and absolute authority.
 ### LAW 8 — MEMORY WRITE CONTROL
 
 **Primary Enforcement Modules:**
-- `core/memory/write_controller.py`
+- `memory/write_controller.py`
 
 **Enforcement Mechanisms:**
 - Only orchestrator can write
@@ -181,8 +193,8 @@ The human user is the final and absolute authority.
 ### LAW 9 — MEMORY DEGRADATION CONTROL
 
 **Primary Enforcement Modules:**
-- `core/memory/summarizer.py`
-- `system/timers/memory_maintenance.timer`
+- `memory/summarizer.py`
+- `automations/` (maintenance hooks; timers in later phase)
 
 **Enforcement Mechanisms:**
 - Periodic summarization
@@ -198,7 +210,7 @@ The human user is the final and absolute authority.
 ### LAW 10 — SERIAL EXECUTION
 
 **Primary Enforcement Modules:**
-- `core/orchestrator/task_queue.py`
+- `orchestrator/task_queue.py`
 
 **Enforcement Mechanisms:**
 - Single execution queue
@@ -214,7 +226,7 @@ The human user is the final and absolute authority.
 ### LAW 11 — TRANSACTIONAL STEPS
 
 **Primary Enforcement Modules:**
-- `core/orchestrator/step_runner.py`
+- `orchestrator/step_runner.py`
 
 **Enforcement Mechanisms:**
 - Step lifecycle enforced
@@ -230,8 +242,9 @@ The human user is the final and absolute authority.
 ### LAW 12 — FAILURE TRANSPARENCY
 
 **Primary Enforcement Modules:**
-- `core/logging/failure_logger.py`
-- `interfaces/*/notification_dispatcher.py`
+- `system/failure_handler.py`
+- `audit/audit_logger.py`
+- `cli/cli.py` / `api/http_handler.py` (surface failures)
 
 **Enforcement Mechanisms:**
 - All failures logged
@@ -246,7 +259,9 @@ The human user is the final and absolute authority.
 ### LAW 13 — COMPLETE AUDITABILITY
 
 **Primary Enforcement Modules:**
-- `core/logging/audit_logger.py`
+- `audit/audit_logger.py`
+- `mcp/authorization_layer.py`
+- `orchestrator/orchestrator.py`
 
 **Enforcement Mechanisms:**
 - Immutable log entries
@@ -262,8 +277,8 @@ The human user is the final and absolute authority.
 ### LAW 14 — LOG RETENTION DISCIPLINE
 
 **Primary Enforcement Modules:**
-- `core/logging/log_retention.py`
-- `system/timers/log_maintenance.timer`
+- `audit/` (retention to be implemented; Phase 11+)
+- `automations/` (timers in later phase)
 
 **Enforcement Mechanisms:**
 - Time-based log expiry
@@ -279,7 +294,7 @@ The human user is the final and absolute authority.
 ### LAW 15 — SECRET ISOLATION
 
 **Primary Enforcement Modules:**
-- `core/security/secret_manager.py`
+- `security/` (secret handling; to be expanded when integrations land)
 
 **Enforcement Mechanisms:**
 - Secrets loaded at runtime only
@@ -295,12 +310,16 @@ The human user is the final and absolute authority.
 ### LAW 16 — NETWORK EXPLICITNESS
 
 **Primary Enforcement Modules:**
-- `core/security/network_guard.py`
+- `security/` (network guard; to be expanded in Phase 11)
+- `mcp/tool_schema.py` (network permission metadata; to be added)
 
 **Enforcement Mechanisms:**
 - Allow-list enforced
 - No implicit outbound calls
 - Offline-first default
+- Network access declared per tool (explicit permissions)
+- Network access depends on tool functionality
+- MCP protocol transport: initially STDIO (local), later HTTP (remote)
 
 **Violation Handling:**
 - Network request blocked
@@ -311,7 +330,7 @@ The human user is the final and absolute authority.
 ### LAW 17 — NO ARCHITECTURAL DRIFT
 
 **Primary Enforcement Modules:**
-- `core/validation/architecture_checker.py`
+- `tests/` + docs discipline (future CI/static checks)
 
 **Enforcement Mechanisms:**
 - Static analysis rules
@@ -327,7 +346,7 @@ The human user is the final and absolute authority.
 ### LAW 18 — FORWARD COMPATIBILITY
 
 **Primary Enforcement Modules:**
-- `config/schema_versioning.py`
+- `config/` (schema + versioning policies)
 
 **Enforcement Mechanisms:**
 - Versioned configs
@@ -337,6 +356,30 @@ The human user is the final and absolute authority.
 **Violation Handling:**
 - Upgrade blocked
 - Migration required
+
+---
+
+### LAW 19 — INTERFACE CONSISTENCY
+
+**Primary Enforcement Modules:**
+- `cli/cli.py`
+- `api/api_server.py`
+- `web/web_server.py`
+- `pc_mcp_client/` (first-party PC MCP CLI client; to be implemented)
+- `service_main.py` (composition root wiring)
+
+**Enforcement Mechanisms:**
+- CLI, API, and Web connect to MCP Server internally
+- All interfaces expose identical functionality
+- Interface synchronization checks
+- No interface-specific privilege escalation
+- MCP Server is the single source of truth for tool capabilities
+
+**Violation Handling:**
+- Interface functionality must be synchronized
+- Discrepancies must be resolved immediately
+- Logged as architectural violation
+- Interface access blocked until synchronization restored
 
 ---
 

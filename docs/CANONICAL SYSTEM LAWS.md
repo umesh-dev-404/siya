@@ -63,21 +63,31 @@ Background autonomy is forbidden.
 
 ---
 
-### LAW 3 — LLM IS NOT AN AGENT
+### LAW 3 — LLM IS A CONTROLLED PROCESSOR
 
-**The Large Language Model (LLM) is a parser and explainer, not an executor.**
+**The Large Language Model (LLM) is a parser, explainer, and content processor, but never an autonomous executor.**
 
 The LLM may:
 - Interpret intent
 - Extract arguments
 - Generate explanations
 - Produce minimal user-facing text
+- Process content (e.g., summarize text, extract information, transform data) when explicitly invoked by a tool execution flow
+- Transform or filter data as part of a tool's execution pipeline
 
 The LLM may never:
-- Execute tools
+- Execute tools autonomously
 - Decide policies
 - Override permissions
-- Initiate actions
+- Initiate actions without explicit tool invocation
+- Access secrets or sensitive data directly
+- Process content outside of explicit tool execution flows
+
+**Content Processing Constraints:**
+- Content processing must occur within a tool execution context
+- All AI-processed content must be logged and auditable (LAW 13)
+- AI model runs locally only (no cloud inference for security)
+- Content processing is subject to the same permission and confirmation requirements as tool execution (LAW 5)
 
 ---
 
@@ -286,6 +296,29 @@ If a feature requires breaking a law, the feature is invalid.
 **All designs must allow future extension without refactoring core laws.**
 
 Scalability must be achieved through configuration, not redesign.
+
+---
+
+### LAW 19 — INTERFACE CONSISTENCY
+
+**All user-facing interfaces (CLI, API, Web) must expose identical functionality and remain synchronized with the MCP Server.**
+
+- CLI, HTTP API, and Web interface are clients of the MCP Server
+- All interfaces must reflect the same tool capabilities, resources, and behaviors
+- No interface may have privileged access or different behavior
+- Interface implementations must stay up-to-date with MCP Server changes
+- Any discrepancy between interfaces is a violation
+
+This law ensures:
+- No interface drift
+- Consistent user experience
+- No hidden capabilities in any interface
+- Maintainability and clarity
+
+**Violation Handling:**
+- Interface functionality must be synchronized
+- Discrepancies must be resolved immediately
+- Logged as architectural violation
 
 ---
 

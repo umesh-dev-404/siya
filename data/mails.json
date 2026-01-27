@@ -1,0 +1,21 @@
+[
+  {
+    "id": "mail_001",
+    "from": "billing@example.com",
+    "to": "you@example.com",
+    "subject": "Invoice due tomorrow",
+    "date": "2026-01-26T09:15:00Z",
+    "snippet": "Your invoice INV-123 is due tomorrow. Please pay to avoid late fees.",
+    "body": "Hello,\n\nYour invoice INV-123 is due tomorrow.\n\nThanks,\nBilling"
+  },
+  {
+    "id": "mail_002",
+    "from": "friend@example.com",
+    "to": "you@example.com",
+    "subject": "Weekend plan?",
+    "date": "2026-01-26T18:40:00Z",
+    "snippet": "Hey, are we meeting this weekend? Let me know what time works.",
+    "body": "Hey!\n\nAre we meeting this weekend? Let me know.\n"
+  }
+]
+

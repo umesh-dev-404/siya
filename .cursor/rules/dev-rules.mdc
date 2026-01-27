@@ -415,9 +415,8 @@ Never silently rewrite files.
 
 ### When to Edit Existing Files
 
-• Deployment instructions → `docs/DEPLOYMENT.md`  
-• Network configuration → `docs/NETWORK_ACCESS.md`  
-• GitHub setup → `docs/GITHUB_SETUP.md`  
+• Deployment instructions → `docs/DEPLOYMENT.md` (includes GitHub setup, network access)  
+• AI model information → `docs/AI_MODEL_GUIDE.md` (setup, testing, optimization, selection)  
 • Project status → `docs/PROJECT_STATUS.md` or `README.md`  
 • Troubleshooting → Add to relevant existing doc, not new file  
 

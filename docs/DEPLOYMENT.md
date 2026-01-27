@@ -17,11 +17,15 @@
 
 ## OVERVIEW
 
-This document describes the deployment process for Siya on Raspberry Pi 5.
+This document describes the complete deployment process for Siya on Raspberry Pi 5, including:
+- Initial setup and GitHub configuration
+- Pi deployment and service configuration
+- Network access configuration
+- Model setup (see `AI_MODEL_GUIDE.md` for detailed model information)
 
 **Per DIP Phase 9: Production Lock & Baseline**
 
-**Note:** Deployment has been completed. This guide documents the process that was followed.
+**Status:** ✅ Deployment completed and operational (2026-01-27)
 
 ## PREREQUISITES
 
@@ -39,6 +43,54 @@ This document describes the deployment process for Siya on Raspberry Pi 5.
 ---
 
 ## DEPLOYMENT STEPS
+
+### 0. GitHub Setup (PC Side)
+
+**Step 0.1: Initialize Git Repository**
+
+```bash
+# On PC
+cd d:\Projects\siya
+git init
+git branch -M main
+
+# Configure Git (if not already done)
+git config user.name "Your Name"
+git config user.email "your.email@example.com"
+```
+
+**Step 0.2: Create GitHub Repository**
+
+1. Go to https://github.com/new
+2. Repository name: `siya`
+3. Visibility: Private (recommended) or Public
+4. **DO NOT** initialize with README/.gitignore/license (we have these)
+5. Click "Create repository"
+
+**Step 0.3: Push to GitHub**
+
+```bash
+# Stage and commit
+git add .
+git commit -m "Initial commit: Siya v1.0.0-baseline"
+
+# Add remote (replace YOUR_USERNAME)
+git remote add origin https://github.com/YOUR_USERNAME/siya.git
+
+# Push
+git push -u origin main
+
+# Optional: Create release tag
+git tag -a v1.0.0-baseline -m "Siya v1.0.0-baseline"
+git push origin v1.0.0-baseline
+```
+
+**Note:** For ongoing development, use:
+```bash
+git add .
+git commit -m "Description"
+git push origin main
+```
 
 ### 1. Operating System Setup
 
@@ -105,9 +157,12 @@ python3 --version
 1. Upgrade to a newer Raspberry Pi OS version, OR
 2. Build Python 3.11 from source (see troubleshooting section)
 
-### 4. Clone Repository
+### 4. Clone Repository from GitHub
 
 ```bash
+# Install Git (if not installed)
+sudo apt install -y git
+
 # Navigate to installation directory
 cd /opt
 
@@ -120,8 +175,19 @@ sudo chown -R YOUR_PI_USERNAME:YOUR_PI_USERNAME /opt/siya
 # Navigate to project directory
 cd /opt/siya
 
+# Verify clone
+git log --oneline -5
+
 # Checkout production baseline tag (optional, if you created the tag)
 # git checkout v1.0.0-baseline
+```
+
+**For Updates After Initial Deployment:**
+```bash
+cd /opt/siya
+git pull origin main
+pip install -e .  # Reinstall if dependencies changed
+sudo systemctl restart siya  # Restart service
 ```
 
 ### 5. Setup Python Environment
@@ -172,9 +238,9 @@ pip install -e .
 # Lock schema version and tool registry
 python -c "
 from system.production_lock import ProductionLock
-from mcp.mcp import ModelControlPlane
+from mcp.mcp_server import MCPServer
 
-mcp = ModelControlPlane()
+mcp = MCPServer()
 lock = ProductionLock()
 lock.lock_schema_version('1.0.0')
 lock.lock_tool_registry(mcp.get_tool_registry())
@@ -235,7 +301,7 @@ export SIYA_API_BASE_URL=http://$(hostname -I | awk '{print $1}'):8080
 - Setting host to `0.0.0.0` allows access from your PC on the same network
 - **Pi's IP address changes when router restarts** - you'll need to update `SIYA_API_BASE_URL` and reconnect from PC
 - To find current IP: `hostname -I` (first IP shown is usually the one to use)
-- See `NETWORK_ACCESS.md` for details on network access
+- See [Network Access](#network-access-from-pc) section below for details
 
 ---
 
@@ -358,18 +424,94 @@ You should see:
 - API server listening on `0.0.0.0:8080` (or `*:8080`)
 - Web server listening on `0.0.0.0:3000` (or `*:3000`)
 
-### Troubleshooting: Service Running But Not Accessible from PC
+---
 
-If the service shows `Active: active (running)` but you can't access it from your PC:
+## NETWORK ACCESS FROM PC
+
+### Overview
+
+Siya's API and web interface are accessible over the network, allowing you to control the system from your PC while it runs on the Raspberry Pi.
+
+**Current Status:**
+- ✅ API Server: Running on port 8080 (network accessible)
+- ✅ Web Interface: Running on port 3000 (network accessible)
+- ✅ CORS: Configured (headers added to API server)
+
+### Architecture
+
+```
+PC Browser/CLI → Pi IP:3000 (Web) or Pi IP:8080 (API) → Siya System
+```
+
+**Default Configuration:**
+- API Host: `0.0.0.0` (all interfaces)
+- API Port: `8080`
+- Web Host: `0.0.0.0` (all interfaces)
+- Web Port: `3000`
+
+### ⚠️ CRITICAL: IP Address Management
+
+**Your Raspberry Pi's IP address changes every time your router restarts.**
+
+**Finding Current IP:**
+```bash
+# On Pi
+hostname -I  # First IP shown is usually the one you need
+
+# From PC (if you know Pi's hostname)
+ssh YOUR_PI_USERNAME@raspberrypi "hostname -I"
+```
+
+**After Router Restart:**
+1. Find new IP: `hostname -I` (on Pi)
+2. Update `SIYA_API_BASE_URL` on Pi: `export SIYA_API_BASE_URL=http://NEW_IP:8080`
+3. Update browser bookmarks on PC
+4. Restart service: `sudo systemctl restart siya`
+
+**Recommended: Configure Static IP**
+- Log into router admin panel
+- Find "DHCP Reservations" or "Static IP Assignment"
+- Assign fixed IP (e.g., `192.168.1.100`) to Pi's MAC address
+- Pi will always get the same IP even after router restarts
+
+### Access from PC
+
+**Web Interface:**
+1. Find Pi's IP: `ssh YOUR_PI_USERNAME@raspberrypi "hostname -I"`
+2. Open browser: `http://<PI_IP>:3000`
+3. Web interface connects to API at `http://<PI_IP>:8080`
+
+**API Direct Access:**
+```bash
+# Health check (from PC)
+curl http://192.168.1.39:8080/health
+
+# Send command (from PC)
+curl -X POST http://192.168.1.39:8080/command \
+  -H "Content-Type: application/json" \
+  -d '{"command": "what can you do?"}'
+```
+
+**Windows PowerShell:**
+```powershell
+# Health check
+Invoke-WebRequest -Uri http://192.168.1.39:8080/health
+
+# Send command
+$body = @{command="what can you do?"} | ConvertTo-Json
+Invoke-WebRequest -Uri http://192.168.1.39:8080/command -Method POST -Body $body -ContentType "application/json"
+```
+
+### Troubleshooting: Service Running But Not Accessible from PC
 
 **1. Check Firewall (Most Common Issue):**
 ```bash
 # Check firewall status
 sudo ufw status
 
-# If firewall is active, allow port 8080
+# Allow ports
 sudo ufw allow 8080/tcp
-sudo ufw allow 3000/tcp  # If using web interface
+sudo ufw allow 3000/tcp
 
 # Verify rules
 sudo ufw status numbered
@@ -377,63 +519,56 @@ sudo ufw status numbered
 
 **2. Verify Port is Listening:**
 ```bash
-# Check if port 8080 is actually listening
-sudo netstat -tlnp | grep 8080
-# Should show: 0.0.0.0:8080 or *:8080
-
-# Or using ss
-sudo ss -tlnp | grep 8080
+# Check if ports are listening
+sudo netstat -tlnp | grep -E '8080|3000'
+# Should show: 0.0.0.0:8080 and 0.0.0.0:3000
 ```
 
 **3. Test from Pi (Localhost):**
 ```bash
-# Test API from Pi itself
 curl http://localhost:8080/health
-
 # Should return: {"status": "healthy", "service": "siya-api"}
 ```
 
 **4. Check Pi's Current IP:**
 ```bash
-# Get Pi's IP address
 hostname -I
-
-# Make sure you're using the correct IP from PC
 # IP may have changed if router restarted
 ```
 
 **5. Test Network Connectivity from PC:**
 ```bash
-# From your PC, test if you can reach the Pi
-ping 192.168.1.39  # Replace with your Pi's actual IP
+# From PC
+ping 192.168.1.39  # Replace with Pi's IP
 
-# Test if port 8080 is reachable
-telnet 192.168.1.39 8080
-# Or on Windows PowerShell:
+# Test port (Windows PowerShell)
 Test-NetConnection -ComputerName 192.168.1.39 -Port 8080
 ```
 
-**6. Check Service Logs for Connection Attempts:**
-```bash
-# Watch logs in real-time, then try connecting from PC
-sudo journalctl -u siya -f
-
-# If you see connection attempts but they fail, check firewall
-# If you see no connection attempts, it's a network/firewall issue
-```
-
-**7. Verify Service is Binding to All Interfaces:**
-```bash
-# Check service logs to confirm it's binding to 0.0.0.0
-sudo journalctl -u siya | grep "API server started"
-# Should show: "API server started on 0.0.0.0:8080"
-```
+**6. Check CORS Configuration:**
+- Web interface shows "Disconnected" → Check CORS headers in API server
+- Should see: `Access-Control-Allow-Origin: *` in response headers
 
 **Common Solutions:**
-- **Firewall blocking:** `sudo ufw allow 8080/tcp`
+- **Firewall blocking:** `sudo ufw allow 8080/tcp && sudo ufw allow 3000/tcp`
 - **Wrong IP address:** Check with `hostname -I` after router restart
 - **Network isolation:** Ensure PC and Pi are on same network
-- **Router blocking:** Some routers block inter-device communication (check router settings)
+- **Router blocking:** Some routers block inter-device communication
+
+### Security Considerations
+
+**Current Implementation:**
+- No authentication (anyone on network can access)
+- HTTP only (not HTTPS)
+- Firewall recommended (restrict to local network)
+
+**For Production:**
+- Add authentication (future phase)
+- Use HTTPS (future phase)
+- Restrict to local network via firewall
+- Consider VPN for remote access
+
+---
 
 ---
 

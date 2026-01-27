@@ -254,9 +254,9 @@ class TestOrchestratorAIIntegration:
 
     def test_submit_user_input_requires_ai_interface(self):
         """Test that submit_user_input requires AI interface."""
-        from mcp import ModelControlPlane
+        from mcp import MCPServer
 
-        orchestrator = Orchestrator(mcp=ModelControlPlane())
+        orchestrator = Orchestrator(mcp=MCPServer())
         orchestrator.start()
 
         with pytest.raises(RuntimeError, match="AI interface not available"):
@@ -267,13 +267,13 @@ class TestOrchestratorAIIntegration:
     def test_submit_user_input_basic(self):
         """Test submitting user input through AI intent parsing."""
         from ai import AIInterface
-        from mcp import ModelControlPlane, ToolRegistry, RequestValidator
+        from mcp import MCPServer, ToolRegistry, RequestValidator
         from mcp.tool_schema import PermissionLevel, ToolSchema
 
         # Setup MCP and AI
         tool_registry = ToolRegistry()
         request_validator = RequestValidator(tool_registry)
-        mcp = ModelControlPlane()
+        mcp = MCPServer()
         ai_interface = AIInterface(tool_registry, request_validator)
 
         # Register a test tool
@@ -301,11 +301,11 @@ class TestOrchestratorAIIntegration:
     def test_submit_user_input_clarification_needed(self):
         """Test that clarification needed raises ValueError."""
         from ai import AIInterface
-        from mcp import ModelControlPlane, ToolRegistry, RequestValidator
+        from mcp import MCPServer, ToolRegistry, RequestValidator
 
         tool_registry = ToolRegistry()
         request_validator = RequestValidator(tool_registry)
-        mcp = ModelControlPlane()
+        mcp = MCPServer()
         ai_interface = AIInterface(tool_registry, request_validator)
 
         orchestrator = Orchestrator(mcp=mcp, ai_interface=ai_interface)
@@ -320,13 +320,13 @@ class TestOrchestratorAIIntegration:
     def test_process_task_with_tool_request(self):
         """Test processing task with tool request from AI."""
         from ai import AIInterface
-        from mcp import ModelControlPlane, ToolRegistry, RequestValidator
+        from mcp import MCPServer, ToolRegistry, RequestValidator
         from mcp.tool_schema import PermissionLevel, ToolSchema
 
         # Setup MCP and AI
         tool_registry = ToolRegistry()
         request_validator = RequestValidator(tool_registry)
-        mcp = ModelControlPlane()
+        mcp = MCPServer()
         ai_interface = AIInterface(tool_registry, request_validator)
 
         # Register a test tool

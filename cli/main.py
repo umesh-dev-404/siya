@@ -16,7 +16,7 @@ from ai.ai_interface import AIInterface
 from cli.cli import CLI
 from config.logging_config import setup_logging
 from config.model_config import get_model_path
-from mcp.mcp import ModelControlPlane
+from mcp.mcp_server import MCPServer
 from orchestrator.orchestrator import Orchestrator
 
 # Setup logging
@@ -32,7 +32,7 @@ def main() -> int:
     """
     try:
         # Initialize components
-        mcp = ModelControlPlane()
+        mcp = MCPServer()
         tool_registry = mcp.get_tool_registry()
         request_validator = mcp.get_request_validator()
         model_path = get_model_path()

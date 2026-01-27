@@ -106,17 +106,29 @@ Secondary stakeholders have **no authority**.
 
 The system **must provide** the following high-level capabilities.
 
+### 5.0 MCP Server Core Functionality
+
+- **Model Context Protocol Server**: Siya operates as an MCP Server on Raspberry Pi
+- Expose tools and resources to MCP clients on PC
+- Provide a **first-party Siya PC MCP CLI client** (Claude-like MCP client behavior) for full user control
+- Allow optional use of external MCP clients (e.g., Claude Desktop / Claude Code) for compatibility testing
+- Maintain context of all integrations (mails, third-party services)
+- Process content through AI within tool execution flows
+- Support MCP protocol transport: initially STDIO (local), later HTTP (remote)
+- Enable remote tool execution on PC via agent/client (future)
+
 ---
 
 ### 5.1 Intent Interpretation
 
 - Accept natural language input via:
-  - Voice
-  - CLI
-  - Web interface
-  - API
+  - **MCP Clients** (primary): Siya PC MCP CLI client (first-party)
+  - External MCP clients (optional): Claude Desktop / Claude Code
+  - **Local Interfaces** (on Pi): CLI, Web interface, HTTP API
+  - Voice (future)
 - Convert user input into structured intent
 - Request clarification when ambiguity exists
+- Process content (summarization, extraction, transformation) within tool execution flows
 
 ---
 
@@ -148,9 +160,12 @@ The system **must provide** the following high-level capabilities.
 
 ### 5.5 Multi-Interface Interaction
 
-- Allow interaction through multiple interfaces
-- Ensure consistent behavior across all interfaces
+- Allow interaction through multiple interfaces (MCP clients, CLI, API, Web)
+- **MCP Server Architecture**: Siya operates as an MCP Server, exposing tools and resources
+- Ensure consistent behavior across all interfaces (LAW 19)
+- All interfaces connect to MCP Server internally
 - Prevent interface-specific privilege escalation
+- Maintain interface synchronization (no drift between CLI/API/Web)
 
 ---
 
@@ -159,6 +174,8 @@ The system **must provide** the following high-level capabilities.
 - Provide explicit feedback for every action
 - Never remain silent on success or failure
 - Explain failures in understandable terms
+- **Selective Output**: Provide filtered/processed results with user-configurable display formats
+- Content processing results must be clearly presented and auditable
 
 ---
 

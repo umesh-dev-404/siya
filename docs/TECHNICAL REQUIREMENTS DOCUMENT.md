@@ -128,10 +128,13 @@ The system is designed for:
 ### 6.2 AI Usage Constraints
 
 The AI model:
-- Must never execute code
+- Must never execute code autonomously
 - Must never access secrets
 - Must never modify system state directly
 - Must always produce structured output
+- May process content (summarization, extraction, transformation) within explicit tool execution flows
+- Content processing must be logged and auditable (LAW 13)
+- AI model runs locally only (no cloud inference for security)
 
 ---
 
@@ -151,21 +154,50 @@ The AI model:
 
 ---
 
-## 8. MCP (MODEL CONTROL PLANE) REQUIREMENTS
+## 8. MCP SERVER (MODEL CONTEXT PROTOCOL) REQUIREMENTS
 
 ### 8.1 Functional Role
 
-MCP must:
-- Validate tool requests
+Siya operates as an **MCP Server (Model Context Protocol)**, which must:
+- Expose tools and resources to MCP clients (first-party PC CLI client; optional external clients like Claude Desktop/Code)
+- Validate tool requests from MCP clients
 - Enforce permissions
 - Enforce confirmation policies
 - Reject malformed or unauthorized requests
+- Maintain context of integrations (mails, third-party services)
+- Process content through AI within tool execution flows
+- Support selective output (filtered/processed results with user-configurable formats)
 
-### 8.2 Structural Constraints
+### 8.2 MCP Protocol Transport
+
+- **Initial**: STDIO transport (local communication)
+- **Future**: HTTP transport (remote communication)
+- Protocol implementation must comply with MCP specification
+
+### 8.2A MCP Client Requirements (PC CLI)
+
+Siya must provide a **first-party PC MCP CLI client** that replicates Claude-like MCP client behavior:
+- Implement MCP lifecycle: `initialize` → `notifications/initialized` → normal operation
+- Support tool discovery: `tools/list`
+- Support tool invocation: `tools/call`
+- Enforce request timeouts and clear error reporting
+- Provide selective output formatting at the client layer (human-readable + structured output passthrough)
+- Support transport targets:
+  - STDIO (spawn local MCP server process for development/testing)
+  - HTTP (connect to Pi-hosted MCP endpoint in later phase)
+
+### 8.3 MCP Primitives
+
+- **Tools**: Executable functions exposed to MCP clients
+- **Resources**: Data sources (e.g., mail content, third-party data)
+- **Prompts**: Templates (future phase)
+
+### 8.4 Structural Constraints
 
 - Stateless design
 - Restartable without data loss
 - Versioned tool schemas
+- Interface consistency (CLI/API/Web connect to MCP Server internally, LAW 19)
 
 ---
 
@@ -183,6 +215,9 @@ Each tool must:
 - No dynamic tool generation
 - No shell passthrough
 - No recursive execution outside orchestration
+- Tools may invoke AI content processing within execution flows
+- Tools may execute remotely on PC via agent/client (future)
+- Tools may access third-party integrations (mails, APIs) with explicit network permissions
 
 ---
 
@@ -301,6 +336,9 @@ Total must remain under **7 GB**.
 - Explicit allow-list
 - No implicit outbound traffic
 - Offline-first behavior
+- Network access for tools is explicit and permission-based (LAW 16)
+- Network access depends on tool functionality (not all tools require network)
+- MCP protocol transport: initially STDIO (local), later HTTP (remote)
 
 ---
 

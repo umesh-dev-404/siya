@@ -12,14 +12,15 @@ This document outlines the **next phases of implementation** following the compl
 **Current Status:**
 - ✅ Baseline complete (v1.0.0)
 - ✅ System deployed and operational on Raspberry Pi 5
-- ⏳ Ready for post-baseline enhancements
+- ✅ Phase 10 complete (AI model operational)
+- ⏳ Ready for Phase 11 (Tool Implementations)
 
 ---
 
 ## PHASE 10 — REAL AI MODEL INTEGRATION
 
 ### Priority: HIGH
-### Status: ⏳ IN PROGRESS (2026-01-27)
+### Status: ✅ COMPLETE (2026-01-27)
 
 **Objective:** Replace stub AI implementation with real llama.cpp integration.
 
@@ -31,48 +32,48 @@ This document outlines the **next phases of implementation** following the compl
 5. ✅ Created model configuration module (`config/model_config.py`)
 6. ✅ Implemented auto-detection of model path
 7. ✅ Added model auto-loading on service startup
-8. ✅ Explicitly start Orchestrator and CLI in service_main.py (ensures proper command processing)
-9. ✅ Acquired Qwen 2.5 3B Instruct model (Q4_K_M quantized) ✅
-10. ✅ Created comprehensive testing guide (`MODEL_TESTING_GUIDE.md`)
+8. ✅ Explicitly start Orchestrator and CLI in service_main.py
+9. ✅ Acquired Qwen 2.5 3B Instruct model (Q4_K_M quantized)
+10. ✅ Created comprehensive AI model guide (`AI_MODEL_GUIDE.md`)
 11. ✅ Updated `.gitignore` to exclude model files
-12. ✅ **Performance optimizations:** max_tokens=128, temperature=0.2, timeout=120s, stop sequences
+12. ✅ **Performance optimizations:** max_tokens=128, temperature=0.2, timeout=120s
 13. ✅ **JSON repair function** for robust parsing of AI responses
 14. ✅ **Simplified prompt structure** for faster inference
 15. ✅ **Enhanced logging** throughout inference pipeline
 16. ✅ **HTTP connection improvements:** 5-minute socket timeout, keep-alive headers
 17. ✅ **Web interface improvements:** processing indicator, better error handling
-
-**Pending Tasks (Pi):**
-1. ⏳ Build llama-cpp-python on Raspberry Pi 5
-2. ⏳ Test model loading on Pi
-3. ⏳ Test inference and intent parsing
-4. ⏳ Verify schema compliance
-5. ⏳ Test resource limits and performance
+18. ✅ **Full RAM loading:** `use_mmap=False` for faster inference
+19. ✅ **RAM monitoring:** Enhanced logging before/after model load
+20. ✅ **Pi testing:** Model operational, performance verified
 
 **Success Criteria:**
-- Real AI model operational ✅ (verified on Pi)
-- Intent parsing produces valid schema-compliant output ✅ (with JSON repair fallback)
-- RAM usage within Pi constraints (< 4GB for model + system) ✅ (verified)
-- Inference latency acceptable (10-30 seconds, optimized for Pi hardware) ✅ (meets target)
-- System prompt integrated ✅
-- Natural language input supported ✅
-- Error handling robust ✅ (JSON parsing errors handled gracefully)
+- ✅ Real AI model operational (verified on Pi)
+- ✅ Intent parsing produces valid schema-compliant output (with JSON repair fallback)
+- ✅ RAM usage within Pi constraints (~3-4 GB total)
+- ✅ Inference latency acceptable (10-30 seconds, optimized for Pi hardware)
+- ✅ System prompt integrated
+- ✅ Natural language input supported
+- ✅ Error handling robust (JSON parsing errors handled gracefully)
+- ✅ Full RAM loading enabled (faster inference)
 
 **Dependencies:**
 - Phase 9 complete ✅
 - Phase 4A complete (Pi deployment) ✅
 
 **Estimated Complexity:** Medium-High  
-**Current Status:** Code complete, Pi testing pending
+**Status:** ✅ COMPLETE — Model operational on Pi with 10-30s response time
 
 ---
 
 ## PHASE 11 — TOOL IMPLEMENTATIONS
 
 ### Priority: HIGH
-### Status: ⏳ Pending
+### Status: ⏳ IN PROGRESS
 
 **Objective:** Implement actual tool executions replacing framework stubs.
+
+**Note:** “Summarize mails” is **only one initial example tool** to validate the end-to-end MCP tool + resource + AI content-processing flow.  
+Phase 11 is designed to scale to **many tools and features** over later stages (system tools, file tools, automation tools, network/integration tools, content-processing tools, etc.).
 
 **Key Tasks:**
 1. Define tool categories (system, file, automation, memory)
@@ -81,6 +82,7 @@ This document outlines the **next phases of implementation** following the compl
 4. Implement automation tools (trigger, list, status)
 5. Register all tools in tool registry
 6. Lock tool registry after registration
+7. Add first-party **PC MCP CLI client** (Claude-like MCP client behavior) for full control (stdio first; HTTP later)
 
 **Success Criteria:**
 - Core tools implemented and operational
@@ -249,12 +251,12 @@ Phase 10 (AI Model) ──> Phase 15 (Voice) [Optional]
 ## CURRENT STUBBED/INCOMPLETE COMPONENTS
 
 ### AI Model (Phase 10)
-- **Current:** Stub implementation in `ai/model_manager.py`
-- **Target:** Real llama.cpp integration with Qwen 2.5 3B model
+- **Current:** ✅ Complete — Real llama.cpp integration operational (Qwen 2.5 3B Q4_K_M)
+- **Target (future optimizations):** Continued performance tuning and optional model upgrades (as needed)
 
 ### Tools (Phase 11)
-- **Current:** Tool registry framework exists, no actual tools
-- **Target:** Core tools implemented (system, file, automation, memory)
+- **Current:** Starter tools exist and execute (system status, list tools, summarize_text, mails demo)
+- **Target:** Expand to full core toolset (system, file, automation, memory) + confirmations
 
 ### Supabase Sync (Phase 12)
 - **Current:** Stub in `memory/supabase_sync.py`
@@ -349,5 +351,5 @@ As each phase completes:
 ---
 
 **Last Updated:** 2026-01-27  
-**Next Phase:** Phase 10 — Real AI Model Integration  
-**Status:** Ready to begin Phase 10
+**Next Phase:** Phase 11 — Tool Implementations  
+**Status:** Phase 10 complete, ready to begin Phase 11

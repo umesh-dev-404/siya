@@ -12,7 +12,7 @@ Enforces:
 """
 
 from mcp.authorization_layer import AuthorizationLayer, AuthorizationResult
-from mcp.mcp import ModelControlPlane
+from mcp.mcp_server import MCPServer
 from mcp.policy_engine import PermissionCheck, PermissionDecision, PolicyEngine
 from mcp.request_validator import RequestValidator, ValidationError
 from mcp.tool_registry import ToolRegistry
@@ -21,7 +21,7 @@ from mcp.tool_schema import PermissionLevel, ToolSchema
 __all__ = [
     "AuthorizationLayer",
     "AuthorizationResult",
-    "ModelControlPlane",
+    "MCPServer",
     "PermissionCheck",
     "PermissionDecision",
     "PermissionLevel",

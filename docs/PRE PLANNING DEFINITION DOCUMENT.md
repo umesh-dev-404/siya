@@ -28,8 +28,10 @@ This document must be read and agreed upon **before** any requirement, law, or i
 
 Siya is a **local-first personal governance and assistant operating system**, designed to run primarily on a **Raspberry Pi 5 (8 GB)**, providing deterministic control, automation, and intelligence assistance to a single user.
 
+**Siya operates as a Model Context Protocol (MCP) Server**, exposing tools and resources to MCP clients (first-party Siya PC MCP CLI client; optional external clients like Claude Desktop/Code). The Pi server maintains context of all integrations (mails, third-party services) and processes user requests through controlled AI content processing within tool execution flows.
+
 Siya is not a chatbot, not a cloud assistant, and not an autonomous agent.  
-It is a **structured control system** where intelligence assists interpretation, but **never governs execution**.
+It is a **structured control system** where intelligence assists interpretation and content processing, but **never governs execution autonomously**.
 
 ---
 
@@ -105,12 +107,19 @@ Future multi-user support must not require changes to core architecture—only c
 - No reliance on external compute for core functionality
 
 ### 6.3 Supporting Interfaces (Planned)
-- Local web interface (hosted on the Pi)
-- CLI
-- HTTP API
+- **MCP Clients** (primary): Siya PC MCP CLI client (first-party, Claude-like behavior)
+- External MCP clients (optional): Claude Desktop / Claude Code
+- **Local Interfaces** (on Pi):
+  - Local web interface (hosted on the Pi)
+  - CLI
+  - HTTP API
 - Mobile and desktop apps (future)
 
-All interfaces are **clients**, not authorities.
+**Interface Architecture:**
+- MCP Server is the core interface layer
+- CLI, API, and Web interface connect to MCP Server internally
+- All interfaces expose identical functionality (LAW 19)
+- All interfaces are **clients**, not authorities
 
 ---
 
@@ -137,16 +146,24 @@ The system must continue to function if:
 ## 8. AI USAGE PHILOSOPHY
 
 AI within Siya is used **only** for:
-- Intent interpretation
+- Intent interpretation (parsing user input into structured intent)
 - Argument extraction
 - Explanation
 - Natural language interaction
+- **Content processing** (summarization, extraction, transformation) within explicit tool execution flows
 
 AI is **never** used for:
-- Execution
+- Autonomous execution
 - Decision authority
 - Policy enforcement
 - Safety overrides
+- Processing content outside of explicit tool execution contexts
+
+**Content Processing Constraints:**
+- Content processing occurs only within tool execution contexts
+- All AI-processed content is logged and auditable (LAW 13)
+- AI model runs locally only (no cloud inference for security)
+- Content processing is subject to permission and confirmation requirements (LAW 5)
 
 AI is treated as a **component**, not an agent.
 

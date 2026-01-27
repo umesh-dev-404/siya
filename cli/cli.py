@@ -15,7 +15,7 @@ from typing import Optional
 from uuid import UUID
 
 from ai.ai_interface import AIInterface
-from mcp.mcp import ModelControlPlane
+from mcp.mcp_server import MCPServer
 from orchestrator.orchestrator import Orchestrator
 
 logger = logging.getLogger(__name__)
@@ -38,7 +38,7 @@ class CLI:
     def __init__(
         self,
         orchestrator: Orchestrator,
-        mcp: ModelControlPlane,
+        mcp: MCPServer,
         ai_interface: AIInterface,
     ) -> None:
         """
@@ -46,7 +46,7 @@ class CLI:
 
         Args:
             orchestrator: Orchestrator instance
-            mcp: Model Control Plane instance
+            mcp: MCP Server instance
             ai_interface: AI Interface instance
         """
         self._orchestrator = orchestrator
@@ -90,6 +90,9 @@ class CLI:
             processed = self._orchestrator.process_next_task()
 
             if processed:
+                result = self._orchestrator.get_task_result(task_id)
+                if result is not None:
+                    return f"OK: {result}"
                 return f"Command processed. Task ID: {task_id}"
             else:
                 return f"Command queued. Task ID: {task_id}"
