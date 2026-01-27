@@ -141,6 +141,7 @@ class SiyaHTTPHandler(BaseHTTPRequestHandler):
             self.send_header("Access-Control-Allow-Origin", "*")
             self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
             self.send_header("Access-Control-Allow-Headers", "Content-Type")
+            self.send_header("Connection", "keep-alive")  # Keep connection alive for long requests
             self.end_headers()
             self.wfile.write(response_bytes)
             self.wfile.flush()

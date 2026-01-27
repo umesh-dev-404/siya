@@ -213,9 +213,10 @@ class ModelManager:
     def generate(
         self,
         prompt: str,
-        max_tokens: int = 512,
-        temperature: float = 0.7,
-        timeout: float = 30.0,
+        max_tokens: int = 128,
+        temperature: float = 0.3,
+        timeout: float = 120.0,
+        stop: Optional[list[str]] = None,
     ) -> str:
         """
         Generate text from prompt.
@@ -225,6 +226,7 @@ class ModelManager:
             max_tokens: Maximum tokens to generate
             temperature: Sampling temperature (0.0-1.0)
             timeout: Maximum time in seconds for inference
+            stop: Stop sequences (model stops when it encounters these)
 
         Returns:
             Generated text
@@ -256,6 +258,7 @@ class ModelManager:
                 max_tokens=max_tokens,
                 temperature=temperature,
                 timeout=timeout,
+                stop=stop,
             )
             return generated_text
         except Exception as e:

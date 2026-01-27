@@ -171,9 +171,9 @@ class LlamaWrapper:
     def generate(
         self,
         prompt: str,
-        max_tokens: int = 512,
-        temperature: float = 0.7,
-        timeout: float = 30.0,
+        max_tokens: int = 128,
+        temperature: float = 0.3,
+        timeout: float = 120.0,
         stop: Optional[list[str]] = None,
     ) -> str:
         """

@@ -45,6 +45,14 @@ class SiyaAPIServer:
             return SiyaHTTPHandler(*args, api_server=self._api_server, **kwargs)
 
         self._server = HTTPServer((self._host, self._port), handler_factory)
+        
+        # Set socket timeout to 5 minutes to handle slow AI inference
+        self._server.timeout = 300  # 5 minutes
+        
+        # Set socket options to keep connections alive
+        import socket
+        self._server.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        self._server.socket.setsockopt(socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1)
 
         logger.info(f"API server started on {self._host}:{self._port}")
         print(f"Siya API server running on http://{self._host}:{self._port}")

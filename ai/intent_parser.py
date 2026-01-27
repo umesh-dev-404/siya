@@ -158,9 +158,10 @@ class IntentParser:
         try:
             response_text = self._model_manager.generate(
                 prompt=prompt,
-                max_tokens=256,  # Reduced for faster inference on Pi
-                temperature=0.7,
+                max_tokens=128,  # Reduced further for faster inference on Pi (JSON responses are short)
+                temperature=0.3,  # Lower temperature for more deterministic JSON output
                 timeout=120.0,  # Increased timeout for slower hardware (Pi)
+                stop=["\n\n", "```"],  # Stop early when JSON is complete
             )
         except Exception as e:
             logger.error(f"Model inference failed: {e}", exc_info=True)
@@ -247,29 +248,12 @@ Your output is data only - execution is handled by deterministic system componen
         
         tools_list = "\n".join([f"- {tool}" for tool in available_tools]) if available_tools else "No tools available"
 
-        task_prompt = f"""
-## CURRENT TASK: Intent Parsing
+        task_prompt = f"""Parse intent for: "{user_input}"
 
-Available tools:
-{tools_list}
+Tools: {', '.join(available_tools) if available_tools else 'none'}
 
-User input: "{user_input}"
-
-Parse the user's intent and respond with a JSON object in this exact format:
-{{
-  "action": "tool_name",
-  "arguments": {{}},
-  "clarification_needed": false,
-  "clarification_question": null
-}}
-
-Rules:
-- "action" must be one of the available tools or "unknown" if no tool matches
-- "arguments" should contain any parameters needed for the tool (empty object if none)
-- "clarification_needed" should be true if the intent is unclear
-- "clarification_question" should be a helpful question if clarification is needed, null otherwise
-
-Respond with ONLY the JSON object, no other text."""
+Return JSON only:
+{{"action": "tool_name"|"unknown", "arguments": {{}}, "clarification_needed": false, "clarification_question": null}}"""
 
         # Combine system prompt with task-specific prompt
         full_prompt = f"""{system_prompt}
