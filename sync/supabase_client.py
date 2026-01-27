@@ -295,9 +295,14 @@ class SupabaseClient:
 
         def _insert() -> str:
             response = self._client.table("memory").insert(record).execute()
-            if response.data:
+            # Supabase-py 2.x raises errors for 4xx/5xx, but logic errors might be in response
+            # Note: execute() usually raises postgrest.exceptions.APIError on failure
+            if hasattr(response, "data") and response.data:
                 return response.data[0].get("id")
-            return None
+            
+            # If we got here with no data and no exception, it might be an RLS policy issue
+            logger.error(f"Supabase insert returned no data: {response}")
+            raise RuntimeError(f"Insert returned no data (Possible RLS blocking): {response}")
 
         return self.execute_with_retry("insert_memory", _insert)
 
