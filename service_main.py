@@ -43,10 +43,17 @@ def run_api_server(http_server: SiyaAPIServer) -> None:
         http_server: API server instance
     """
     try:
+        print("API server thread starting...", flush=True)
+        logger.info("API server thread starting")
         http_server.serve_forever()
     except Exception as e:
-        logger.error(f"API server error: {e}", exc_info=True)
-        raise
+        error_msg = f"API server thread crashed: {e}"
+        print(error_msg, file=sys.stderr, flush=True)
+        logger.error(error_msg, exc_info=True)
+        import traceback
+        traceback.print_exc(file=sys.stderr)
+        sys.stderr.flush()
+        # Don't re-raise - let the thread die gracefully
 
 
 def run_web_server(web_server: WebServer) -> None:
@@ -142,6 +149,17 @@ def main() -> int:
         # Start API server in a thread
         api_thread = threading.Thread(target=run_api_server, args=(http_server,), daemon=True)
         api_thread.start()
+        
+        # Give API server thread a moment to start
+        import time
+        time.sleep(0.5)
+        
+        # Verify API server started
+        if not api_thread.is_alive():
+            error_msg = "API server thread died immediately after start"
+            print(error_msg, file=sys.stderr, flush=True)
+            logger.error(error_msg)
+            raise RuntimeError(error_msg)
 
         # Start web server in main thread (blocking)
         # This keeps the main process alive
