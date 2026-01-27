@@ -432,18 +432,19 @@ async function doExecuteTool(toolName, args, confirmed = false) {
                             showConfirmation({ name: toolName }, args, parsed.message);
                             return;
                         }
-                        addOutput(JSON.stringify(parsed, null, 2), 'success');
+                        // Format as human-readable output
+                        addOutput(formatResult(parsed), 'success', true);
                     } catch {
                         addOutput(content.text, 'success');
                     }
                 } else {
-                    addOutput(JSON.stringify(response.result, null, 2), 'success');
+                    addOutput(formatResult(response.result), 'success', true);
                 }
             } else {
-                addOutput(JSON.stringify(response.result, null, 2), 'success');
+                addOutput(formatResult(response.result), 'success', true);
             }
         } else {
-            addOutput(JSON.stringify(response, null, 2), 'success');
+            addOutput(formatResult(response), 'success', true);
         }
     } catch (error) {
         addOutput(`Error: ${error.message}`, 'error');
@@ -506,19 +507,112 @@ async function confirmExecution() {
 }
 
 // ===== OUTPUT =====
-function addOutput(message, type = 'info') {
-    if (!elements.outputBody) return;
+function addOutput(message, type = 'info', isHtml = false) {
+    const outputBody = document.getElementById('output-body');
+    if (!outputBody) return;
 
     const line = document.createElement('div');
     line.className = `output-line ${type}`;
-    line.textContent = message;
-    elements.outputBody.appendChild(line);
-    elements.outputBody.scrollTop = elements.outputBody.scrollHeight;
+
+    if (isHtml) {
+        line.innerHTML = message;
+    } else {
+        line.textContent = message;
+    }
+
+    outputBody.appendChild(line);
+    outputBody.scrollTop = outputBody.scrollHeight;
+}
+
+/**
+ * Format tool result as human-readable HTML
+ */
+function formatResult(data) {
+    if (typeof data === 'string') {
+        return `<span class="result-text">${escapeHtml(data)}</span>`;
+    }
+
+    if (Array.isArray(data)) {
+        if (data.length === 0) return '<em>Empty list</em>';
+        return `<div class="result-list">${data.map(item => formatResult(item)).join('')}</div>`;
+    }
+
+    if (typeof data === 'object' && data !== null) {
+        let html = '<div class="result-card">';
+
+        for (const [key, value] of Object.entries(data)) {
+            const label = formatLabel(key);
+            const formattedValue = formatValue(key, value);
+            html += `<div class="result-row"><span class="result-label">${label}:</span> ${formattedValue}</div>`;
+        }
+
+        html += '</div>';
+        return html;
+    }
+
+    return String(data);
+}
+
+function formatLabel(key) {
+    return key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+}
+
+function formatValue(key, value) {
+    if (value === null || value === undefined) return '<em>—</em>';
+    if (typeof value === 'boolean') {
+        return value
+            ? '<span class="value-true">✓ Yes</span>'
+            : '<span class="value-false">✗ No</span>';
+    }
+    if (typeof value === 'number') return `<strong>${value}</strong>`;
+    if (typeof value === 'string') {
+        // Format status values with colors
+        if (key.toLowerCase().includes('status')) {
+            const statusClass = getStatusClass(value);
+            return `<span class="status-badge ${statusClass}">${escapeHtml(value)}</span>`;
+        }
+        return escapeHtml(value);
+    }
+    if (Array.isArray(value)) {
+        if (value.length === 0) return '<em>None</em>';
+        return `<span class="value-count">${value.length} items</span>`;
+    }
+    if (typeof value === 'object') {
+        // Nested object - format inline
+        const parts = Object.entries(value)
+            .map(([k, v]) => `${formatLabel(k)}: ${formatSimpleValue(v)}`)
+            .join(' • ');
+        return `<span class="nested-obj">${parts}</span>`;
+    }
+    return String(value);
+}
+
+function formatSimpleValue(value) {
+    if (value === null || value === undefined) return '—';
+    if (typeof value === 'boolean') return value ? '✓' : '✗';
+    if (typeof value === 'number') return String(value);
+    if (typeof value === 'string') return value;
+    return JSON.stringify(value);
+}
+
+function getStatusClass(status) {
+    const s = String(status).toLowerCase();
+    if (s.includes('connected') || s.includes('success') || s.includes('active') || s.includes('enabled')) return 'status-success';
+    if (s.includes('error') || s.includes('fail') || s.includes('disconnect')) return 'status-error';
+    if (s.includes('pending') || s.includes('process') || s.includes('wait')) return 'status-warning';
+    return 'status-info';
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
 }
 
 function clearOutput() {
-    if (elements.outputBody) {
-        elements.outputBody.innerHTML = '';
+    const outputBody = document.getElementById('output-body');
+    if (outputBody) {
+        outputBody.innerHTML = '';
     }
 }
 
