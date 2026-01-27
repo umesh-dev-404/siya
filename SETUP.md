@@ -358,5 +358,5 @@ From Supabase Dashboard → **Settings** → **API**:
 
 ---
 
-**Last Updated:** 2026-01-27
+**Last Updated:** 2026-01-28
 

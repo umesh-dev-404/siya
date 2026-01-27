@@ -380,6 +380,34 @@ If no → Ask user for confirmation before creating
 
 ---
 
+## 8.2 ERROR CORRECTION DISCIPLINE (MANDATORY)
+
+**Rule:** All errors encountered and their solutions MUST be documented in `docs/ERROR_CORRECTION.md`.
+
+### When to Document
+
+• After any bug fix during implementation  
+• After resolving configuration issues  
+• After fixing schema mismatches  
+• After correcting API or protocol errors  
+
+### Required Information
+
+For each error, document:
+• **Symptom:** What error message or behavior was observed  
+• **Cause:** Root cause analysis  
+• **Solution:** What was changed to fix it  
+• **Files Modified:** List of affected files  
+
+### Principles
+
+• **Document as you fix** — Don't defer error documentation  
+• **Be specific** — Include exact error messages  
+• **Group by session** — Organize entries by date/session  
+• **Preserve history** — Never delete old entries; they serve as institutional knowledge
+
+---
+
 ## 9. DEFAULT ATTITUDE
 
 Behave like a **careful senior engineer** who knows:

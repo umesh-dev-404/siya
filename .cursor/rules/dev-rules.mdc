@@ -394,6 +394,65 @@ Never skip tests “for now”.
 
 If unsafe → do not proceed.
 
+## 8.1 DOCUMENTATION DISCIPLINE (MANDATORY)
+
+**Rule:** Edit existing documentation files. Do NOT create new files unless absolutely necessary.
+
+### When to Edit Existing Files
+
+• Deployment instructions → `docs/DEPLOYMENT.md` (includes GitHub setup, network access)  
+• AI model information → `docs/AI_MODEL_GUIDE.md` (setup, testing, optimization, selection)  
+• Project status → `docs/PROJECT_STATUS.md` or `README.md`  
+• Troubleshooting → Add to relevant existing doc, not new file  
+
+### When to Create New Files
+
+ONLY when:
+• User explicitly requests a new document  
+• Content fundamentally cannot fit in existing structure  
+• It's a required project artifact (e.g., phase completion reports in designated folder)  
+
+### Documentation Principles
+
+• **Consolidate, don't fragment**  
+• **One topic, one file** (when possible)  
+• **Clear sections, not many files**  
+• **Update existing docs, don't duplicate**  
+
+Before creating a new doc file, ask:
+> "Can this information go in an existing file instead?"
+
+If yes → Edit existing file  
+If no → Ask user for confirmation before creating
+
+---
+
+## 8.2 ERROR CORRECTION DISCIPLINE (MANDATORY)
+
+**Rule:** All errors encountered and their solutions MUST be documented in `docs/ERROR_CORRECTION.md`.
+
+### When to Document
+
+• After any bug fix during implementation  
+• After resolving configuration issues  
+• After fixing schema mismatches  
+• After correcting API or protocol errors  
+
+### Required Information
+
+For each error, document:
+• **Symptom:** What error message or behavior was observed  
+• **Cause:** Root cause analysis  
+• **Solution:** What was changed to fix it  
+• **Files Modified:** List of affected files  
+
+### Principles
+
+• **Document as you fix** — Don't defer error documentation  
+• **Be specific** — Include exact error messages  
+• **Group by session** — Organize entries by date/session  
+• **Preserve history** — Never delete old entries; they serve as institutional knowledge
+
 ---
 
 ## 9. DIFF & CHANGE DISCIPLINE
