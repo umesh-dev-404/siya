@@ -45,12 +45,14 @@ class SiyaHTTPHandler(BaseHTTPRequestHandler):
 
             if parsed_path.path == "/health":
                 # Health check
+                logger.debug("Health check requested")
                 response = self._api_server.handle_health_check() if self._api_server else {
                     "status": "error",
                     "message": "API server not initialized",
                 }
                 self._send_json_response(200, response)
             else:
+                logger.warning(f"GET to unknown path: {parsed_path.path}")
                 self._send_json_response(404, {"status": "error", "message": "Not found"})
         except Exception as e:
             logger.error(f"GET request failed: {e}", exc_info=True)
@@ -72,23 +74,33 @@ class SiyaHTTPHandler(BaseHTTPRequestHandler):
         """Handle POST requests."""
         try:
             parsed_path = urlparse(self.path)
+            logger.info(f"POST request to {parsed_path.path} from {self.address_string()}")
 
             if parsed_path.path == "/command":
                 # Command endpoint
                 try:
                     content_length = int(self.headers.get("Content-Length", 0))
+                    if content_length == 0:
+                        self._send_json_response(400, {"status": "error", "message": "Empty request body"})
+                        return
+                    
                     body = self.rfile.read(content_length)
                     request_data = json.loads(body.decode("utf-8"))
+                    
+                    logger.info(f"Command received: {request_data.get('command', 'N/A')}")
 
-                    response = (
-                        self._api_server.handle_command(request_data)
-                        if self._api_server
-                        else {"status": "error", "message": "API server not initialized"}
-                    )
+                    if not self._api_server:
+                        logger.error("API server not initialized")
+                        self._send_json_response(500, {"status": "error", "message": "API server not initialized"})
+                        return
+
+                    response = self._api_server.handle_command(request_data)
+                    logger.info(f"Command response: {response.get('status', 'unknown')}")
 
                     self._send_json_response(200, response)
 
-                except json.JSONDecodeError:
+                except json.JSONDecodeError as e:
+                    logger.error(f"Invalid JSON in request: {e}")
                     self._send_json_response(
                         400, {"status": "error", "message": "Invalid JSON"}
                     )
@@ -101,6 +113,7 @@ class SiyaHTTPHandler(BaseHTTPRequestHandler):
                     except Exception:
                         logger.error("Failed to send error response", exc_info=True)
             else:
+                logger.warning(f"POST to unknown path: {parsed_path.path}")
                 self._send_json_response(404, {"status": "error", "message": "Not found"})
         except Exception as e:
             logger.error(f"POST request failed: {e}", exc_info=True)

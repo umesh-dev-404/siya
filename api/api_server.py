@@ -72,8 +72,10 @@ class APIServer:
             }
 
         try:
+            logger.info(f"Processing command: {command}")
             # Mirror CLI behavior exactly
             response_message = self._cli.run_single_command(command)
+            logger.info(f"Command processed successfully: {response_message[:100]}")
 
             return {
                 "status": "success",

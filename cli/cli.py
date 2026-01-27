@@ -155,10 +155,14 @@ class CLI:
             Used for non-interactive execution (e.g., from API).
         """
         if not self._running:
+            logger.warning("CLI not running, starting now...")
             self.start()
 
         try:
-            return self.process_command(command)
-        finally:
-            # Don't stop after single command (may be used in API context)
-            pass
+            logger.info(f"CLI processing command: {command}")
+            result = self.process_command(command)
+            logger.info(f"CLI command result: {result[:100] if result else 'None'}")
+            return result
+        except Exception as e:
+            logger.error(f"CLI command processing failed: {e}", exc_info=True)
+            raise

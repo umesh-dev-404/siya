@@ -205,15 +205,20 @@
                     body: JSON.stringify({ command: command }),
                 });
 
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
                 const data = await response.json();
 
                 if (data.status === 'success') {
                     addOutput(data.message, 'success');
                 } else {
-                    addOutput(data.message, 'error');
+                    addOutput(data.message || 'Unknown error', 'error');
                 }
             } catch (error) {
-                addOutput(`Error: ${error.message}`, 'error');
+                console.error('Command submission error:', error);
+                addOutput(`Error: ${error.message || 'Failed to connect to API server'}`, 'error');
             } finally {
                 // Re-enable input
                 input.disabled = false;
