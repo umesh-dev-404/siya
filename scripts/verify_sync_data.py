@@ -26,12 +26,15 @@ def main():
 
     record_id = str(uuid.uuid4())
     payload = {
+        "id": record_id,
         "key": "test_verification_entry",
         "value": "TEST_MEMORY_ENTRY_FOR_SYNC_VERIFICATION",
-        "created_at": datetime.datetime.now().isoformat(),
-        "tags": ["test", "verification"],
+        "memory_tier": "L3",
+        "tags": '["test", "verification"]',  # JSON string
         "confidence": 1.0,
-        "source": "manual_verification_script"
+        "created_at": datetime.datetime.now(datetime.timezone.utc).isoformat(),
+        "updated_at": datetime.datetime.now(datetime.timezone.utc).isoformat(),
+        "source_type": "user_input",
     }
 
     print(f"Queueing fake memory record {record_id}...")
