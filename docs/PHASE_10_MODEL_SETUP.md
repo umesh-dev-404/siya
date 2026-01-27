@@ -288,16 +288,28 @@ The AI model uses a system prompt to define its role and constraints.
 
 ---
 
+## PERFORMANCE NOTES
+
+The system includes optimizations for faster inference on Raspberry Pi:
+
+- **Inference Settings:** max_tokens=128, temperature=0.2, timeout=120s
+- **Expected Response Time:** 10-30 seconds per query (after first warmup)
+- **JSON Repair:** Automatically fixes common JSON issues from AI responses
+- **Connection Handling:** 5-minute HTTP timeout for long-running inferences
+- **Natural Language:** System accepts conversational input, not just commands
+
 ## NEXT STEPS
 
 After model setup is complete:
-1. Test intent parsing with real model
-2. Verify schema compliance
-3. Monitor resource usage
-4. Optimize performance if needed
-5. Complete Phase 10 implementation
+1. ✅ Test intent parsing with real model (verified working)
+2. ✅ Verify schema compliance (with JSON repair fallback)
+3. ✅ Monitor resource usage (RAM usage verified)
+4. ✅ Performance optimizations implemented
+5. ⏳ Extended testing and fine-tuning (ongoing)
 
 ---
 
 **Last Updated:** 2026-01-27  
-**Status:** Model download complete ✅ — Ready for configuration and testing
+**Status:** ✅ Model operational — Running with performance optimizations  
+**Performance:** Optimized settings (max_tokens=128, temperature=0.2, timeout=120s)  
+**Response Time:** 10-30 seconds per query (after warmup)

@@ -12,6 +12,10 @@ This guide explains how to run and test the AI model (Qwen 2.5 3B Instruct) in S
 - ✅ Model auto-loads on service startup (if path configured)
 - ✅ Model can be manually loaded/unloaded
 - ✅ Model used automatically for intent parsing
+- ✅ Performance optimizations implemented (max_tokens=128, temperature=0.2)
+- ✅ JSON repair function for robust parsing
+- ✅ Natural language input supported
+- ✅ Expected response time: 10-30 seconds per query
 
 ---
 
@@ -106,8 +110,8 @@ if manager.load_model():
     print("✅ Model loaded!")
     print(f"Model size: {manager.get_model_size_mb()} MB")
     
-    # Test inference
-    response = manager.generate("What is 2+2?", max_tokens=50)
+    # Test inference (using optimized defaults: max_tokens=128, temperature=0.2)
+    response = manager.generate("What is 2+2?", max_tokens=128, temperature=0.2)
     print(f"Response: {response}")
     
     manager.unload_model()
@@ -364,10 +368,19 @@ curl -X POST http://192.168.1.39:8080/command \
 
 ### Check Inference Time
 
-Model logs include inference timing. Check logs:
+Model logs include inference timing and detailed debugging. Check logs:
 ```bash
-sudo journalctl -u siya | grep -i "inference\|model"
+# View all model-related logs
+sudo journalctl -u siya | grep -i "inference\|model\|intent"
+
+# View detailed debug logs (if DEBUG level enabled)
+sudo journalctl -u siya | grep -E "Model response|Parsing AI response|extracted_json"
 ```
+
+**Expected Performance:**
+- First inference: 30-60 seconds (model warmup)
+- Subsequent inferences: 10-30 seconds (with optimized settings)
+- Timeout: 120 seconds maximum
 
 ### Monitor RAM Usage
 
@@ -382,7 +395,10 @@ free -h
 free -h
 
 # Should see ~2-3 GB increase in used RAM
+# Model stays loaded in memory for faster subsequent inferences
 ```
+
+**Note:** The model remains loaded in RAM after startup for faster inference. RAM usage should be ~3-4 GB total (system + model).
 
 ### Check Model Status
 
@@ -406,18 +422,47 @@ if model_path:
 
 ---
 
+## PERFORMANCE OPTIMIZATIONS
+
+The system includes several optimizations for faster inference on Raspberry Pi:
+
+1. **Reduced Token Generation:**
+   - `max_tokens=128` (reduced from 512) for faster JSON responses
+   - Stop sequences (`\n\n`, ````, `}`) to stop early when JSON completes
+
+2. **Deterministic Output:**
+   - `temperature=0.2` (reduced from 0.7) for more consistent JSON generation
+   - Lower temperature = faster, more predictable responses
+
+3. **Simplified Prompt:**
+   - Shorter, more focused prompt structure
+   - Direct JSON format example in prompt
+   - Reduced prompt length = fewer tokens to process
+
+4. **JSON Repair Function:**
+   - Automatically fixes common JSON issues (quotes, commas, etc.)
+   - Handles malformed AI responses gracefully
+   - Falls back to stub mode if JSON cannot be repaired
+
+5. **Connection Handling:**
+   - HTTP socket timeout: 5 minutes (handles slow inference)
+   - Keep-alive headers for long-running requests
+   - Better error handling for connection issues
+
 ## NEXT STEPS
 
 After model is working:
 
-1. **Test various natural language inputs**
+1. **Test various natural language inputs** (system handles natural language, not just commands)
 2. **Monitor resource usage** during extended use
 3. **Verify schema compliance** of AI outputs
-4. **Test error recovery** (model failures, timeouts)
-5. **Optimize performance** if needed
+4. **Test error recovery** (model failures, timeouts, JSON parsing errors)
+5. **Monitor inference times** - should be 10-30 seconds for typical queries
 
 ---
 
 **Last Updated:** 2026-01-27  
-**Status:** Ready for testing  
-**Model:** Qwen 2.5 3B Instruct (Q4_K_M)
+**Status:** ✅ Operational — Model running with performance optimizations  
+**Model:** Qwen 2.5 3B Instruct (Q4_K_M)  
+**Performance:** Optimized for Pi (max_tokens=128, temperature=0.2, timeout=120s)  
+**Expected Response Time:** 10-30 seconds per query

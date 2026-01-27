@@ -253,10 +253,13 @@ When you send a command:
 
 ## CURRENT LIMITATIONS
 
-**Phase 2 Status:**
+**Phase 10 Status:**
 - Tool registry framework exists but no tools registered
-- Intent parsing is stub (will be replaced with actual AI model)
-- Tool execution is stubbed (no tools to execute)
+- Intent parsing uses real AI model (Qwen 2.5 3B Instruct)
+- Model optimized for Pi: max_tokens=128, temperature=0.2, timeout=120s
+- JSON repair function handles malformed AI responses
+- Natural language input supported (not just commands)
+- Tool execution is stubbed (no tools to execute yet)
 
 **What Works:**
 - ✅ Service initialization (Orchestrator and CLI started automatically)

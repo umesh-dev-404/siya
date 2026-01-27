@@ -214,6 +214,7 @@ class LlamaWrapper:
             # Call llama.cpp inference
             # Note: llama-cpp-python doesn't support timeout directly
             # We'll rely on max_tokens to limit generation time
+            logger.debug(f"Starting inference: max_tokens={max_tokens}, temperature={temperature}, stop={stop}")
             result = self._model(
                 prompt,
                 max_tokens=max_tokens,
@@ -221,6 +222,7 @@ class LlamaWrapper:
                 stop=stop or [],
                 echo=False,  # Don't echo the prompt
             )
+            logger.debug(f"Inference complete, result type: {type(result)}")
 
             inference_time = time.time() - start_time
 
@@ -231,10 +233,17 @@ class LlamaWrapper:
 
             # Extract text from result
             # llama-cpp-python returns a dict with 'choices' list
-            if "choices" in result and len(result["choices"]) > 0:
+            logger.debug(f"Result type: {type(result)}, keys: {result.keys() if isinstance(result, dict) else 'N/A'}")
+            if isinstance(result, dict) and "choices" in result and len(result["choices"]) > 0:
                 generated_text = result["choices"][0].get("text", "")
+            elif isinstance(result, dict) and "text" in result:
+                generated_text = result["text"]
+            elif hasattr(result, 'choices') and len(result.choices) > 0:
+                generated_text = result.choices[0].text if hasattr(result.choices[0], 'text') else str(result.choices[0])
             else:
-                generated_text = ""
+                generated_text = str(result) if result else ""
+            
+            logger.debug(f"Extracted text (first 200 chars): {generated_text[:200]}")
 
             logger.debug(
                 "Text generated",

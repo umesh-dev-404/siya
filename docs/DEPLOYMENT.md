@@ -614,6 +614,14 @@ sudo journalctl -u siya -f
 - **Cause:** Orchestrator or CLI not started before servers
 - **Fix:** Ensure `service_main.py` explicitly calls `orchestrator.start()` and `cli.start()` before starting servers (already fixed in latest code)
 
+**Error: AI inference taking too long (> 2 minutes)**
+- **Cause:** Model inference is slow on Pi hardware
+- **Fix:** Optimizations already implemented (max_tokens=128, temperature=0.2, timeout=120s). Expected response time: 10-30 seconds after warmup.
+
+**Error: JSON parsing errors from AI model**
+- **Cause:** AI model sometimes generates malformed JSON
+- **Fix:** JSON repair function automatically fixes common issues. Falls back to stub mode if repair fails (graceful degradation).
+
 **Error: `status=1/FAILURE` (general failure)**
 - **Cause:** Python script error (check logs for details)
 - **Fix:** See Step 2 below

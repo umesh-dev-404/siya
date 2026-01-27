@@ -156,13 +156,15 @@ class IntentParser:
 
         # Generate response from model
         try:
+            logger.debug(f"Calling model with prompt length: {len(prompt)}")
             response_text = self._model_manager.generate(
                 prompt=prompt,
                 max_tokens=128,  # Reduced further for faster inference on Pi (JSON responses are short)
-                temperature=0.3,  # Lower temperature for more deterministic JSON output
+                temperature=0.2,  # Very low temperature for deterministic JSON output
                 timeout=120.0,  # Increased timeout for slower hardware (Pi)
-                stop=["\n\n", "```"],  # Stop early when JSON is complete
+                stop=["\n\n", "```", "\n}", "}"],  # Stop early when JSON is complete
             )
+            logger.debug(f"Model response (first 200 chars): {response_text[:200]}")
         except Exception as e:
             logger.error(f"Model inference failed: {e}", exc_info=True)
             raise RuntimeError(f"Inference failed: {e}") from e
@@ -248,12 +250,11 @@ Your output is data only - execution is handled by deterministic system componen
         
         tools_list = "\n".join([f"- {tool}" for tool in available_tools]) if available_tools else "No tools available"
 
-        task_prompt = f"""Parse intent for: "{user_input}"
-
-Tools: {', '.join(available_tools) if available_tools else 'none'}
-
-Return JSON only:
-{{"action": "tool_name"|"unknown", "arguments": {{}}, "clarification_needed": false, "clarification_question": null}}"""
+        # Simplified prompt for faster, more reliable JSON generation
+        tools_str = ', '.join(available_tools) if available_tools else 'none'
+        task_prompt = f"""Parse: "{user_input}"
+Tools: {tools_str}
+JSON: {{"action":"unknown","arguments":{{}},"clarification_needed":false,"clarification_question":null}}"""
 
         # Combine system prompt with task-specific prompt
         full_prompt = f"""{system_prompt}
@@ -261,6 +262,43 @@ Return JSON only:
 {task_prompt}"""
 
         return full_prompt
+
+    def _repair_json(self, json_str: str) -> str:
+        """
+        Attempt to repair common JSON issues in AI responses.
+        
+        Args:
+            json_str: Potentially malformed JSON string
+            
+        Returns:
+            Repaired JSON string
+        """
+        # Remove any text before first {
+        start_idx = json_str.find('{')
+        if start_idx > 0:
+            json_str = json_str[start_idx:]
+        
+        # Remove any text after last }
+        end_idx = json_str.rfind('}')
+        if end_idx != -1 and end_idx < len(json_str) - 1:
+            json_str = json_str[:end_idx+1]
+        
+        # Fix common issues:
+        # 1. Single quotes to double quotes
+        json_str = json_str.replace("'", '"')
+        
+        # 2. Trailing commas before }
+        json_str = re.sub(r',\s*}', '}', json_str)
+        json_str = re.sub(r',\s*]', ']', json_str)
+        
+        # 3. Missing quotes around keys
+        json_str = re.sub(r'(\w+):', r'"\1":', json_str)
+        
+        # 4. Fix unquoted string values (but not numbers/booleans/null)
+        # This is tricky, so we'll be conservative
+        json_str = re.sub(r':\s*([^",\[\]{}0-9\-\s]+)([,}])', r': "\1"\2', json_str)
+        
+        return json_str.strip()
 
     def _parse_ai_response(self, response_text: str, available_tools: list[str]) -> Dict[str, Any]:
         """
@@ -276,9 +314,13 @@ Return JSON only:
         Raises:
             RuntimeError: If response cannot be parsed
         """
+        logger.debug(f"Parsing AI response: {response_text[:500]}")
+        
+        # Clean the response - remove any leading/trailing whitespace
+        response_text = response_text.strip()
+        
         # Try to extract JSON from response
-        # AI might return JSON wrapped in markdown or other text
-        # Look for JSON object (handles nested objects)
+        # First, try to find JSON object (handles nested objects better)
         json_match = re.search(r'\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}', response_text, re.DOTALL)
         if json_match:
             json_str = json_match.group(0)
@@ -288,13 +330,27 @@ Return JSON only:
             if code_block_match:
                 json_str = code_block_match.group(1)
             else:
-                json_str = response_text.strip()
+                # Try to find first { to last }
+                start_idx = response_text.find('{')
+                end_idx = response_text.rfind('}')
+                if start_idx != -1 and end_idx != -1 and end_idx > start_idx:
+                    json_str = response_text[start_idx:end_idx+1]
+                else:
+                    json_str = response_text.strip()
+
+        # Try to repair common JSON issues
+        json_str = self._repair_json(json_str)
 
         try:
             intent = json.loads(json_str)
         except json.JSONDecodeError as e:
-            logger.error(f"Failed to parse AI response as JSON: {e}", extra={"response": response_text})
+            logger.error(f"Failed to parse AI response as JSON: {e}", extra={
+                "response": response_text[:500],
+                "extracted_json": json_str[:500]
+            })
             raise RuntimeError(f"Invalid JSON response from AI: {e}") from e
+        
+        logger.debug(f"Successfully parsed intent: {intent}")
 
         # Validate and normalize intent structure
         action = intent.get("action", "unknown")
