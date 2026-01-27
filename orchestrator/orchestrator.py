@@ -67,6 +67,10 @@ class Orchestrator:
         self._ai_interface = ai_interface
         self._tool_executor = tool_executor or ToolExecutor()
         self._task_results: Dict[UUID, Dict[str, Any]] = {}
+        
+        # Phase 11: Confirmation flow support (LAW 1 - Human Sovereignty)
+        self._pending_confirmations: Dict[UUID, Dict[str, Any]] = {}
+        self._pending_tool_requests: Dict[UUID, Dict[str, Any]] = {}
 
     def start(self) -> None:
         """
@@ -354,12 +358,32 @@ class Orchestrator:
                     raise RuntimeError(f"{error_code}: {error_message}")
 
                 if authorization_result.requires_confirmation:
-                    # Phase 5: Confirmation required - fail for now
-                    # In later phases, this will trigger confirmation flow
-                    raise RuntimeError(
-                        f"Confirmation required for tool {tool_request.get('tool_name')}. "
-                        f"Confirmation flow not implemented in Phase 5."
+                    # Phase 11: Store pending confirmation (LAW 1 - Human Sovereignty)
+                    tool_name = tool_request.get('tool_name')
+                    self._pending_confirmations[task.task_id] = {
+                        "tool_request": tool_request,
+                        "task": task,
+                        "step_id": step_id,
+                        "tool_name": tool_name,
+                        "arguments": tool_request.get("arguments", {}),
+                        "message": f"Tool '{tool_name}' requires confirmation before execution.",
+                    }
+                    
+                    # Store task result as pending
+                    self._task_results[task.task_id] = {
+                        "status": "pending_confirmation",
+                        "tool_name": tool_name,
+                        "message": f"Tool '{tool_name}' requires your confirmation to execute. Use confirm_execution() or reject_execution().",
+                    }
+                    
+                    logger.info(
+                        f"Confirmation required for tool {tool_name} (task {task.task_id})",
+                        extra={"task_id": str(task.task_id), "tool_name": tool_name},
                     )
+                    
+                    # Mark task as waiting for confirmation (not failed, not complete)
+                    self._task_queue.mark_complete()  # Remove from queue but track in pending
+                    return True
 
                 logger.debug(
                     f"Step {step_id} validated and authorized",
@@ -473,3 +497,117 @@ class Orchestrator:
             True if executing, False otherwise
         """
         return self._task_queue.is_executing()
+
+    # Phase 11: Confirmation Flow (LAW 1 - Human Sovereignty)
+    
+    def get_pending_confirmations(self) -> Dict[UUID, Dict[str, Any]]:
+        """
+        Get all pending confirmations.
+        
+        Per LAW 1: Human Sovereignty - tools requiring confirmation are held
+        until user explicitly approves or rejects.
+        
+        Returns:
+            Dictionary of task_id -> confirmation details
+        """
+        return dict(self._pending_confirmations)
+
+    def confirm_execution(self, task_id: UUID) -> Dict[str, Any]:
+        """
+        Confirm and execute a pending tool request.
+        
+        Per LAW 1: Human Sovereignty - user explicitly approves execution.
+        
+        Args:
+            task_id: Task ID of the pending confirmation
+            
+        Returns:
+            Execution result
+            
+        Raises:
+            ValueError: If task_id not in pending confirmations
+        """
+        if task_id not in self._pending_confirmations:
+            raise ValueError(f"No pending confirmation for task {task_id}")
+        
+        confirmation = self._pending_confirmations.pop(task_id)
+        tool_request = confirmation["tool_request"]
+        tool_name = confirmation["tool_name"]
+        arguments = confirmation["arguments"]
+        
+        logger.info(
+            f"Confirmation received for tool {tool_name} (task {task_id})",
+            extra={"task_id": str(task_id), "tool_name": tool_name},
+        )
+        
+        try:
+            # Execute the tool
+            execution_result = self._tool_executor.execute(tool_name, arguments)
+            
+            # Update task result
+            self._task_results[task_id] = {
+                "status": "ok",
+                "tool_name": execution_result.tool_name,
+                "output": execution_result.output,
+                "confirmed": True,
+            }
+            
+            logger.info(
+                f"Tool {tool_name} executed after confirmation",
+                extra={"task_id": str(task_id), "tool_name": tool_name},
+            )
+            
+            return self._task_results[task_id]
+            
+        except Exception as e:
+            logger.error(
+                f"Tool {tool_name} failed after confirmation: {e}",
+                extra={"task_id": str(task_id), "tool_name": tool_name},
+                exc_info=True,
+            )
+            
+            self._task_results[task_id] = {
+                "status": "error",
+                "tool_name": tool_name,
+                "message": str(e),
+                "confirmed": True,
+            }
+            
+            return self._task_results[task_id]
+
+    def reject_execution(self, task_id: UUID, reason: Optional[str] = None) -> Dict[str, Any]:
+        """
+        Reject a pending tool request.
+        
+        Per LAW 1: Human Sovereignty - user explicitly rejects execution.
+        
+        Args:
+            task_id: Task ID of the pending confirmation
+            reason: Optional rejection reason
+            
+        Returns:
+            Rejection result
+            
+        Raises:
+            ValueError: If task_id not in pending confirmations
+        """
+        if task_id not in self._pending_confirmations:
+            raise ValueError(f"No pending confirmation for task {task_id}")
+        
+        confirmation = self._pending_confirmations.pop(task_id)
+        tool_name = confirmation["tool_name"]
+        
+        logger.info(
+            f"Execution rejected for tool {tool_name} (task {task_id})",
+            extra={"task_id": str(task_id), "tool_name": tool_name, "reason": reason},
+        )
+        
+        self._task_results[task_id] = {
+            "status": "rejected",
+            "tool_name": tool_name,
+            "message": reason or "Execution rejected by user",
+            "confirmed": False,
+        }
+        
+        return self._task_results[task_id]
+

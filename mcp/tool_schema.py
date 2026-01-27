@@ -3,15 +3,19 @@ Tool Schema Framework
 
 Defines strict tool schema format for tool registration.
 Per DIP Phase 2: Tool schema framework (no tools yet).
+Per DIP Phase 11: Added category field for tool organization.
 
 Enforces:
 - LAW 4 — TOOL-ONLY EXECUTION
 - LAW 6 — NO FREE-FORM COMPUTATION
 """
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from tools.categories import ToolCategory
 
 # Import JSON schema validation when available
 try:
@@ -66,6 +70,9 @@ class ToolSchema:
 
     requires_confirmation: bool
     """Whether this tool requires explicit user confirmation before execution."""
+
+    category: Optional[str] = None
+    """Tool category (system, file, memory, automation, content, integration)."""
 
     version: str = "1.0.0"
     """Tool schema version."""

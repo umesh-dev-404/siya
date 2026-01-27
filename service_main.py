@@ -31,6 +31,19 @@ from tools.text_tools import make_summarize_text_tool
 from tools.tool_executor import ToolExecutor
 from web.web_server import WebServer
 
+# Phase 11: New tool imports
+from tools.system.resource_monitor_tool import make_resource_monitor_tool, resource_monitor_impl
+from tools.system.log_query_tool import make_log_query_tool, log_query_impl
+from tools.memory.memory_read_tool import make_memory_read_tool, memory_read_impl
+from tools.file.file_read_tool import make_file_read_tool, file_read_impl
+from tools.file.file_write_tool import make_file_write_tool, file_write_impl
+from tools.file.file_list_tool import make_directory_list_tool, directory_list_impl
+from tools.automation_tools import (
+    make_list_automations_tool, list_automations_impl,
+    make_trigger_automation_tool, trigger_automation_impl,
+    set_automation_manager,
+)
+
 # Setup logging first (before any other imports that might log)
 try:
     setup_logging(level=logging.INFO)
@@ -187,10 +200,31 @@ def main() -> int:
             )
         )
 
+        # Phase 11: Register new tools
+        tool_registry.register(make_resource_monitor_tool())
+        tool_registry.register(make_log_query_tool())
+        tool_registry.register(make_memory_read_tool())
+        tool_registry.register(make_file_read_tool())
+        tool_registry.register(make_file_write_tool())
+        tool_registry.register(make_directory_list_tool())
+        tool_registry.register(make_list_automations_tool())
+        tool_registry.register(make_trigger_automation_tool())
+        print("Phase 11 tools registered (8 new tools)", flush=True)
+
         # Tool implementations
         tool_executor = ToolExecutor()
         tool_executor.register("get_system_status", get_system_status)
         tool_executor.register("tools_list", lambda _args: {"status": "ok", "tools": tool_registry.list_tools()})
+        
+        # Phase 11: Register new tool implementations
+        tool_executor.register("resource_monitor", resource_monitor_impl)
+        tool_executor.register("log_query", log_query_impl)
+        tool_executor.register("memory_read", memory_read_impl)
+        tool_executor.register("file_read", file_read_impl)
+        tool_executor.register("file_write", file_write_impl)
+        tool_executor.register("directory_list", directory_list_impl)
+        tool_executor.register("list_automations", list_automations_impl)
+        tool_executor.register("trigger_automation", trigger_automation_impl)
         
         print("Getting model path...", flush=True)
         model_path = get_model_path()
