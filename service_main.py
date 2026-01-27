@@ -94,6 +94,23 @@ def main() -> int:
         print("Creating AI interface...", flush=True)
         ai_interface = AIInterface(tool_registry, request_validator, model_path=model_path)
         
+        # Load model if path is configured (Phase 10)
+        if model_path:
+            print(f"Loading AI model from {model_path}...", flush=True)
+            try:
+                if ai_interface.load_model():
+                    print("✅ AI model loaded successfully", flush=True)
+                    logger.info("AI model loaded successfully")
+                else:
+                    print("⚠️  Model loading failed - will use stub mode", flush=True)
+                    logger.warning("Model loading failed - will use stub mode")
+            except Exception as e:
+                print(f"⚠️  Model loading error: {e} - will use stub mode", flush=True)
+                logger.warning(f"Model loading error: {e} - will use stub mode", exc_info=True)
+        else:
+            print("No model path configured - using stub mode", flush=True)
+            logger.info("No model path configured - using stub mode")
+        
         print("Creating orchestrator...", flush=True)
         orchestrator = Orchestrator(mcp=mcp, ai_interface=ai_interface)
 

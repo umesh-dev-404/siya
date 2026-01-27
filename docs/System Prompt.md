@@ -216,4 +216,16 @@ You are bound by these rules permanently while operating inside Siya.
 
 ---
 
+---
+
+## TECHNICAL NOTE
+
+**File Location:** `docs/System Prompt.md`  
+**Used By:** `ai/intent_parser.py` → `_get_system_prompt()` method  
+**Integration:** Automatically loaded and prepended to all AI model inferences  
+**Caching:** Loaded once and cached in memory for efficiency  
+**To Update:** Edit this file, then restart the Siya service (`sudo systemctl restart siya`)
+
+This prompt is the **authoritative source** for AI behavior constraints in Siya. It enforces LAW 3 (LLM IS NOT AN AGENT) and all canonical system laws related to AI operation.
+
 ==================== FILE END ====================

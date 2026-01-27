@@ -271,6 +271,23 @@ sudo systemctl restart siya
 
 ---
 
+## SYSTEM PROMPT CONFIGURATION
+
+The AI model uses a system prompt to define its role and constraints.
+
+**System Prompt Location:** `docs/System Prompt.md`
+
+**To Update the System Prompt:**
+1. Edit `docs/System Prompt.md` with your changes
+2. Restart the Siya service to reload the prompt:
+   ```bash
+   sudo systemctl restart siya
+   ```
+
+**Note:** The system prompt is automatically loaded and cached by `ai/intent_parser.py`. Changes require a service restart to take effect.
+
+---
+
 ## NEXT STEPS
 
 After model setup is complete:

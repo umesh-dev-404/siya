@@ -33,6 +33,9 @@ Replace stub AI implementation with **real llama.cpp integration** for productio
 - [x] Updated `ai/intent_parser.py` to use real model
 - [x] Added `_ai_parse()` method for real inference
 - [x] Added `_build_intent_prompt()` for prompt engineering
+- [x] Added `_get_system_prompt()` for loading system prompt from `docs/System Prompt.md`
+- [x] Integrated system prompt automatically into all AI inferences
+- [x] Added system prompt caching for efficiency
 - [x] Added `_parse_ai_response()` for JSON extraction
 - [x] Improved JSON extraction (handles markdown, nested objects)
 - [x] Maintains stub fallback
@@ -55,8 +58,10 @@ Replace stub AI implementation with **real llama.cpp integration** for productio
 #### 6. Documentation
 - [x] Created `PHASE_10_IMPLEMENTATION_CHECKLIST.md`
 - [x] Created `PHASE_10_MODEL_SETUP.md` (Pi setup guide)
+- [x] Created `MODEL_TESTING_GUIDE.md` (comprehensive testing guide)
 - [x] Updated `pyproject.toml` with llama-cpp-python note
 - [x] Updated `.gitignore` to exclude model files
+- [x] Documented system prompt integration and location
 
 #### 7. Git Configuration
 - [x] Updated `.gitignore` to exclude `qwen2.5-3b-q4_k_m/` directory
@@ -109,14 +114,15 @@ Replace stub AI implementation with **real llama.cpp integration** for productio
 - `config/model_config.py` — Model configuration with default path support
 - `docs/PHASE_10_IMPLEMENTATION_CHECKLIST.md` — Implementation checklist
 - `docs/PHASE_10_MODEL_SETUP.md` — Pi setup guide
+- `docs/MODEL_TESTING_GUIDE.md` — Comprehensive model testing guide
 
 ### Modified Files
 - `ai/model_manager.py` — Real llama.cpp integration
-- `ai/intent_parser.py` — Real AI inference
+- `ai/intent_parser.py` — Real AI inference + system prompt integration
 - `ai/ai_interface.py` — Model manager integration
 - `ai/__init__.py` — Updated exports
 - `cli/main.py` — Model config integration
-- `service_main.py` — Model config integration
+- `service_main.py` — Model config integration + auto-load on startup
 - `pyproject.toml` — llama-cpp-python note
 - `.gitignore` — Added model file exclusions
 
@@ -134,9 +140,13 @@ Replace stub AI implementation with **real llama.cpp integration** for productio
 ### Integration Points
 - **ModelManager** → Uses LlamaWrapper for real model operations
 - **IntentParser** → Uses ModelManager.generate() for inference
+  - Loads system prompt from `docs/System Prompt.md`
+  - Prepends system prompt to all AI inferences
+  - Caches system prompt for efficiency
 - **AIInterface** → Coordinates model and parser
 - **ResourceMonitor** → Monitors RAM during model loading
 - **ModelConfig** → Auto-detects model path from default location or environment variable
+- **ServiceMain** → Auto-loads model on service startup
 
 ### Fallback Behavior
 - If llama-cpp-python not available → Stub mode
@@ -236,5 +246,15 @@ Replace stub AI implementation with **real llama.cpp integration** for productio
 ---
 
 **Last Updated:** 2026-01-27  
-**Status:** ⏳ CODE COMPLETE (PC), MODEL DOWNLOADED ✅, CONFIGURATION READY ✅  
+**Status:** ⏳ CODE COMPLETE (PC), MODEL DOWNLOADED ✅, CONFIGURATION READY ✅, SYSTEM PROMPT INTEGRATED ✅  
 **Next Step:** Pull latest code on Pi, reinstall package, test model loading
+
+## SYSTEM PROMPT INTEGRATION ✅
+
+**Location:** `docs/System Prompt.md`  
+**Integration:** Automatically loaded by `ai/intent_parser.py` → `_get_system_prompt()`  
+**Usage:** Prepended to all AI model inferences  
+**Caching:** Loaded once and cached in memory  
+**To Update:** Edit `docs/System Prompt.md`, then restart service (`sudo systemctl restart siya`)
+
+The system prompt ensures the AI follows Siya's canonical constraints (LAW 3) and understands its role as an intent parser, not an executor.

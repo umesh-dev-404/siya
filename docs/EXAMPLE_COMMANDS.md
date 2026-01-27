@@ -10,7 +10,8 @@ This document provides example commands you can test from your PC while Siya run
 **Current System Status:**
 - ✅ API server running (port 8080)
 - ✅ Web interface running (port 3000)
-- ✅ Intent parsing (stub mode)
+- ✅ Intent parsing (Phase 10: Real AI model integration in progress)
+- ✅ System prompt integrated (from `docs/System Prompt.md`)
 - ✅ Orchestration flow (task queue working)
 - ⚠️ Tool execution (stubbed - no tools registered yet)
 

@@ -13,12 +13,16 @@ import json
 import logging
 import re
 from datetime import datetime
+from pathlib import Path
 from typing import Any, Dict, Optional
 from uuid import uuid4
 
 from mcp.request_validator import RequestValidator, ValidationError
 
 logger = logging.getLogger(__name__)
+
+# System prompt cache (loaded once)
+_SYSTEM_PROMPT_CACHE: Optional[str] = None
 
 
 class IntentParser:
@@ -167,6 +171,62 @@ class IntentParser:
 
         return intent
 
+    def _get_system_prompt(self) -> str:
+        """
+        Load system prompt from docs/System Prompt.md.
+
+        Returns:
+            System prompt text
+
+        Note:
+            System prompt is cached after first load.
+            Falls back to minimal prompt if file not found.
+        """
+        global _SYSTEM_PROMPT_CACHE
+
+        if _SYSTEM_PROMPT_CACHE is not None:
+            return _SYSTEM_PROMPT_CACHE
+
+        # Try to load from docs/System Prompt.md
+        project_root = Path(__file__).parent.parent
+        system_prompt_path = project_root / "docs" / "System Prompt.md"
+
+        if system_prompt_path.exists():
+            try:
+                content = system_prompt_path.read_text(encoding="utf-8")
+                # Extract content between markers (if present) or use full content
+                if "FILE START" in content and "FILE END" in content:
+                    # Extract between markers
+                    start_marker = "FILE START"
+                    end_marker = "FILE END"
+                    start_idx = content.find(start_marker) + len(start_marker)
+                    end_idx = content.find(end_marker)
+                    if end_idx > start_idx:
+                        content = content[start_idx:end_idx].strip()
+                
+                # Remove markdown header if present
+                if content.startswith("#"):
+                    # Skip first line if it's a header
+                    lines = content.split("\n")
+                    if lines[0].startswith("#"):
+                        content = "\n".join(lines[1:]).strip()
+                
+                _SYSTEM_PROMPT_CACHE = content
+                logger.debug("System prompt loaded from file")
+                return _SYSTEM_PROMPT_CACHE
+            except Exception as e:
+                logger.warning(f"Failed to load system prompt: {e}", exc_info=True)
+        
+        # Fallback to minimal system prompt
+        fallback = """You are an intent parser for a personal assistant system named Siya.
+You are NOT an autonomous agent, decision-maker, or executor.
+You are an intent interpreter that extracts structured information from user input.
+Your output is data only - execution is handled by deterministic system components."""
+        
+        _SYSTEM_PROMPT_CACHE = fallback
+        logger.warning("Using fallback system prompt (System Prompt.md not found)")
+        return _SYSTEM_PROMPT_CACHE
+
     def _build_intent_prompt(self, user_input: str, available_tools: list[str]) -> str:
         """
         Build prompt for intent parsing.
@@ -176,11 +236,19 @@ class IntentParser:
             available_tools: Available tool names
 
         Returns:
-            Formatted prompt string
+            Formatted prompt string with system prompt prepended
+
+        Note:
+            System prompt is loaded from docs/System Prompt.md and prepended.
+            This ensures the AI follows Siya's canonical constraints (LAW 3).
         """
+        # Get system prompt (cached after first load)
+        system_prompt = self._get_system_prompt()
+        
         tools_list = "\n".join([f"- {tool}" for tool in available_tools]) if available_tools else "No tools available"
 
-        prompt = f"""You are an intent parser for a personal assistant system. Your task is to parse user input and determine which tool to use.
+        task_prompt = f"""
+## CURRENT TASK: Intent Parsing
 
 Available tools:
 {tools_list}
@@ -201,9 +269,14 @@ Rules:
 - "clarification_needed" should be true if the intent is unclear
 - "clarification_question" should be a helpful question if clarification is needed, null otherwise
 
-Respond with ONLY the JSON object, no other text:"""
+Respond with ONLY the JSON object, no other text."""
 
-        return prompt
+        # Combine system prompt with task-specific prompt
+        full_prompt = f"""{system_prompt}
+
+{task_prompt}"""
+
+        return full_prompt
 
     def _parse_ai_response(self, response_text: str, available_tools: list[str]) -> Dict[str, Any]:
         """

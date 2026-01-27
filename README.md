@@ -74,6 +74,8 @@ All authoritative documentation is in the `docs/` directory:
 - **EXAMPLE_COMMANDS.md** — Example commands for testing from PC
 - **NEXT_PHASES_ROADMAP.md** — Post-baseline implementation roadmap (Phases 10-15)
 - **PHASE_10_MODEL_SETUP.md** — Phase 10 model setup guide (Pi setup instructions)
+- **MODEL_TESTING_GUIDE.md** — How to run and test the AI model
+- **System Prompt.md** — AI system prompt (authoritative, auto-loaded by intent parser)
 
 ---
 
