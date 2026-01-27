@@ -11,7 +11,12 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from sync.sync_manager import get_sync_manager
 from sync.sync_queue import OperationType
 
+from dotenv import load_dotenv
+
 def main():
+    # Load .env variables so SupabaseClient can configure itself
+    load_dotenv()
+    
     print("Initializing Sync Manager...")
     try:
         sm = get_sync_manager()
@@ -31,7 +36,7 @@ def main():
     print(f"Queueing fake memory record {record_id}...")
     try:
         q_id = sm.queue_for_sync(
-            item_type=OperationType.INSERT,
+            operation_type=OperationType.INSERT,
             table_name="memory",
             record_id=record_id,
             payload=payload
