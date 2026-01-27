@@ -57,8 +57,9 @@ def _create_client(args: argparse.Namespace) -> Union[MCPStdioClient, MCPHttpCli
 
 def main(argv: list[str] | None = None) -> int:
     p = argparse.ArgumentParser(
-        prog="siya-mcp",
-        description="Siya first-party PC MCP CLI client.",
+        prog="siya-cli",
+        description="Siya PC Client — Control your Personal Assistant remotely from this computer.",
+        epilog="Example: siya-cli --transport http --url http://192.168.1.39:8080 call get_system_status"
     )
 
     # Transport options
@@ -66,45 +67,55 @@ def main(argv: list[str] | None = None) -> int:
         "--transport",
         choices=["stdio", "http"],
         default="stdio",
-        help="Transport to use: stdio (local, default) or http (remote Pi).",
+        help="Connection mode: 'http' for a remote Pi (recommended), or 'stdio' for local testing.",
     )
     p.add_argument(
         "--url",
         default=None,
-        help="URL of Siya Pi server (required for --transport http, e.g., http://192.168.1.100:8080).",
+        help="The address of your Pi server (Required for http mode). Example: http://192.168.1.39:8080",
     )
     p.add_argument(
         "--api-key",
         default=None,
-        help="Optional API key for X-Siya-Api-Key header (http transport only).",
+        help="Your API Key (if authentication is enabled on the server).",
     )
     p.add_argument(
         "--timeout",
         type=int,
         default=300,
-        help="Request timeout in seconds (default: 300, for slow AI inference).",
+        help="Max wait time in seconds (Default: 300s). Increase this if AI responses are slow.",
     )
     p.add_argument(
         "--protocol-version",
         default="2025-03-26",
-        help="MCP protocol version to request in initialize (default: 2025-03-26).",
+        help=argparse.SUPPRESS, # Hide this advanced option from normal help
     )
 
-    sub = p.add_subparsers(dest="cmd", required=True)
+    sub = p.add_subparsers(dest="cmd", required=True, title="Available Commands")
 
-    sub.add_parser("server-info", help="Check connection and server status.")
+    # Friendlier command help
+    sub.add_parser(
+        "server-info", 
+        help="Check connectivity. Verifies if your Pi is online and reachable."
+    )
 
-    sub_list = sub.add_parser("list-tools", help="Initialize and list tools.")
-    sub_list.add_argument("--raw", action="store_true", help="Print raw MCP response JSON.")
+    sub_list = sub.add_parser(
+        "list-tools", 
+        help="Show all capabilities (tools) available on your Siya system."
+    )
+    sub_list.add_argument("--raw", action="store_true", help="Show the raw JSON response instead of a summarized list.")
 
-    sub_call = sub.add_parser("call", help="Initialize and call a tool.")
-    sub_call.add_argument("tool_name", help="Tool name to call.")
+    sub_call = sub.add_parser(
+        "call", 
+        help="Execute a specific tool/action."
+    )
+    sub_call.add_argument("tool_name", help="Name of the tool to run (e.g., get_system_status).")
     sub_call.add_argument(
         "--args",
         default="{}",
-        help='Tool arguments as JSON object string (default: "{}").',
+        help='Tool arguments as a JSON string (e.g., \'{"path": "/opt"}\'). Default is empty "{}"',
     )
-    sub_call.add_argument("--raw", action="store_true", help="Print raw MCP response JSON.")
+    sub_call.add_argument("--raw", action="store_true", help="Show raw JSON response.")
 
     args = p.parse_args(argv)
 
