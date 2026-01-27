@@ -54,15 +54,18 @@ class SiyaHTTPHandler(BaseHTTPRequestHandler):
         logger.info(f"do_GET called for path: {self.path}")
         try:
             parsed_path = urlparse(self.path)
+            logger.info(f"Parsed path: {parsed_path.path}")
 
             if parsed_path.path == "/health":
                 # Health check
-                logger.debug("Health check requested")
+                logger.info("Health check - getting response")
                 response = self._api_server.handle_health_check() if self._api_server else {
                     "status": "error",
                     "message": "API server not initialized",
                 }
+                logger.info(f"Health check response: {response}")
                 self._send_json_response(200, response)
+                logger.info("Health check response sent")
             else:
                 logger.warning(f"GET to unknown path: {parsed_path.path}")
                 self._send_json_response(404, {"status": "error", "message": "Not found"})
@@ -199,9 +202,11 @@ class SiyaHTTPHandler(BaseHTTPRequestHandler):
             status_code: HTTP status code
             data: Response data dictionary
         """
+        logger.info(f"_send_json_response called: status={status_code}")
         try:
             response_json = json.dumps(data, indent=2)
             response_bytes = response_json.encode("utf-8")
+            logger.info(f"Sending {len(response_bytes)} bytes")
 
             self.send_response(status_code)
             self.send_header("Content-Type", "application/json")
