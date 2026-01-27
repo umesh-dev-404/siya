@@ -38,8 +38,9 @@ This report details the enforcement of Siamese Canonical Laws during **Phase 11 
 - **Objective**: Secure transport and consistent behavior across interfaces.
 - **Enforcement**: 
   - HTTP Transport implemented with `ThreadingHTTPServer` to prevent blocking.
-  - PC MCP Client uses standardized `mcp` protocol messages.
-- **Verification**: Successful end-to-end `call fetch_mails` from Windows PC to Pi Server over HTTP.
+  - PC MCP Client (`siya-cli`) uses standardized `mcp` protocol messages.
+  - Standalone distribution (`scripts/build_release.py`) ensures artifact consistency (LAW 17).
+- **Verification**: Successful end-to-end `call fetch_mails` from Windows PC to Pi Server over HTTP using `siya-cli`.
 
 ---
 
@@ -51,6 +52,7 @@ This report details the enforcement of Siamese Canonical Laws during **Phase 11 
 | Tool Executor | LAW 4 | Only registered tools can be executed. |
 | Memory Manager | LAW 8 | Writes restricted to Orchestrator; L1/L2 verified. |
 | API Server | LAW 19 | CLI, Web, and Bridge share identical validation logic. |
+| PC Client | LAW 19 | `siya-cli` mirrors server capabilities exactly. |
 | File Tools | LAW 15 | Explicit path validation and secret blocking. |
 
 ---

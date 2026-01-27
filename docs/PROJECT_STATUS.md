@@ -145,6 +145,7 @@
   - ✅ 13 Core tools implemented (System, File, Automation, etc.)
   - ✅ Confirmation flow (LAW 1) implemented
   - ✅ PC MCP Client with HTTP transport working
+  - ✅ Global CLI (`siya-cli`) & Distribution System (`scripts/build_release.py`)
   - ✅ API Server multi-threaded fix
 
 ### Phase 12 — System Context & Memory
@@ -301,4 +302,5 @@
 **Deployment Date:** 2026-01-27  
 **Deployment Status:** ✅ OPERATIONAL ON RASPBERRY PI 5  
 **Phase 10 Status:** ✅ COMPLETE — AI Model Operational (10-30s response time, full RAM loading)  
-**Current Phase:** Phase 11 — Tool Implementations (⏳ IN PROGRESS)
+**Phase 11 Status:** ✅ COMPLETE — Tools & CLI Operational  
+**Current Phase:** Phase 12 — System Context & Memory (⏳ NEXT UP)

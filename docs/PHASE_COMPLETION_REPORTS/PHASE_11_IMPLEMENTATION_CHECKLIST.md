@@ -1,7 +1,7 @@
 # PHASE 11 — TOOL IMPLEMENTATIONS — IMPLEMENTATION CHECKLIST
 ## Project: Siya
 ## Date: 2026-01-27
-## Status: ✅ CORE IMPLEMENTATION COMPLETE
+## Status: ✅ FULLY COMPLETE
 
 ---
 
@@ -136,6 +136,9 @@ This document tracks the implementation of Phase 11 (Tool Implementations) for S
 - [x] HTTP transport (remote Pi connection over LAN)
 - [x] `--transport http --url http://<pi-ip>:8080` option
 - [x] Commands: list-tools, call, server-info
+- [x] Global CLI (`siya-cli`) via entry points
+- [x] Automated Build System (`scripts/build_release.py`)
+- [x] Client Distribution Guide (`docs/CLIENT_DISTRIBUTION.md`)
 
 ### Issues Faced & Remedies
 1. **Single-threaded HTTPServer blocking**

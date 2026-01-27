@@ -114,6 +114,14 @@ pytest tests/ --cov=. --cov-report=html  # With coverage
 mypy .
 ```
 
+
+
+### Build Release (Standalone CLI)
+```bash
+python scripts/build_release.py
+```
+*Generates a `.whl` in `dist/` for distribution to other PCs.*
+
 ---
 
 ## PROJECT STRUCTURE

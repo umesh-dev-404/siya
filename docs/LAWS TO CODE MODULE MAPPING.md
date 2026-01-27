@@ -319,7 +319,7 @@ The human user is the final and absolute authority.
 - Offline-first default
 - Network access declared per tool (explicit permissions)
 - Network access depends on tool functionality
-- MCP protocol transport: initially STDIO (local), later HTTP (remote)
+- MCP protocol transport: STDIO (local) and HTTP (remote via `pc_mcp_client`)
 
 **Violation Handling:**
 - Network request blocked
@@ -365,7 +365,7 @@ The human user is the final and absolute authority.
 - `cli/cli.py`
 - `api/api_server.py`
 - `web/web_server.py`
-- `pc_mcp_client/` (first-party PC MCP CLI client; to be implemented)
+- `pc_mcp_client/` (first-party PC MCP CLI client; implemented with STDIO/HTTP)
 - `service_main.py` (composition root wiring)
 
 **Enforcement Mechanisms:**
