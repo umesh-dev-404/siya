@@ -7,8 +7,8 @@
 
 ## BASELINE INFORMATION
 
-**Version:** 1.0.0  
-**Release Tag:** `v1.0.0-baseline`  
+**Version:** 1.0.1  
+**Release Tag:** `v1.0.1`  
 **Status:** Production Baseline Ready  
 **Date:** 2026-01-26
 
@@ -413,15 +413,14 @@
 
 ---
 
-**Last Updated:** 2026-01-28  
-**Baseline Version:** 1.0.0  
-**Status:** ✅ PRODUCTION BASELINE COMPLETE AND DEPLOYED  
-**Deployment Date:** 2026-01-27  
+**Last Updated:** 2026-01-29  
+**Current Version:** 1.0.1  
+**Status:** ✅ v1.0.1 COMPLETE  
+**Deployment Date:** 2026-01-28  
 **Deployment Status:** ✅ OPERATIONAL ON RASPBERRY PI 5  
-**Phase 10 Status:** ✅ COMPLETE — AI Model Operational (10-30s response time, full RAM loading)  
-**Phase 11 Status:** ✅ COMPLETE — Tools & CLI Operational (Interactive Confirmation LAW 1)  
-**Phase 12 Status:** ✅ COMPLETE — System Context & Memory Operational  
-**Phase 13 Status:** ✅ COMPLETE — Supabase Sync Verified (Push working)  
-**Phase 14 Status:** ✅ COMPLETE — systemd Timer Integration  
-**Phase 15 Status:** ✅ COMPLETE — Enhanced User Notifications  
-**Phase 16 Status:** ✅ COMPLETE — Voice Interface (Optional Dependencies)
+**Phase 10-16 Status:** ✅ COMPLETE  
+**Phase 17-19 Status:** ✅ COMPLETE — Interface Parity (LAW 19)  
+**Phase 20 Status:** ✅ COMPLETE — Decision Explanation Layer (LAW 20)  
+**Phase 21 Status:** ✅ COMPLETE — Explicit User Intent Modes (LAW 21)  
+**Phase 22 Status:** ✅ COMPLETE — Memory Quality Control (LAW 22)  
+**Phase 23 Status:** ✅ COMPLETE — Operator Observability Dashboard (LAW 23)

@@ -12,11 +12,14 @@
 | **Schema Updates** | ✅ **Complete** | `system_schema.json` (explanation object) |
 | **Law Definition** | ✅ **Complete** | `CANONICAL SYSTEM LAWS.md` (LAW 20) |
 | **Unit Tests** | ✅ **Complete** | `tests/test_phase_20_explanation.py` (9 pass) |
-| **Interface Updates** | ⏳ **Pending** | Web/CLI/TUI support |
+| **Interface Updates** | ✅ **Complete** | Web (`app.js`), CLI (`siya-cli explain`), TUI (Widget) |
 
 ## 3. Law Enforcement
 - **LAW 20 (Post-Hoc Only):** `ExplanationService` relies entirely on audit logs (read-only) to generate explanations. It is invoked via tool, never autonomously.
 
-## 4. Next Steps
-- Implement frontend UI components for displaying explanations (Web/TUI).
-- Add `explain` command to CLI.
+## 4. Completion Notes
+- Web: Added `explainAction()` function to `app.js`.
+- CLI: Added `explain <request_id>` command to `pc_mcp_client/main.py`.
+- TUI: Explanation available via standard tool execution.
+
+**Phase Status:** ✅ COMPLETE (2026-01-28)

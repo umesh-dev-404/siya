@@ -13,12 +13,14 @@
 | **Schema Updates** | ✅ **Complete** | `system_schema.json` (user_intent_mode) |
 | **Law Definition** | ✅ **Complete** | `CANONICAL SYSTEM LAWS.md` (LAW 21) |
 | **Unit Tests** | ✅ **Complete** | `tests/test_phase_21_intent_mode.py` (19 pass) |
-| **Interface Updates** | ⏳ **Pending** | Web/CLI/TUI mode switching |
+| **Interface Updates** | ✅ **Complete** | Web (Mode Switcher), CLI (`mode` cmd), TUI (Widget) |
 
 ## 3. Law Enforcement
 - **LAW 21 (User Intent Supremacy):** Intent modes are strictly user-declared. AI cannot switch modes. High-risk actions in low-permission modes are blocked.
 
-## 4. Next Steps
-- Add intent mode toggle to Web Interface.
-- Add `--mode` flag to CLI.
-- Add mode switcher to TUI.
+## 4. Completion Notes
+- Web: Added Mode Switcher dropdown to header (`index.html`, `app.js`).
+- CLI: Added `mode [informational|operational|destructive]` command to `pc_mcp_client/main.py`.
+- TUI: Added Mode status widget to sidebar (`tui/app.py`).
+
+**Phase Status:** ✅ COMPLETE (2026-01-28)

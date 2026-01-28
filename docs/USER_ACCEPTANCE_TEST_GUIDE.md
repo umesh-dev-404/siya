@@ -1,6 +1,6 @@
 # USER ACCEPTANCE TEST GUIDE (UAT)
 
-**Target:** Siya System v1.0.0
+**Target:** Siya System v1.0.1
 **Client:** PC (Powershell/CMD)
 **Server:** Raspberry Pi 5
 
