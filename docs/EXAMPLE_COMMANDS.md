@@ -125,19 +125,24 @@ http://192.168.1.39:3000
 
 ---
 
-## 7. INTERACTIVE CLI (Phase 18)
+## 7. FULL-SCREEN TUI (Phase 18-19)
 
-### Simple Wake Command
+### Launch TUI
 ```powershell
-siya              # First run prompts for Pi URL, then auto-connects
+siya              # First run prompts for Pi URL, then launches TUI
 siya --reset      # Reset saved config (e.g., switch networks)
 ```
 
-### Menu Navigation
-- **Arrow keys:** Navigate menu
-- **Type:** Filter/search tools
-- **Enter:** Select tool
-- **Ctrl+C:** Back/cancel
+### Keyboard Shortcuts
+| Key | Action |
+|-----|--------|
+| `q` | Quit |
+| `?` | Help |
+| `r` | Refresh tools |
+| `Ctrl+L` | Clear output |
+| `↑↓` | Navigate sidebar |
+| `Enter` | Execute tool |
+| `Escape` | Unfocus |
 
 ### Remote Access (Tailscale)
 ```powershell

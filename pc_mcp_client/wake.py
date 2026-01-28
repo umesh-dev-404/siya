@@ -88,15 +88,15 @@ def main() -> int:
         if not url:
             return 1
     
-    # Create client and launch interactive mode
+    # Create client and launch TUI
     from pc_mcp_client.http_client import MCPHttpClient
-    from pc_mcp_client.interactive import interactive_main
+    from pc_mcp_client.tui.app import run_tui
     
     try:
         client = MCPHttpClient(base_url=url)
         with client:
             client.initialize()
-            return interactive_main(client, server_url=url)
+            return run_tui(client, server_url=url)
     except Exception as e:
         console.print(f"[red]Connection failed: {e}[/red]")
         console.print(f"[dim]Server URL: {url}[/dim]")

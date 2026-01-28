@@ -1,0 +1,135 @@
+/* Siya TUI Styles - Phase 19 */
+
+/* Main layout */
+#main-content {
+    height: 1fr;
+}
+
+/* Sidebar */
+#sidebar {
+    width: 30;
+    min-width: 25;
+    max-width: 40;
+    background: $surface;
+    border-right: solid $primary;
+    padding: 1;
+}
+
+#status {
+    padding: 0 1;
+    margin-bottom: 1;
+    color: $text-muted;
+}
+
+#tool-tree {
+    padding: 0;
+}
+
+#tool-sidebar {
+    height: 1fr;
+}
+
+/* Output area */
+#output-area {
+    width: 1fr;
+    padding: 1;
+}
+
+#output-header {
+    text-align: center;
+    padding: 0 1;
+    margin-bottom: 1;
+    color: $secondary;
+}
+
+#output {
+    height: 1fr;
+    border: solid $success;
+    padding: 1;
+    scrollbar-gutter: stable;
+}
+
+/* Input bar */
+#input-bar {
+    dock: bottom;
+    height: 3;
+    padding: 0 1;
+}
+
+#command-input {
+    width: 100%;
+}
+
+/* Confirmation Modal */
+ConfirmModal {
+    align: center middle;
+}
+
+#confirm-dialog {
+    width: 60;
+    height: auto;
+    border: thick $warning;
+    background: $surface;
+    padding: 1 2;
+}
+
+#confirm-title {
+    text-align: center;
+    text-style: bold;
+    color: $warning;
+    margin-bottom: 1;
+}
+
+#confirm-tool {
+    margin-bottom: 1;
+}
+
+#confirm-args {
+    margin-bottom: 1;
+    color: $text-muted;
+}
+
+#confirm-law {
+    margin-top: 1;
+    text-align: center;
+}
+
+#confirm-law-name {
+    text-align: center;
+    text-style: bold;
+    color: $warning;
+    margin-bottom: 1;
+}
+
+#confirm-buttons {
+    align: center middle;
+    height: 3;
+    margin-top: 1;
+}
+
+#confirm-buttons Button {
+    margin: 0 1;
+}
+
+/* Tree styling */
+Tree {
+    padding: 0;
+}
+
+Tree > .tree--cursor {
+    background: $primary;
+}
+
+Tree > .tree--highlight {
+    background: $primary 30%;
+}
+
+/* Footer overrides */
+Footer {
+    background: $primary;
+}
+
+/* Header overrides */
+Header {
+    background: $primary;
+}

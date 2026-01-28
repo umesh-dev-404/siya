@@ -1,9 +1,11 @@
 # Phase 18: Interactive CLI
 
-## Status: ✅ COMPLETE
+## Status: ✅ COMPLETE (Superseded by Phase 19)
 
 **Date:** 2026-01-28  
 **Objective:** Transform CLI into interactive terminal application with simple wake command
+
+> **Note:** Phase 19 introduced a full-screen TUI using Textual, which replaces the InquirerPy menus from Phase 18. The `siya` wake command and config system remain.
 
 ---
 

@@ -25,6 +25,7 @@ dependencies = [
     "rich>=13.0.0",  # Styled terminal output (Phase 18)
     "InquirerPy>=0.3.4",  # Interactive CLI menus (Phase 18)
     "pyfiglet>=0.8",  # ASCII art banners (Phase 18)
+    "textual>=0.95.0",  # Full-screen TUI (Phase 19)
 ]
 
 
