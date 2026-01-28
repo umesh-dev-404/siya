@@ -179,7 +179,8 @@ class SiyaApp(App):
         """Called when app is mounted."""
         if self.client:
             try:
-                self.tools = self.client.list_tools()
+                result = self.client.tools_list()
+                self.tools = result.get("tools", [])
                 # Rebuild sidebar with tools
                 sidebar = self.query_one("#sidebar", Vertical)
                 loading = sidebar.query_one("#loading", Static)
@@ -187,7 +188,7 @@ class SiyaApp(App):
                 await sidebar.mount(ToolSidebar(self.tools, id="tool-sidebar"))
                 
                 self.log_output("[green]Connected successfully![/green]")
-                self.log_output(f"Available tools: {len(self.tools)}")
+                self.log_output(f"[dim]Available tools: {len(self.tools)}[/dim]")
             except Exception as e:
                 self.log_output(f"[red]Error loading tools: {e}[/red]")
     
@@ -205,13 +206,12 @@ class SiyaApp(App):
         node = event.node
         label = str(node.label)
         
-        # Extract tool name (remove icon and suffix)
-        if label.startswith("▸") or label.startswith("📂"):
-            # Category node - toggle expand
+        # If node has children, it's a category - toggle expand
+        if node.children:
             node.toggle()
             return
         
-        # Tool node - extract name
+        # Leaf node (tool) - extract name from label "icon tool_name" or "icon tool_name (!)"
         parts = label.split(" ", 1)
         if len(parts) > 1:
             tool_name = parts[1].replace(" (!)", "").strip()
@@ -253,7 +253,7 @@ class SiyaApp(App):
         self.log_output(f"\n[bold cyan]Executing: {tool_name}[/bold cyan]")
         
         try:
-            result = self.client.call_tool(tool_name, args)
+            result = self.client.tools_call(tool_name, args)
             self._display_result(tool_name, result)
         except Exception as e:
             self.log_output(f"[red]Error: {e}[/red]")
@@ -303,7 +303,8 @@ class SiyaApp(App):
     async def action_refresh(self) -> None:
         """Refresh tools list."""
         if self.client:
-            self.tools = self.client.list_tools()
+            result = self.client.tools_list()
+            self.tools = result.get("tools", [])
             self.log_output(f"[green]Refreshed: {len(self.tools)} tools[/green]")
 
 

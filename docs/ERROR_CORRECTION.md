@@ -138,6 +138,12 @@ Maintained per dev-rules.md §8.2 (Error Correction Discipline).
 - Tool panel and output section optimized for smaller screens
 **Files Modified:** `web/static/index.html`, `web/static/styles.css`, `web/static/app.js`
 
+### Fix: TUI API Method Names
+**Symptom:** TUI showed "Error loading tools: 'MCPHttpClient' object has no attribute 'list_tools'"  
+**Cause:** TUI app used incorrect method names (`list_tools`, `call_tool`) instead of actual MCPHttpClient methods (`tools_list`, `tools_call`)  
+**Solution:** Updated `pc_mcp_client/tui/app.py` to use correct method names and parse response correctly (`result.get("tools", [])`)  
+**Files Modified:** `pc_mcp_client/tui/app.py`
+
 ---
 
 ## Template for Future Entries
