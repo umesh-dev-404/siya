@@ -71,13 +71,14 @@
 ### 4. Keyboard Shortcuts
 | Key | Action |
 |-----|--------|
-| `q` | Quit |
-| `?` | Help |
-| `r` | Refresh tools |
+| `Ctrl+Q` | Quit |
+| `Ctrl+H` | Help |
+| `Ctrl+R` | Refresh tools |
 | `Ctrl+L` | Clear output |
 | `↑↓` | Navigate tree |
-| `Enter` | Execute selected tool |
-| `Escape` | Unfocus |
+| `Space` / `Enter` | Expand/Collapse category |
+| `Enter` | Execute tool (on leaf) |
+| `Escape` | Back/Close |
 
 ### 5. LAW 1 Confirmation Modal
 - Modal overlay for confirmation-required tools

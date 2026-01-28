@@ -143,10 +143,10 @@ class SiyaApp(App):
     SUB_TITLE = "Personal Assistant Platform"
     
     BINDINGS = [
-        Binding("q", "quit", "Quit"),
-        Binding("?", "help", "Help"),
-        Binding("r", "refresh", "Refresh"),
-        Binding("escape", "unfocus", "Unfocus"),
+        Binding("ctrl+q", "quit", "Quit", show=True),
+        Binding("ctrl+h", "help", "Help", show=True),
+        Binding("ctrl+r", "refresh", "Refresh"),
+        Binding("escape", "close_or_unfocus", "Close/Back"),
         Binding("ctrl+l", "clear", "Clear"),
     ]
     
@@ -177,6 +177,9 @@ class SiyaApp(App):
     
     async def on_mount(self) -> None:
         """Called when app is mounted."""
+        # Focus on the tool tree when app starts
+        self.call_after_refresh(self._focus_tree)
+        
         if self.client:
             try:
                 result = self.client.tools_list()
@@ -206,8 +209,8 @@ class SiyaApp(App):
         node = event.node
         label = str(node.label)
         
-        # If node has children, it's a category - toggle expand
-        if node.children:
+        # If node allows expand (is a branch), it's a category - toggle it
+        if node.allow_expand:
             node.toggle()
             return
         
@@ -280,13 +283,14 @@ class SiyaApp(App):
     def action_help(self) -> None:
         """Show help."""
         self.log_output("\n[bold yellow]KEYBOARD SHORTCUTS[/bold yellow]")
-        self.log_output("  [cyan]q[/cyan]       - Quit")
-        self.log_output("  [cyan]?[/cyan]       - Help")
-        self.log_output("  [cyan]r[/cyan]       - Refresh")
+        self.log_output("  [cyan]Ctrl+Q[/cyan]  - Quit")
+        self.log_output("  [cyan]Ctrl+H[/cyan]  - Help")
+        self.log_output("  [cyan]Ctrl+R[/cyan]  - Refresh")
         self.log_output("  [cyan]Ctrl+L[/cyan]  - Clear output")
         self.log_output("  [cyan]↑↓[/cyan]      - Navigate tree")
-        self.log_output("  [cyan]Enter[/cyan]   - Select/Execute")
-        self.log_output("  [cyan]Escape[/cyan]  - Unfocus\n")
+        self.log_output("  [cyan]Space[/cyan]   - Expand/Collapse category")
+        self.log_output("  [cyan]Enter[/cyan]   - Execute tool")
+        self.log_output("  [cyan]Escape[/cyan]  - Back/Close\n")
     
     def action_clear(self) -> None:
         """Clear output."""
@@ -296,8 +300,16 @@ class SiyaApp(App):
         except Exception:
             pass
     
-    def action_unfocus(self) -> None:
-        """Unfocus current widget."""
+    def _focus_tree(self) -> None:
+        """Focus on the tool tree."""
+        try:
+            tree = self.query_one("#tool-tree", Tree)
+            self.set_focus(tree)
+        except Exception:
+            pass
+    
+    def action_close_or_unfocus(self) -> None:
+        """Close modal or unfocus current widget."""
         self.set_focus(None)
     
     async def action_refresh(self) -> None:

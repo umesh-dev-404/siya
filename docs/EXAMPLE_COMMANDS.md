@@ -136,13 +136,14 @@ siya --reset      # Reset saved config (e.g., switch networks)
 ### Keyboard Shortcuts
 | Key | Action |
 |-----|--------|
-| `q` | Quit |
-| `?` | Help |
-| `r` | Refresh tools |
+| `Ctrl+Q` | Quit |
+| `Ctrl+H` | Help |
+| `Ctrl+R` | Refresh tools |
 | `Ctrl+L` | Clear output |
 | `↑↓` | Navigate sidebar |
-| `Enter` | Execute tool |
-| `Escape` | Unfocus |
+| `Space` / `Enter` | Expand/Collapse category |
+| `Enter` | Execute tool (on leaf) |
+| `Escape` | Back/Close |
 
 ### Remote Access (Tailscale)
 ```powershell
