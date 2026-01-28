@@ -758,6 +758,25 @@ function closeMobileSidebar() {
     overlay?.classList.remove('active');
 }
 
+function toggleMobileNotifications() {
+    const list = document.getElementById('mobile-notifications-list');
+    const toggle = document.getElementById('notification-toggle');
+
+    if (list) {
+        const isCollapsed = list.classList.toggle('collapsed');
+
+        // Update toggle arrow
+        if (toggle) {
+            toggle.classList.toggle('expanded', !isCollapsed);
+        }
+
+        // Render notifications if expanding
+        if (!isCollapsed) {
+            renderMobileNotifications();
+        }
+    }
+}
+
 function renderMobileNotifications() {
     const mobileList = document.getElementById('mobile-notifications-list');
     const mobileBadge = document.getElementById('mobile-notification-badge');

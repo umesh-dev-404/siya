@@ -759,16 +759,37 @@ code,
 .sidebar-section-header {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    gap: var(--space-sm);
     padding: var(--space-md);
     font-weight: 700;
     background: var(--accent-secondary);
     border-bottom: 2px solid var(--border-color);
+    cursor: pointer;
+    user-select: none;
+}
+
+.sidebar-section-header:hover {
+    filter: brightness(1.1);
+}
+
+.notification-toggle {
+    margin-left: auto;
+    transition: transform 0.2s ease;
+}
+
+.notification-toggle.expanded {
+    transform: rotate(180deg);
 }
 
 .notifications-list-mobile {
-    max-height: 200px;
+    max-height: 250px;
     overflow-y: auto;
+    transition: max-height 0.3s ease;
+}
+
+.notifications-list-mobile.collapsed {
+    max-height: 0;
+    overflow: hidden;
 }
 
 /* ===== MOBILE RESPONSIVE ===== */
@@ -845,19 +866,9 @@ code,
         font-size: 1.25rem;
     }
 
-    /* Notifications panel - limit height on mobile */
+    /* Hide overlay notifications panel on mobile - use sidebar collapsible instead */
     .notifications-panel {
-        width: 100%;
-        max-height: 50vh;
-        top: var(--header-height);
-        bottom: auto;
-        border-bottom: var(--border-width) solid var(--border-color);
-        border-left: none;
-    }
-
-    .notifications-panel .notifications-list {
-        max-height: calc(50vh - 60px);
-        overflow-y: auto;
+        display: none !important;
     }
 
     /* Footer simplify */

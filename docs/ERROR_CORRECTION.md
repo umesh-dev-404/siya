@@ -210,6 +210,12 @@ Maintained per dev-rules.md §8.2 (Error Correction Discipline).
 **Solution:** Added `clear_all` boolean parameter that immediately clears all acknowledged notifications regardless of age  
 **Files Modified:** `tools/notification_tools.py`, `tools/tool_registration.py`
 
+### Fix: Mobile Notifications Still Overlapping Sidebar (Final)
+**Symptom:** Notifications panel still covering sidebar tools even after 50vh fix  
+**Cause:** Overlay panel not appropriate for mobile - needed integrated collapsible section  
+**Solution:** Redesigned mobile notifications as collapsible section at bottom of sidebar. Hidden overlay panel on mobile. Added `toggleMobileNotifications()` JS function. Notifications now expand/collapse on header click.  
+**Files Modified:** `web/static/index.html`, `web/static/styles.css`, `web/static/app.js`
+
 ---
 
 ## Template for Future Entries
