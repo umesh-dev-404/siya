@@ -5,7 +5,6 @@ Phase 8 tests for failure handling and resource monitoring.
 Tests failure detection, state checking, and resource monitoring.
 """
 
-import tempfile
 from pathlib import Path
 
 import pytest
@@ -17,27 +16,26 @@ from system import FailureHandler, FailureSeverity, FailureType, ResourceMonitor
 class TestFailureHandler:
     """Tests for FailureHandler."""
 
-    def test_failure_handler_initialization(self):
+    def test_failure_handler_initialization(self, tmp_path):
         """Test failure handler initialization."""
-        with tempfile.TemporaryDirectory() as tmpdir:
-            db_path = Path(tmpdir) / "test.db"
-            db = Database(str(db_path))
-            db.connect()
+        db_path = tmp_path / "test.db"
+        db = Database(str(db_path))
+        db.connect()
 
+        try:
             audit_logger = AuditLogger(db)
             handler = FailureHandler(audit_logger)
-
             assert handler is not None
-
+        finally:
             db.close()
 
-    def test_handle_failure(self):
+    def test_handle_failure(self, tmp_path):
         """Test handling a failure."""
-        with tempfile.TemporaryDirectory() as tmpdir:
-            db_path = Path(tmpdir) / "test.db"
-            db = Database(str(db_path))
-            db.connect()
+        db_path = tmp_path / "test.db"
+        db = Database(str(db_path))
+        db.connect()
 
+        try:
             audit_logger = AuditLogger(db)
             handler = FailureHandler(audit_logger)
 
@@ -49,61 +47,61 @@ class TestFailureHandler:
             )
 
             assert failure_id is not None
-
+        finally:
             db.close()
 
-    def test_handle_power_loss(self):
+    def test_handle_power_loss(self, tmp_path):
         """Test handling power loss."""
-        with tempfile.TemporaryDirectory() as tmpdir:
-            db_path = Path(tmpdir) / "test.db"
-            db = Database(str(db_path))
-            db.connect()
+        db_path = tmp_path / "test.db"
+        db = Database(str(db_path))
+        db.connect()
 
+        try:
             audit_logger = AuditLogger(db)
             handler = FailureHandler(audit_logger)
 
             failure_id = handler.handle_power_loss()
             assert failure_id is not None
-
+        finally:
             db.close()
 
-    def test_handle_network_loss(self):
+    def test_handle_network_loss(self, tmp_path):
         """Test handling network loss."""
-        with tempfile.TemporaryDirectory() as tmpdir:
-            db_path = Path(tmpdir) / "test.db"
-            db = Database(str(db_path))
-            db.connect()
+        db_path = tmp_path / "test.db"
+        db = Database(str(db_path))
+        db.connect()
 
+        try:
             audit_logger = AuditLogger(db)
             handler = FailureHandler(audit_logger)
 
             failure_id = handler.handle_network_loss()
             assert failure_id is not None
-
+        finally:
             db.close()
 
-    def test_handle_ai_crash(self):
+    def test_handle_ai_crash(self, tmp_path):
         """Test handling AI crash."""
-        with tempfile.TemporaryDirectory() as tmpdir:
-            db_path = Path(tmpdir) / "test.db"
-            db = Database(str(db_path))
-            db.connect()
+        db_path = tmp_path / "test.db"
+        db = Database(str(db_path))
+        db.connect()
 
+        try:
             audit_logger = AuditLogger(db)
             handler = FailureHandler(audit_logger)
 
             failure_id = handler.handle_ai_crash()
             assert failure_id is not None
-
+        finally:
             db.close()
 
-    def test_handle_tool_failure(self):
+    def test_handle_tool_failure(self, tmp_path):
         """Test handling tool failure."""
-        with tempfile.TemporaryDirectory() as tmpdir:
-            db_path = Path(tmpdir) / "test.db"
-            db = Database(str(db_path))
-            db.connect()
+        db_path = tmp_path / "test.db"
+        db = Database(str(db_path))
+        db.connect()
 
+        try:
             audit_logger = AuditLogger(db)
             handler = FailureHandler(audit_logger)
 
@@ -113,54 +111,54 @@ class TestFailureHandler:
                 error_message="Tool failed",
             )
             assert failure_id is not None
-
+        finally:
             db.close()
 
-    def test_handle_resource_exhaustion(self):
+    def test_handle_resource_exhaustion(self, tmp_path):
         """Test handling resource exhaustion."""
-        with tempfile.TemporaryDirectory() as tmpdir:
-            db_path = Path(tmpdir) / "test.db"
-            db = Database(str(db_path))
-            db.connect()
+        db_path = tmp_path / "test.db"
+        db = Database(str(db_path))
+        db.connect()
 
+        try:
             audit_logger = AuditLogger(db)
             handler = FailureHandler(audit_logger)
 
             failure_id = handler.handle_resource_exhaustion("RAM")
             assert failure_id is not None
-
+        finally:
             db.close()
 
 
 class TestStateChecker:
     """Tests for StateChecker."""
 
-    def test_state_checker_initialization(self):
+    def test_state_checker_initialization(self, tmp_path):
         """Test state checker initialization."""
-        with tempfile.TemporaryDirectory() as tmpdir:
-            db_path = Path(tmpdir) / "test.db"
-            db = Database(str(db_path))
-            db.connect()
+        db_path = tmp_path / "test.db"
+        db = Database(str(db_path))
+        db.connect()
 
+        try:
             checker = StateChecker(db)
             assert checker is not None
-
+        finally:
             db.close()
 
-    def test_check_state_consistency(self):
+    def test_check_state_consistency(self, tmp_path):
         """Test state consistency checking."""
-        with tempfile.TemporaryDirectory() as tmpdir:
-            db_path = Path(tmpdir) / "test.db"
-            db = Database(str(db_path))
-            db.connect()
+        db_path = tmp_path / "test.db"
+        db = Database(str(db_path))
+        db.connect()
 
+        try:
             checker = StateChecker(db)
             result = checker.check_state_consistency()
 
             assert "consistent" in result
             assert "issues" in result
             assert isinstance(result["issues"], list)
-
+        finally:
             db.close()
 
 

@@ -122,6 +122,17 @@ def main(argv: list[str] | None = None) -> int:
     )
     sub_call.add_argument("--raw", action="store_true", help="Show raw JSON response.")
 
+    # Phase 20: Explanation
+    sub_explain = sub.add_parser("explain", help="Explain a specific decision or action (LAW 20).")
+    sub_explain.add_argument("request_id", help="The UUID of the request to explain.")
+
+    # Phase 21: Intent Mode
+    sub_mode = sub.add_parser("mode", help="Get or set the User Intent Mode (LAW 21).")
+    sub_mode.add_argument("mode", nargs="?", choices=["informational", "operational", "destructive"], help="Mode to set (optional). If omitted, shows current mode.")
+
+    # Phase 23: Observability Posture
+    sub_posture = sub.add_parser("posture", help="Get the current System Posture (LAW 23).")
+
     args = p.parse_args(argv)
 
     # Validate: either interactive mode or a command must be specified
@@ -210,6 +221,62 @@ def main(argv: list[str] | None = None) -> int:
                 _print_json({"status": "ok", "output": structured})
                 return 0
             _print_json({"status": "ok", "result": resp})
+            _print_json({"status": "ok", "result": resp})
+            return 0
+
+        if args.cmd == "explain":
+            print(f"Generating explanation for {args.request_id}...")
+            resp = client.tools_call("explain_decision", {"request_id": args.request_id})
+            result = resp.get("result", {})
+            
+            # Try to print just the explanation text if possible
+            if "content" in result:
+                try:
+                     content_text = result["content"][0]["text"]
+                     data = json.loads(content_text)
+                     print(f"\nEXPLANATION:\n{data.get('explanation', content_text)}")
+                     return 0
+                except:
+                     pass
+            
+            _print_json(resp)
+            return 0
+
+        if args.cmd == "mode":
+            if args.mode:
+                # Set mode
+                resp = client.tools_call("set_user_intent_mode", {"mode": args.mode})
+                print(f"✅ Mode set to: {args.mode.upper()}")
+            else:
+                # Get mode
+                resp = client.tools_call("get_user_intent_mode", {})
+                result = resp.get("result", {})
+                if "content" in result:
+                    try:
+                        content_text = result["content"][0]["text"]
+                        data = json.loads(content_text)
+                        print(f"Current Mode: {data.get('mode', 'UNKNOWN').upper()}")
+                        return 0
+                    except:
+                        pass
+                _print_json(resp)
+            return 0
+
+        if args.cmd == "posture":
+            resp = client.tools_call("get_system_posture", {})
+            result = resp.get("result", {})
+            if "content" in result:
+                try:
+                    content_text = result["content"][0]["text"]
+                    data = json.loads(content_text)
+                    print(f"System Posture: {data.get('posture_level', 'UNKNOWN')}")
+                    components = data.get('components', {})
+                    for k, v in components.items():
+                         print(f" - {k}: {v}")
+                    return 0
+                except:
+                    pass
+            _print_json(resp)
             return 0
 
     return 0

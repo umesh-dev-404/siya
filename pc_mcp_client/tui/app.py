@@ -254,6 +254,11 @@ class SiyaApp(App):
         with Horizontal(id="main-content"):
             with Vertical(id="sidebar"):
                 yield Static(f"[bold cyan]Connected:[/] {self.server_url}", id="status")
+                
+                # Phase 21 & 23 Widgets
+                yield Static("Mode: [dim]Loading...[/dim]", id="mode-status")
+                yield Static("Posture: [dim]Loading...[/dim]", id="posture-status")
+                
                 if self.tools:
                     yield ToolSidebar(self.tools, id="tool-sidebar")
                 else:
@@ -283,8 +288,61 @@ class SiyaApp(App):
                 
                 self.log_output("[green]Connected successfully![/green]")
                 self.log_output(f"[dim]Available tools: {len(self.tools)}[/dim]")
+                self.log_output(f"[dim]Available tools: {len(self.tools)}[/dim]")
+                
+                # Start status polling (Phase 20-23)
+                self.update_status()
+                self.set_interval(30, self.update_status)
+                
             except Exception as e:
                 self.log_output(f"[red]Error loading tools: {e}[/red]")
+    
+    @work(thread=True)
+    def update_status(self) -> None:
+        """Poll system status (Mode, Posture)."""
+        if not self.client:
+            return
+
+        # Get Mode
+        try:
+            resp = self.client.tools_call("get_user_intent_mode", {})
+            content = resp.get("result", {}).get("content", [])
+            if content and isinstance(content, list):
+                text = content[0].get("text", "{}")
+                data = self._safe_json_load(text)
+                mode = data.get("mode", "UNKNOWN").upper()
+                
+                color = "green" if mode == "INFORMATIONAL" else "yellow" if mode == "OPERATIONAL" else "red"
+                self.call_from_thread(self._update_widget, "#mode-status", f"Mode: [{color}]{mode}[/{color}]")
+        except:
+            pass
+            
+        # Get Posture
+        try:
+            resp = self.client.tools_call("get_system_posture", {})
+            content = resp.get("result", {}).get("content", [])
+            if content and isinstance(content, list):
+                text = content[0].get("text", "{}")
+                data = self._safe_json_load(text)
+                level = data.get("posture_level", "UNKNOWN")
+                
+                color = "green" if level == "SAFE" else "yellow" if level == "DEGRADED" else "red"
+                self.call_from_thread(self._update_widget, "#posture-status", f"Posture: [{color}]{level}[/{color}]")
+        except:
+            pass
+
+    def _safe_json_load(self, text: str) -> Dict[str, Any]:
+        try:
+            import json
+            return json.loads(text)
+        except:
+            return {}
+
+    def _update_widget(self, widget_id: str, content: str) -> None:
+        try:
+            self.query_one(widget_id, Static).update(content)
+        except:
+            pass
     
     def log_output(self, message: str) -> None:
         """Add message to output panel."""

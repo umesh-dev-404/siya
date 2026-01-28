@@ -227,6 +227,50 @@
 
 ---
 
+## UPCOMING PHASES (v1.0.1)
+
+### Phase 20 — Decision Explanation Layer
+- **Status:** ✅ COMPLETE
+- **Objective:** Provide post-hoc explainability for system decisions
+- **New Law:** LAW 20 — POST-HOC EXPLANATION ONLY
+- **New Tool:** `explain_decision`
+- **Deliverables:**
+  - `audit/explanation_service.py`
+  - `tools/explanation_tools.py`
+  - Schema extension for `explanation` object
+  - Interface updates (Web/CLI/TUI)
+
+### Phase 21 — Explicit User Intent Modes
+- **Status:** ✅ COMPLETE
+- **Objective:** Allow users to explicitly declare intent posture
+- **New Law:** LAW 21 — USER-DECLARED INTENT SUPREMACY
+- **Deliverables:**
+  - `core/intent_mode.py`
+  - Orchestrator integration
+  - Interface updates (CLI, Web, TUI)
+
+### Phase 22 — Memory Quality Control
+- **Status:** ✅ COMPLETE
+- **Objective:** Prevent memory degradation through confidence decay
+- **New Law:** LAW 22 — MEMORY QUALITY PRESERVATION
+- **Deliverables:**
+  - `memory/memory_quality.py`
+  - `memory/memory_summarizer.py`
+  - Database schema extension
+  - Interface updates (Web/CLI/TUI)
+
+### Phase 23 — Operator Observability Dashboard
+- **Status:** ✅ COMPLETE
+- **Objective:** Provide read-only system posture view
+- **New Law:** LAW 23 — OBSERVABILITY WITHOUT CONTROL
+- **New Tool:** `get_system_posture`
+- **Deliverables:**
+  - `system/observability_service.py`
+  - `tools/observability_tools.py`
+  - Interface updates (CLI, Web, TUI)
+
+---
+
 ## SYSTEM ARCHITECTURE
 
 ### Core Components
@@ -259,6 +303,12 @@
 - ✅ LAW 18 — FORWARD COMPATIBILITY
 - ✅ LAW 19 — INTERFACE CONSISTENCY (new: CLI/API/Web must match MCP Server)
 
+### v1.0.1 Enhancement Laws (Pending Implementation)
+- ✅ LAW 20 — POST-HOC EXPLANATION ONLY (Phase 20 core implemented)
+- ✅ LAW 21 — USER-DECLARED INTENT SUPREMACY (Phase 21 core implemented)
+- ✅ LAW 22 — MEMORY QUALITY PRESERVATION (Phase 22 core implemented)
+- ✅ LAW 23 — OBSERVABILITY WITHOUT CONTROL (Phase 23 core implemented)
+
 ---
 
 ## DEPLOYMENT STATUS
@@ -289,6 +339,26 @@
 - Accessible from PC via network (API: port 8080, Web: port 3000)
 - Service managed by systemd
 - All core components operational
+
+---
+
+## RECENT MAINTENANCE (2026-01-28)
+
+### ✅ Fix: AI Output Display
+- **Issue:** TUI and Web Interface displayed duplicate/redundant AI output json fields.
+- **Fix:** Refactored display logic in `tui/app.py` and `web/static/app.js` to properly parse MCP `structuredContent` and display only the clean summary.
+
+### ✅ Fix: Notification Synchronization
+- **Issue:** Web interface did not load notifications on startup or refresh them.
+- **Fix:** Added `loadNotifications()` to startup sequence and implemented 30s periodic refresh.
+
+### ✅ Fix: Mobile Notifications UI
+- **Issue:** Notifications panel covered the entire screen on mobile, overlapping sidebar tools.
+- **Fix:** Redesigned mobile notifications as a collapsible section within the sidebar (accordion style) with smooth animations.
+
+### ✅ Feature: Clear All Notifications
+- **Issue:** `clear_notifications` tool only supported clearing old notifications.
+- **Update:** Added `clear_all=True` parameter to clear all acknowledged notifications immediately. Updated tool registration and schema.
 
 ---
 

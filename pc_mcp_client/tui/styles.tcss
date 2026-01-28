@@ -21,6 +21,16 @@
     color: $text-muted;
 }
 
+#mode-status {
+    padding: 0 1;
+    margin-bottom: 0;
+}
+
+#posture-status {
+    padding: 0 1;
+    margin-bottom: 1;
+}
+
 #tool-tree {
     padding: 0;
 }

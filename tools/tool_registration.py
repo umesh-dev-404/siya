@@ -170,4 +170,20 @@ def register_all_tools(executor: ToolExecutor) -> None:
     except ImportError:
         logger.debug("Voice tools not available")
     
+    # Explanation tools (Phase 20)
+    try:
+        from tools.explanation_tools import register_explanation_tools
+        register_explanation_tools(executor)
+    except ImportError:
+        logger.debug("Explanation tools not available")
+    
+    # Observability tools (Phase 23)
+    try:
+        from tools.observability_tools import register_observability_tools
+        register_observability_tools(executor)
+    except ImportError:
+        logger.debug("Observability tools not available")
+    
     logger.info("All available tools registered")
+
+

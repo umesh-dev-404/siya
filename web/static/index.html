@@ -28,6 +28,21 @@
             <span class="header-subtitle">Personal Assistant Platform</span>
         </div>
         <div class="header-actions">
+            <!-- Intent Mode Switcher -->
+            <div class="mode-switcher">
+                <select id="mode-select" class="select select-sm">
+                    <option value="informational">Info Mode</option>
+                    <option value="operational">Ops Mode</option>
+                    <option value="destructive">Destructive Mode</option>
+                </select>
+            </div>
+
+            <!-- Posture Widget -->
+            <div class="posture-widget" id="posture-widget">
+                <span class="status-dot" id="posture-dot" style="background-color: var(--accent-success);"></span>
+                <span id="posture-text">Likely Safe</span>
+            </div>
+
             <!-- Desktop only notifications button -->
             <button class="btn btn-sm desktop-only" id="notifications-btn" style="position: relative;">
                 🔔 Notifications

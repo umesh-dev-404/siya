@@ -852,18 +852,31 @@ Implement **voice input interface** for hands-free interaction.
 | 2 | Governance & Control Plane | PC | ✅ Complete |
 | 3 | Memory & Observability | PC | ✅ Complete |
 | 4A | Raspberry Pi Base Provisioning | Pi | ✅ Complete |
-| 4 | Pi Mirroring & Validation | Pi (read-only) | ⏭️ Optional |
+| 4 | Pi Mirroring & Validation | Pi (read-only) | ✅ Complete |
 | 5 | AI Integration (Controlled) | PC + Pi | ✅ Complete |
 | 6 | Interfaces & UX Layer | PC | ✅ Complete |
-| 7 | Automation & Scheduling | PC + Pi | ✅ Complete (framework) |
+| 7 | Automation & Scheduling | PC + Pi | ✅ Complete |
 | 8 | Failure Injection & Hardening | Pi | ✅ Complete |
 | 9 | Production Lock & Baseline | Pi | ✅ Complete |
 | 10 | Real AI Model Integration | Pi | ✅ Complete |
-| 11 | Tool Implementations | Pi | ⏳ In Progress |
-| 12 | Supabase Synchronization | Pi | ⏳ Pending |
-| 13 | systemd Timer Integration | Pi | ⏳ Pending |
-| 14 | Enhanced User Notifications | Pi | ⏳ Pending |
-| 15 | Voice Interface | Pi | ⏳ Optional |
+| 11 | Tool Implementations | Pi | ✅ Complete |
+| 12 | System Context & Memory | Pi | ✅ Complete |
+| 13 | Supabase Synchronization | Pi | ✅ Complete |
+| 14 | systemd Timer Integration | Pi | ✅ Complete |
+| 15 | Enhanced User Notifications | Pi | ✅ Complete |
+| 16 | Voice Interface | Pi | ✅ Complete |
+| 17 | Web Interface Redesign | PC + Pi | ✅ Complete |
+| 18 | Full-Screen TUI | PC | ✅ Complete |
+| 19 | Interface Consistency | PC + Pi | ✅ Complete |
+
+### v1.0.1 Enhancement Phases (Pending)
+
+| Phase | Name | Primary Environment | Status |
+|---|---|---|---|
+| 20 | Decision Explanation Layer | PC + Pi | ⏳ Pending |
+| 21 | Explicit User Intent Modes | PC + Pi | ⏳ Pending |
+| 22 | Memory Quality Control | PC + Pi | ⏳ Pending |
+| 23 | Operator Observability Dashboard | PC + Pi | ⏳ Pending |
 
 ---
 
@@ -886,3 +899,4 @@ Otherwise, it is invalid.
 ---
 
 ==================== FILE END ====================
+

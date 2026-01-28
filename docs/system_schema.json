@@ -3,7 +3,7 @@
   "$id": "https://siya.local/system_schema.json",
   "title": "Siya Canonical System Schema",
   "description": "Binding JSON schema for all AI outputs, tool requests, errors, confirmations, memory writes, audit logs, and orchestration steps. This schema enforces Canonical System Laws and must be strictly followed.",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "oneOf": [
     {
       "$ref": "#/definitions/intent_parsing_output"
@@ -46,24 +46,151 @@
     },
     "memory_tier": {
       "type": "string",
-      "enum": ["L1", "L2", "L3"],
+      "enum": [
+        "L1",
+        "L2",
+        "L3"
+      ],
       "description": "Memory tier: L1 (runtime/ephemeral), L2 (local SQLite), L3 (Supabase)"
     },
     "execution_state": {
       "type": "string",
-      "enum": ["INIT", "VALIDATE", "EXECUTE", "VERIFY", "COMMIT", "FAIL", "ABORT"],
+      "enum": [
+        "INIT",
+        "VALIDATE",
+        "EXECUTE",
+        "VERIFY",
+        "COMMIT",
+        "FAIL",
+        "ABORT"
+      ],
       "description": "Orchestration execution lifecycle state"
     },
     "permission_level": {
       "type": "string",
-      "enum": ["NONE", "READ", "WRITE", "EXECUTE"],
+      "enum": [
+        "NONE",
+        "READ",
+        "WRITE",
+        "EXECUTE"
+      ],
       "description": "Permission level for tool execution"
+    },
+    "user_intent_mode": {
+      "type": "string",
+      "enum": [
+        "informational",
+        "operational",
+        "destructive"
+      ],
+      "default": "informational",
+      "description": "v1.0.1 (Phase 21): User-declared intent posture. informational=read-only, operational=normal flow, destructive=extra confirmation"
+    },
+    "explanation": {
+      "type": "object",
+      "description": "v1.0.1 (Phase 20): Post-hoc explanation for system decisions",
+      "properties": {
+        "summary": {
+          "type": "string",
+          "description": "Human-readable explanation summary"
+        },
+        "decision_basis": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of factors that led to the decision"
+        },
+        "laws_applied": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of Canonical Laws that were applied"
+        },
+        "confidence": {
+          "$ref": "#/definitions/confidence"
+        }
+      }
+    },
+    "memory_quality": {
+      "type": "object",
+      "description": "v1.0.1 (Phase 22): Memory quality metadata for confidence decay",
+      "properties": {
+        "confidence_current": {
+          "type": "number",
+          "minimum": 0.0,
+          "maximum": 1.0,
+          "description": "Current confidence score after decay"
+        },
+        "confidence_original": {
+          "type": "number",
+          "minimum": 0.0,
+          "maximum": 1.0,
+          "description": "Original confidence score at creation"
+        },
+        "last_evaluated": {
+          "$ref": "#/definitions/timestamp",
+          "description": "When confidence was last evaluated"
+        },
+        "parent_memory_id": {
+          "type": "string",
+          "description": "ID of parent memory if this is a summary"
+        }
+      }
+    },
+    "system_posture": {
+      "type": "object",
+      "description": "v1.0.1 (Phase 23): Read-only system posture snapshot",
+      "properties": {
+        "snapshot_timestamp": {
+          "$ref": "#/definitions/timestamp"
+        },
+        "queue_depth": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "pending_confirmations": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "recent_errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "memory_pressure": {
+          "type": "string",
+          "enum": [
+            "low",
+            "medium",
+            "high",
+            "critical"
+          ]
+        },
+        "sync_status": {
+          "type": "string",
+          "enum": [
+            "online",
+            "offline",
+            "syncing",
+            "error"
+          ]
+        }
+      }
     },
     "intent_parsing_output": {
       "type": "object",
       "title": "AI Intent Parsing Output",
       "description": "Output from AI intent parser. AI may ONLY produce this format. AI never executes tools.",
-      "required": ["type", "request_id", "timestamp", "intent", "confidence"],
+      "required": [
+        "type",
+        "request_id",
+        "timestamp",
+        "intent",
+        "confidence"
+      ],
       "properties": {
         "type": {
           "type": "string",
@@ -79,7 +206,10 @@
         "intent": {
           "type": "object",
           "description": "Parsed user intent",
-          "required": ["action", "arguments"],
+          "required": [
+            "action",
+            "arguments"
+          ],
           "properties": {
             "action": {
               "type": "string",
@@ -119,7 +249,14 @@
       "type": "object",
       "title": "Tool Request",
       "description": "Request to execute a tool. Must be validated by MCP before execution.",
-      "required": ["type", "request_id", "timestamp", "tool_name", "arguments", "requires_confirmation"],
+      "required": [
+        "type",
+        "request_id",
+        "timestamp",
+        "tool_name",
+        "arguments",
+        "requires_confirmation"
+      ],
       "properties": {
         "type": {
           "type": "string",
@@ -151,7 +288,12 @@
         },
         "source": {
           "type": "string",
-          "enum": ["user_direct", "user_parsed", "scheduled", "automation"],
+          "enum": [
+            "user_direct",
+            "user_parsed",
+            "scheduled",
+            "automation"
+          ],
           "description": "Origin of the tool request"
         },
         "intent_parsing_output_id": {
@@ -165,7 +307,15 @@
       "type": "object",
       "title": "Error Response",
       "description": "Explicit error representation. No failure may be silent (LAW 12).",
-      "required": ["type", "request_id", "timestamp", "error_code", "error_message", "severity", "user_notified"],
+      "required": [
+        "type",
+        "request_id",
+        "timestamp",
+        "error_code",
+        "error_message",
+        "severity",
+        "user_notified"
+      ],
       "properties": {
         "type": {
           "type": "string",
@@ -188,7 +338,12 @@
         },
         "severity": {
           "type": "string",
-          "enum": ["LOW", "MEDIUM", "HIGH", "CRITICAL"],
+          "enum": [
+            "LOW",
+            "MEDIUM",
+            "HIGH",
+            "CRITICAL"
+          ],
           "description": "Error severity level"
         },
         "user_notified": {
@@ -197,7 +352,15 @@
         },
         "failure_layer": {
           "type": "string",
-          "enum": ["AI", "MCP", "ORCHESTRATOR", "TOOL", "MEMORY", "NETWORK", "SYSTEM"],
+          "enum": [
+            "AI",
+            "MCP",
+            "ORCHESTRATOR",
+            "TOOL",
+            "MEMORY",
+            "NETWORK",
+            "SYSTEM"
+          ],
           "description": "System layer where failure occurred"
         },
         "recoverable": {
@@ -225,7 +388,14 @@
       "type": "object",
       "title": "Confirmation Request",
       "description": "Request for explicit user confirmation before executing a tool (LAW 5).",
-      "required": ["type", "request_id", "timestamp", "tool_request_id", "confirmation_message", "requires_explicit_consent"],
+      "required": [
+        "type",
+        "request_id",
+        "timestamp",
+        "tool_request_id",
+        "confirmation_message",
+        "requires_explicit_consent"
+      ],
       "properties": {
         "type": {
           "type": "string",
@@ -270,7 +440,15 @@
       "type": "object",
       "title": "Memory Write Suggestion",
       "description": "Suggestion to write to memory. Only orchestrator may write (LAW 8). AI may suggest.",
-      "required": ["type", "request_id", "timestamp", "memory_tier", "content", "confidence", "lineage"],
+      "required": [
+        "type",
+        "request_id",
+        "timestamp",
+        "memory_tier",
+        "content",
+        "confidence",
+        "lineage"
+      ],
       "properties": {
         "type": {
           "type": "string",
@@ -290,7 +468,10 @@
         "content": {
           "type": "object",
           "description": "Memory content to write",
-          "required": ["key", "value"],
+          "required": [
+            "key",
+            "value"
+          ],
           "properties": {
             "key": {
               "type": "string",
@@ -322,7 +503,10 @@
         "lineage": {
           "type": "object",
           "description": "Lineage tracking for memory (LAW 9)",
-          "required": ["source_request_id", "source_type"],
+          "required": [
+            "source_request_id",
+            "source_type"
+          ],
           "properties": {
             "source_request_id": {
               "type": "string",
@@ -330,7 +514,12 @@
             },
             "source_type": {
               "type": "string",
-              "enum": ["intent_parsing", "tool_execution", "user_input", "automation"],
+              "enum": [
+                "intent_parsing",
+                "tool_execution",
+                "user_input",
+                "automation"
+              ],
               "description": "Type of source that generated this memory"
             },
             "parent_memory_id": {
@@ -342,7 +531,11 @@
         },
         "suggested_by": {
           "type": "string",
-          "enum": ["AI", "ORCHESTRATOR", "TOOL"],
+          "enum": [
+            "AI",
+            "ORCHESTRATOR",
+            "TOOL"
+          ],
           "description": "Component suggesting this memory write"
         }
       },
@@ -352,7 +545,14 @@
       "type": "object",
       "title": "Audit Log Entry",
       "description": "Immutable audit log entry (LAW 13). Every action must be auditable.",
-      "required": ["type", "request_id", "timestamp", "event_type", "event_data", "correlation_id"],
+      "required": [
+        "type",
+        "request_id",
+        "timestamp",
+        "event_type",
+        "event_data",
+        "correlation_id"
+      ],
       "properties": {
         "type": {
           "type": "string",
@@ -404,12 +604,25 @@
         },
         "interface": {
           "type": "string",
-          "enum": ["CLI", "WEB", "API", "VOICE"],
+          "enum": [
+            "CLI",
+            "WEB",
+            "API",
+            "VOICE"
+          ],
           "description": "Interface through which action originated"
         },
         "layer": {
           "type": "string",
-          "enum": ["AI", "MCP", "ORCHESTRATOR", "TOOL", "MEMORY", "INTERFACE"],
+          "enum": [
+            "AI",
+            "MCP",
+            "ORCHESTRATOR",
+            "TOOL",
+            "MEMORY",
+            "INTERFACE",
+            "SYSTEM"
+          ],
           "description": "System layer where event occurred"
         }
       },
@@ -419,7 +632,14 @@
       "type": "object",
       "title": "Orchestration Step Report",
       "description": "Report of a single orchestration step execution (LAW 11).",
-      "required": ["type", "request_id", "timestamp", "step_id", "execution_state", "tool_request_id"],
+      "required": [
+        "type",
+        "request_id",
+        "timestamp",
+        "step_id",
+        "execution_state",
+        "tool_request_id"
+      ],
       "properties": {
         "type": {
           "type": "string",
@@ -459,7 +679,10 @@
           "description": "When step execution started"
         },
         "completed_at": {
-          "type": ["string", "null"],
+          "type": [
+            "string",
+            "null"
+          ],
           "format": "date-time",
           "description": "When step execution completed (null if not completed)"
         },
@@ -468,7 +691,10 @@
           "description": "Whether step completed successfully"
         },
         "error": {
-          "type": ["object", "null"],
+          "type": [
+            "object",
+            "null"
+          ],
           "description": "Error details if step failed",
           "properties": {
             "error_code": {
@@ -480,7 +706,10 @@
           }
         },
         "verification_result": {
-          "type": ["object", "null"],
+          "type": [
+            "object",
+            "null"
+          ],
           "description": "Result of step verification (if applicable)",
           "additionalProperties": true
         },

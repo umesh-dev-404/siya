@@ -56,6 +56,9 @@ class ModelManager:
         self._model_path = Path(model_path) if model_path else None
         self._n_ctx = n_ctx
         self._n_threads = n_threads
+        
+        # Stub mode state tracking
+        self._stub_loaded = False
 
         # Check if llama-cpp-python is available
         self._llama_available = is_llama_available()
@@ -123,8 +126,9 @@ class ModelManager:
             return True
 
         if not self._llama_available or self._llama_wrapper is None:
-            # Stub mode
+            # Stub mode - track state for consistent behavior
             logger.info("Would load model (stub mode)", extra={"model_path": str(self._model_path)})
+            self._stub_loaded = True
             return True
 
         try:
@@ -211,8 +215,9 @@ class ModelManager:
             return True
 
         if not self._llama_available or self._llama_wrapper is None:
-            # Stub mode
+            # Stub mode - track state for consistent behavior
             logger.info("Would unload model (stub mode)")
+            self._stub_loaded = False
             return True
 
         try:
@@ -233,7 +238,8 @@ class ModelManager:
             True if model is loaded
         """
         if not self._llama_available or self._llama_wrapper is None:
-            return False
+            # Stub mode - use tracked state
+            return self._stub_loaded
         return self._llama_wrapper.is_loaded()
 
     def get_model_size_mb(self) -> int:

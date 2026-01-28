@@ -431,6 +431,66 @@ For each error, document:
 
 ---
 
+## 8.3 CHANGE IMPACT ANALYSIS (MANDATORY)
+
+**Rule:** Before considering ANY code change complete, you MUST analyze and address its impact on the entire codebase.
+
+### Impact Analysis Process
+
+**For every code change, you MUST:**
+
+1. **Identify Affected Areas**
+   - What other modules import or depend on the changed code?
+   - What tests exercise the changed functionality?
+   - What documentation references the changed code?
+   - What schemas or interfaces are affected?
+
+2. **Trace Dependencies**
+   - If a schema changes → update all code that reads/writes that schema
+   - If a function signature changes → update all callers
+   - If a database table changes → update queries, migrations, and sync logic
+   - If an API changes → update all clients (CLI, Web, TUI)
+
+3. **Update All Affected Code**
+   - Make changes in dependent modules immediately, not "later"
+   - Do NOT leave the codebase in an inconsistent state
+   - Do NOT skip updates because "it still works" — consistency is mandatory
+
+4. **Update All Affected Documentation**
+   - Update schema documentation
+   - Update API documentation
+   - Update user guides
+   - Update PROJECT_STATUS.md if status changes
+   - Update ERROR_CORRECTION.md if bugs were fixed
+
+### Forbidden Behaviors
+
+- ❌ **Do NOT** say "this is a pre-existing issue" and ignore it
+- ❌ **Do NOT** skip tests because they're "unrelated to my changes"
+- ❌ **Do NOT** leave broken tests for "later"
+- ❌ **Do NOT** make a change that causes test failures without fixing them immediately
+- ❌ **Do NOT** defer documentation updates
+
+### Enforcement
+
+Before marking any change complete:
+
+1. Run the **full test suite** — ALL tests must pass
+2. Verify **no new warnings** were introduced
+3. Confirm **all affected documentation** is updated
+4. Confirm **all dependent code** is updated
+
+If tests fail after your change → **FIX THEM IMMEDIATELY**, do not proceed.
+
+If you discover a "pre-existing issue" during your work → either:
+- Fix it as part of this change, OR
+- Document it in ERROR_CORRECTION.md with a clear explanation of why it cannot be fixed now
+
+**Rationale:**  
+A codebase must remain in a **consistent, working state** at all times. Partial changes create technical debt that compounds. The time to fix impact is **now**, not later.
+
+---
+
 ## 9. DEFAULT ATTITUDE
 
 Behave like a **careful senior engineer** who knows:

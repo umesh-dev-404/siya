@@ -71,6 +71,9 @@ class MCPServer:
     def get_request_validator(self) -> RequestValidator:
         return self._request_validator
 
+    def get_policy_engine(self) -> PolicyEngine:
+        return self._policy_engine
+
     def list_tools(self) -> list[str]:
         return self._tool_registry.list_tools()
 

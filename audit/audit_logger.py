@@ -107,27 +107,29 @@ class AuditLogger:
         conn = self._database.get_connection()
         cursor = conn.cursor()
 
-        cursor.execute(
-            """
-            INSERT INTO audit_log (
-                id, request_id, timestamp, event_type, event_data,
-                correlation_id, user_id, interface, layer
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """,
-            (
-                log_id,
-                request_id or str(uuid4()),
-                timestamp,
-                event_type,
-                event_data_json,
-                correlation_id,
-                user_id,
-                interface,
-                layer,
-            ),
-        )
-
-        conn.commit()
+        try:
+            cursor.execute(
+                """
+                INSERT INTO audit_log (
+                    id, request_id, timestamp, event_type, event_data,
+                    correlation_id, user_id, interface, layer
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    log_id,
+                    request_id or str(uuid4()),
+                    timestamp,
+                    event_type,
+                    event_data_json,
+                    correlation_id,
+                    user_id,
+                    interface,
+                    layer,
+                ),
+            )
+            conn.commit()
+        finally:
+            cursor.close()
 
         logger.debug(
             f"Audit event logged: {event_type}",
@@ -154,15 +156,18 @@ class AuditLogger:
         conn = self._database.get_connection()
         cursor = conn.cursor()
 
-        cursor.execute(
-            "SELECT * FROM audit_log WHERE correlation_id = ? ORDER BY timestamp ASC",
-            (correlation_id,),
-        )
+        try:
+            cursor.execute(
+                "SELECT * FROM audit_log WHERE correlation_id = ? ORDER BY timestamp ASC",
+                (correlation_id,),
+            )
 
-        rows = cursor.fetchall()
-        columns = [desc[0] for desc in cursor.description]
+            rows = cursor.fetchall()
+            columns = [desc[0] for desc in cursor.description]
 
-        return [dict(zip(columns, row)) for row in rows]
+            return [dict(zip(columns, row)) for row in rows]
+        finally:
+            cursor.close()
 
     def get_events_by_request_id(self, request_id: str) -> List[Dict[str, Any]]:
         """
@@ -177,12 +182,15 @@ class AuditLogger:
         conn = self._database.get_connection()
         cursor = conn.cursor()
 
-        cursor.execute(
-            "SELECT * FROM audit_log WHERE request_id = ? ORDER BY timestamp ASC",
-            (request_id,),
-        )
+        try:
+            cursor.execute(
+                "SELECT * FROM audit_log WHERE request_id = ? ORDER BY timestamp ASC",
+                (request_id,),
+            )
 
-        rows = cursor.fetchall()
-        columns = [desc[0] for desc in cursor.description]
+            rows = cursor.fetchall()
+            columns = [desc[0] for desc in cursor.description]
 
-        return [dict(zip(columns, row)) for row in rows]
+            return [dict(zip(columns, row)) for row in rows]
+        finally:
+            cursor.close()

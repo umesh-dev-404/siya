@@ -99,7 +99,32 @@ siya-cli --transport http --url http://192.168.1.39:8080 call summarize_text --a
 
 ---
 
-## 6. WEB INTERFACE (Phase 17)
+## 6. NOTIFICATION TOOLS
+
+### List Notifications
+```powershell
+siya-cli --transport http --url http://192.168.1.39:8080 call list_notifications --args "{\"unread_only\": false}"
+```
+
+### Acknowledge All Notifications
+```powershell
+siya-cli --transport http --url http://192.168.1.39:8080 call acknowledge_all_notifications
+```
+
+### Clear All Acknowledged Notifications
+```powershell
+siya-cli --transport http --url http://192.168.1.39:8080 call clear_notifications --args "{\"clear_all\": true}"
+```
+*Expect:* `pending_confirmation` status (LAW 1 - destructive action).
+
+### Clear Old Notifications (30+ days)
+```powershell
+siya-cli --transport http --url http://192.168.1.39:8080 call clear_notifications --args "{\"days_old\": 30}"
+```
+
+---
+
+## 7. WEB INTERFACE (Phase 17)
 
 The Neo-Brutalism web interface provides full CLI parity at port 3000.
 
@@ -113,7 +138,9 @@ http://192.168.1.39:3000
 - **Tool Panel:** Dynamic forms based on tool schemas
 - **Confirmation Modal:** LAW 1 enforcement with Yes/Cancel buttons
 - **Output Panel:** Human-readable formatted results
-- **Notifications:** Slide-out panel for system notifications
+- **Notifications:** 
+  - Desktop: Slide-out panel from right side
+  - Mobile: Collapsible section at bottom of sidebar (tap to expand/collapse)
 
 ### Using the Web Interface
 1. Open `http://<pi-ip>:3000` in browser
@@ -125,7 +152,7 @@ http://192.168.1.39:3000
 
 ---
 
-## 7. FULL-SCREEN TUI (Phase 18-19)
+## 8. FULL-SCREEN TUI (Phase 18-19)
 
 ### Launch TUI
 ```powershell
@@ -170,5 +197,38 @@ siya
 
 ---
 
+## 9. v1.0.1 TOOLS (NEW)
+ 
+> **Note:** These features were added in the Phase 20-23 Interface Update.
+
+### Explain Decision (Phase 20)
+```powershell
+# Explain why a previous request was denied or required confirmation
+siya-cli explain <REQUEST_UUID>
+```
+ 
+### Get System Posture (Phase 23)
+```powershell
+# Get read-only system status snapshot
+siya-cli posture
+```
+*Returns: Posture Level (SAFE/DEGRADED/CRITICAL) and component health.*
+
+### Intent Mode (Phase 21)
+```powershell
+# Check current mode
+siya-cli mode
+
+# Set mode to Operational
+siya-cli mode operational
+
+# Set mode to Informational (Read-Only)
+siya-cli mode informational
+```
+*Intent modes: informational (default), operational, destructive*
+
+---
+
 **Last Updated:** 2026-01-28
-**Schema Version:** 1.0.0
+**Schema Version:** 1.0.1 (v1.0.1 Compliant)
+

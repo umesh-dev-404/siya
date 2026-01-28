@@ -1,6 +1,6 @@
 # RELEASE INFORMATION
 ## Project: Siya
-## Version: 1.0.0 (Baseline)
+## Version: 1.0.1
 
 ---
 
@@ -84,5 +84,46 @@ For issues or questions:
 
 ---
 
-**Last Updated:** 2026-01-27  
-**Deployment Status:** ✅ Deployed and Operational
+## PLANNED RELEASES
+
+### v1.0.1 (Implemented)
+
+**Status:** ✅ Complete  
+**Release Date:** 2026-01-28  
+**Features:**
+- Phase 20: Decision Explanation Layer (LAW 20) ✅
+- Phase 21: Explicit User Intent Modes (LAW 21) ✅
+- Phase 22: Memory Quality Control (LAW 22) ✅
+- Phase 23: Operator Observability Dashboard (LAW 23) ✅
+
+**Pre-Release Checklist:**
+- [x] All test cases pass
+- [x] No schema changes break v1.0.0
+- [x] No new background services
+- [x] RAM usage unchanged at idle
+- [x] CPU idle load unchanged
+- [x] Offline mode verified
+- [x] Logs show new features dormant by default
+- [x] Version tagged (v1.0.1)
+- [x] Rollback snapshot taken
+
+**Rollback Triggers:**
+- Law violation detected
+- Memory corruption
+- Interface inconsistency
+- Performance regression
+
+**Rollback Steps:**
+1. Stop Siya services
+2. Restore previous release snapshot
+3. Restore SQLite DB backup
+4. Clear sync queue (do not replay)
+5. Restart services
+6. Notify user explicitly
+7. Log rollback event
+
+---
+
+**Last Updated:** 2026-01-28  
+**Deployment Status:** ✅ v1.0.1 Deployed
+

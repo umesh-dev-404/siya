@@ -122,3 +122,108 @@ class MemoryAccessLayer:
 
         columns = [desc[0] for desc in cursor.description]
         return dict(zip(columns, row))
+
+    # Phase 22: Memory Quality Control (v1.0.1)
+    
+    def get_memories_by_confidence(
+        self,
+        max_confidence: float = 1.0,
+        min_confidence: float = 0.0,
+        limit: int = 100,
+    ) -> List[Dict[str, Any]]:
+        """
+        Get memories filtered by confidence level.
+        
+        Args:
+            max_confidence: Maximum confidence_current (inclusive)
+            min_confidence: Minimum confidence_current (inclusive)
+            limit: Maximum number of results
+            
+        Returns:
+            List of memory entries matching confidence criteria
+            
+        Note:
+            LAW 22: Supports memory quality evaluation without mutation.
+        """
+        conn = self._database.get_connection()
+        cursor = conn.cursor()
+        
+        cursor.execute(
+            """
+            SELECT * FROM memory 
+            WHERE confidence_current >= ? AND confidence_current <= ?
+            ORDER BY confidence_current ASC
+            LIMIT ?
+            """,
+            (min_confidence, max_confidence, limit),
+        )
+        rows = cursor.fetchall()
+        columns = [desc[0] for desc in cursor.description]
+        return [dict(zip(columns, row)) for row in rows]
+
+    def get_summarization_candidates(
+        self,
+        confidence_threshold: float = 0.3,
+        limit: int = 50,
+    ) -> List[Dict[str, Any]]:
+        """
+        Get memories eligible for summarization.
+        
+        Args:
+            confidence_threshold: Max confidence for summarization eligibility
+            limit: Maximum number of results
+            
+        Returns:
+            List of unsummarized memories below confidence threshold
+            
+        Note:
+            LAW 22: Identifies candidates without performing summarization.
+        """
+        conn = self._database.get_connection()
+        cursor = conn.cursor()
+        
+        cursor.execute(
+            """
+            SELECT * FROM memory 
+            WHERE confidence_current <= ? 
+              AND is_summarized = 0
+            ORDER BY confidence_current ASC
+            LIMIT ?
+            """,
+            (confidence_threshold, limit),
+        )
+        rows = cursor.fetchall()
+        columns = [desc[0] for desc in cursor.description]
+        return [dict(zip(columns, row)) for row in rows]
+
+    def get_memory_lineage(self, memory_id: str) -> List[Dict[str, Any]]:
+        """
+        Get lineage chain for a memory (parents and children).
+        
+        Args:
+            memory_id: Starting memory ID
+            
+        Returns:
+            List of related memories in lineage chain
+            
+        Note:
+            LAW 22: Preserves lineage for attribution.
+        """
+        conn = self._database.get_connection()
+        cursor = conn.cursor()
+        
+        # Get direct parents and children
+        cursor.execute(
+            """
+            SELECT * FROM memory 
+            WHERE id = ? 
+               OR parent_memory_id = ? 
+               OR lineage_id = ?
+            ORDER BY summarization_level ASC, created_at ASC
+            """,
+            (memory_id, memory_id, memory_id),
+        )
+        rows = cursor.fetchall()
+        columns = [desc[0] for desc in cursor.description]
+        return [dict(zip(columns, row)) for row in rows]
+

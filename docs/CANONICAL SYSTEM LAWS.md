@@ -322,6 +322,75 @@ This law ensures:
 
 ---
 
+## 8B. v1.0.1 ENHANCEMENT LAWS (PHASES 20–23)
+
+---
+
+### LAW 20 — POST-HOC EXPLANATION ONLY
+
+**System explanations must reflect reality, not influence it.**
+
+Explanations must:
+- Reflect actual logged decisions
+- Never influence execution
+- Never introduce new logic
+- Never mask uncertainty
+
+If an explanation cannot be generated truthfully, the system must respond:
+> "Explanation unavailable due to insufficient data."
+
+Explanations are derived from audit logs, never speculated.
+
+---
+
+### LAW 21 — USER-DECLARED INTENT SUPREMACY
+
+**Intent posture must be explicitly declared, never inferred.**
+
+Intent posture:
+- Must be explicitly declared by the user
+- Must never be inferred by AI
+- May only constrain, never expand, permissions
+
+Valid intent modes:
+- `informational` (default) — read-only queries
+- `operational` — normal permission flow
+- `destructive` — extra confirmation required
+
+The system may restrict tools based on intent mode but may never skip confirmations or escalate permissions.
+
+---
+
+### LAW 22 — MEMORY QUALITY PRESERVATION
+
+**Memory must decay gracefully, never disappear abruptly.**
+
+Memory systems must:
+- Degrade confidence before summarization
+- Preserve lineage through all transformations
+- Never delete without a summarized successor
+
+Confidence decay is deterministic and configurable.
+Summarization is logged and trigger is auditable.
+AI may suggest summarization; Orchestrator decides.
+
+---
+
+### LAW 23 — OBSERVABILITY WITHOUT CONTROL
+
+**Observability interfaces must be read-only.**
+
+Observability interfaces:
+- Must be read-only
+- Must not expose execution triggers
+- Must not bypass MCP
+- Must not alter state
+
+All interfaces (CLI, Web, API) must expose identical operator data.
+No privileged interface is allowed (LAW 19 enforced).
+
+---
+
 ---
 
 ## 9. AI-SPECIFIC ENFORCEMENT GUIDELINES

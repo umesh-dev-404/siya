@@ -77,6 +77,17 @@ siya-cli --transport http --url http://192.168.1.39:8080 call list_notifications
 ```
 *Expected Output: Should list the "UAT Test" notification.*
 
+**Clear Notifications:**
+First, acknowledge:
+```powershell
+siya-cli --transport http --url http://192.168.1.39:8080 call acknowledge_all_notifications
+```
+Then clear:
+```powershell
+siya-cli --transport http --url http://192.168.1.39:8080 call clear_notifications --args "{\"clear_all\": true}"
+```
+*Expected Output: `pending_confirmation` (LAW 1). After confirming, `cleared_count` should be > 0.*
+
 ---
 
 ### Test 4: Voice Interface (Phase 16)
@@ -175,3 +186,58 @@ The Neo-Brutalism web interface runs on port 3000 and provides full CLI parity.
    - Status badges with colors (CONNECTED=green, ERROR=red)
    - Boolean values as ✓ Yes / ✗ No
    - Nested objects formatted inline
+
+---
+
+## 5. v1.0.1 Test Cases (Interfaces Implemented)
+ 
+> **Note:** These features are now live in v1.0.1.
+
+### Test 11: Decision Explanation (Phase 20)
+1. Execute a tool that requires confirmation
+2. Record the `request_id` from the response (found in logs or output)
+3. Call `explain` command:
+   ```powershell
+   siya-cli explain <REQUEST_UUID>
+   ```
+4. *Expected:* Explanation shows:
+   - Summary of why confirmation was required
+   - Referenced audit logs
+   - Laws applied (e.g., LAW 1)
+   - Confidence score
+
+### Test 12: Intent Mode (Phase 21)
+1. Set intent mode to `informational`:
+   ```powershell
+   siya-cli mode informational
+   ```
+2. Attempt to execute a WRITE tool (e.g., `trigger_sync`)
+3. *Expected:* Action rejected or flagged (depending on policy configuration)
+4. Set intent mode to `operational`:
+   ```powershell
+   siya-cli mode operational
+   ```
+5. *Expected:* Normal confirmation flow resumes
+
+### Test 13: Memory Quality (Phase 22)
+1. Create a memory entry
+2. Check `memory_quality.confidence_current` = 1.0
+3. Wait for decay (or simulate time passage)
+4. *Expected:* Confidence decreases deterministically
+5. When below threshold, memory summarized with lineage preserved
+
+### Test 14: System Posture (Phase 23)
+1. Call `posture` command via CLI:
+   ```powershell
+   siya-cli posture
+   ```
+2. Check Web Interface widget (Header)
+3. Check TUI Sidebar widget
+4. *Expected:* All three return identical data (LAW 19)
+5. Verify read-only (no actions possible)
+
+---
+
+**Last Updated:** 2026-01-28
+**Version:** 1.0.1 (Complete)
+

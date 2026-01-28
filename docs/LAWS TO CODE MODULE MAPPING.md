@@ -413,6 +413,96 @@ The human user is the final and absolute authority.
 
 ---
 
+---
+
+## 3B. v1.0.1 ENHANCEMENT LAW MAPPINGS (PHASES 20–23)
+
+---
+
+### LAW 20 — POST-HOC EXPLANATION ONLY
+
+**Primary Enforcement Modules:**
+- `audit/explanation_service.py` (Phase 20)
+- `tools/explanation_tools.py` (Phase 20)
+- `audit/audit_logger.py`
+
+**Enforcement Mechanisms:**
+- Explanations derived from audit logs only
+- No state mutation during explanation generation
+- Explanation tool is read-only (no side effects)
+- Confidence score reflects data availability
+
+**Violation Handling:**
+- Explanation refused if data insufficient
+- "Explanation unavailable" response returned
+- No speculative reasoning permitted
+
+---
+
+### LAW 21 — USER-DECLARED INTENT SUPREMACY
+
+**Primary Enforcement Modules:**
+- `core/intent_mode.py` (Phase 21)
+- `orchestrator/orchestrator.py`
+- `mcp/mcp_server.py`
+- CLI/Web/TUI interfaces (LAW 19 parity)
+
+**Enforcement Mechanisms:**
+- Intent mode must be explicitly declared in request
+- Default to `informational` if unspecified
+- AI parser forbidden from inferring intent mode
+- Intent mode logged with every request
+
+**Violation Handling:**
+- AI-inferred intent rejected
+- Request blocked if intent mode invalid
+- Logged as policy violation
+
+---
+
+### LAW 22 — MEMORY QUALITY PRESERVATION
+
+**Primary Enforcement Modules:**
+- `memory/memory_quality.py` (Phase 22)
+- `memory/memory_summarizer.py` (Phase 22)
+- `memory/tier_manager.py`
+- `memory/database_schema.py`
+
+**Enforcement Mechanisms:**
+- Confidence decay is deterministic (configurable rate)
+- Summarization triggered at threshold
+- Lineage preserved through parent_memory_id
+- Direct deletion blocked (must summarize first)
+
+**Violation Handling:**
+- Delete without summary rejected
+- Lineage missing flagged as error
+- Memory write without orchestrator rejected
+
+---
+
+### LAW 23 — OBSERVABILITY WITHOUT CONTROL
+
+**Primary Enforcement Modules:**
+- `system/observability_service.py` (Phase 23)
+- `tools/observability_tools.py` (Phase 23)
+- CLI/Web/TUI interfaces (LAW 19 parity)
+
+**Enforcement Mechanisms:**
+- `get_system_posture` tool is read-only
+- No execution triggers exposed
+- Identical data across all interfaces
+- Works offline (LAW 16)
+
+**Violation Handling:**
+- Action attempts denied
+- Interface drift logged as violation
+- Hidden controls rejected
+
+---
+
+---
+
 ## 4. FINAL GUARANTEE
 
 If all mappings in this document are implemented and enforced:

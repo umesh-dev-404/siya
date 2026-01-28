@@ -218,6 +218,28 @@ Maintained per dev-rules.md §8.2 (Error Correction Discipline).
 
 ---
 
+## Session: 2026-01-28 (Phase 20-23 Test Creation)
+
+### Error 1: Phase 20 Test — Database Mock Missing Interface
+**Symptom:** `test_explanation_service_init` failed when creating `ExplanationService` with mocked Database  
+**Cause:** `ExplanationService.__init__` creates `AuditLogger(database)` which expects a real Database interface. The mock didn't have required methods like `get_connection()`.  
+**Solution:** Patched `audit.explanation_service.AuditLogger` to avoid actual database calls during test.  
+**Files Modified:** `tests/test_phase_20_explanation.py`
+
+### Error 2: Phase 23 Test — Incomplete Orchestrator Mock
+**Symptom:** `test_pending_confirmations_with_orchestrator` failed during `get_system_posture()` call  
+**Cause:** Test mocked `get_pending_confirmations()` but not `get_queue_size()`. The `get_system_posture()` method calls `_calculate_overall_health()` which also calls `_get_queue_depth()`, needing `get_queue_size()`.  
+**Solution:** Added `mock_orchestrator.get_queue_size.return_value = 0` to also mock queue size.  
+**Files Modified:** `tests/test_phase_23_observability.py`
+
+### Error 3: Circular Import Between Memory and Audit Modules
+**Symptom:** `ImportError: cannot import name 'AuditLogger' from partially initialized module 'audit.audit_logger'` when running tests  
+**Cause:** `memory/__init__.py` eagerly imported `MemoryManager`, which imports `AuditLogger`, which imports from `memory`.  
+**Solution:** Removed eager `MemoryManager` import from `memory/__init__.py`. MemoryManager should be imported directly when needed.  
+**Files Modified:** `memory/__init__.py`
+
+---
+
 ## Template for Future Entries
 
 ### Error N: [Short Title]
@@ -227,3 +249,4 @@ Maintained per dev-rules.md §8.2 (Error Correction Discipline).
 **Files Modified:** [List of files]
 
 ---
+

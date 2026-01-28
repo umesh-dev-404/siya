@@ -8,7 +8,7 @@
 
 ### 1.1 Schema Structure
 - [x] JSON Schema Draft-07 compliant
-- [x] Schema version defined (1.0.0)
+- [x] Schema version defined (1.0.1)
 - [x] Schema ID and title present
 - [x] Description explains binding nature
 - [x] oneOf structure for all output types

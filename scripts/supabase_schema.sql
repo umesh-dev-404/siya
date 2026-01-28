@@ -27,6 +27,17 @@ CREATE TABLE IF NOT EXISTS memory (
     parent_memory_id UUID REFERENCES memory(id),
     suggested_by TEXT CHECK(suggested_by IN ('AI', 'ORCHESTRATOR', 'TOOL')),
     
+    -- Phase 22: Memory Quality Control (v1.0.1)
+    confidence_original REAL DEFAULT 1.0 CHECK(confidence_original >= 0.0 AND confidence_original <= 1.0),
+    confidence_current REAL DEFAULT 1.0 CHECK(confidence_current >= 0.0 AND confidence_current <= 1.0),
+    last_evaluated TIMESTAMPTZ,
+    last_accessed TIMESTAMPTZ,
+    access_count INTEGER DEFAULT 0,
+    decay_rate REAL DEFAULT 0.05,
+    lineage_id UUID REFERENCES memory(id),
+    is_summarized INTEGER DEFAULT 0 CHECK(is_summarized IN (0, 1)),
+    summarization_level INTEGER DEFAULT 0,
+    
     -- Sync metadata
     synced_at TIMESTAMPTZ,  -- When last synced from device
     device_id TEXT  -- Source device identifier
@@ -41,6 +52,12 @@ CREATE INDEX IF NOT EXISTS idx_memory_source_request_id ON memory(source_request
 CREATE INDEX IF NOT EXISTS idx_memory_parent_memory_id ON memory(parent_memory_id);
 CREATE INDEX IF NOT EXISTS idx_memory_synced_at ON memory(synced_at);
 CREATE INDEX IF NOT EXISTS idx_memory_device_id ON memory(device_id);
+
+-- Phase 22 Indexes
+CREATE INDEX IF NOT EXISTS idx_memory_lineage_id ON memory(lineage_id);
+CREATE INDEX IF NOT EXISTS idx_memory_confidence_current ON memory(confidence_current);
+CREATE INDEX IF NOT EXISTS idx_memory_last_evaluated ON memory(last_evaluated);
+CREATE INDEX IF NOT EXISTS idx_memory_is_summarized ON memory(is_summarized);
 
 -- ============================================
 -- AUDIT LOG TABLE
@@ -74,7 +91,7 @@ CREATE TABLE IF NOT EXISTS audit_log (
     correlation_id UUID NOT NULL,
     user_id TEXT,
     interface TEXT CHECK(interface IN ('CLI', 'WEB', 'API', 'VOICE')),
-    layer TEXT CHECK(layer IN ('AI', 'MCP', 'ORCHESTRATOR', 'TOOL', 'MEMORY', 'INTERFACE')),
+    layer TEXT CHECK(layer IN ('AI', 'MCP', 'ORCHESTRATOR', 'TOOL', 'MEMORY', 'INTERFACE', 'SYSTEM')),
     
     -- Sync metadata
     synced_at TIMESTAMPTZ,

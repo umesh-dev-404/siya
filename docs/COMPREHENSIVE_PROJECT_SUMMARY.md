@@ -1,7 +1,7 @@
 # SIYA: THE COMPREHENSIVE SYSTEM ARCHITECTURE & EVOLUTION REPORT
 
 **Date:** 2026-01-28
-**Version:** 1.0.0 (Production Baseline)
+**Version:** 1.0.1 (v1.0.1 Complete)
 **Status:** ✅ SYSTEM FEATURES COMPLETE
 **Target:** Raspberry Pi 5 (8GB RAM)
 
@@ -163,6 +163,36 @@ The project was executed in strict, gated phases. Each phase required verificati
 
 ---
 
+## v1.0.1 ENHANCEMENT PHASES (20-23)
+
+The following phases extend Siya's capabilities while maintaining all existing laws and backward compatibility:
+
+### 🔵 PHASE 20: DECISION EXPLANATION LAYER
+**Goal:** Post-hoc explainability for system decisions.
+*   **New Law:** LAW 20 — POST-HOC EXPLANATION ONLY
+*   **New Tool:** `explain_decision` — Returns explanation derived from audit logs
+*   **Schema:** Adds `explanation` object to responses
+
+### 🔵 PHASE 21: EXPLICIT USER INTENT MODES
+**Goal:** Allow users to declare intent posture explicitly.
+*   **New Law:** LAW 21 — USER-DECLARED INTENT SUPREMACY
+*   **Modes:** `informational` (read-only), `operational` (normal), `destructive` (extra confirmation)
+*   **Schema:** Adds `user_intent_mode` field
+
+### 🔵 PHASE 22: MEMORY QUALITY CONTROL
+**Goal:** Prevent memory degradation through confidence decay.
+*   **New Law:** LAW 22 — MEMORY QUALITY PRESERVATION
+*   **Features:** Deterministic confidence decay, summarization with lineage preservation
+*   **Schema:** Adds `memory_quality` metadata object
+
+### 🔵 PHASE 23: OPERATOR OBSERVABILITY DASHBOARD
+**Goal:** Read-only system posture view.
+*   **New Law:** LAW 23 — OBSERVABILITY WITHOUT CONTROL
+*   **New Tool:** `get_system_posture` — Returns queue depth, pending confirmations, resource usage
+*   **Compliance:** Identical data across CLI/Web/API (LAW 19)
+
+---
+
 ## 4. FEATURE IMPLEMENTATION SUMMARY
 
 | Feature | Implementation Status | Technical Detail |
@@ -176,9 +206,15 @@ The project was executed in strict, gated phases. Each phase required verificati
 | **TUI** | ✅ **Complete** | Terminal app with mouse support and menus. |
 | **Timers** | ✅ **Complete** | Native systemd integration for reliability. |
 | **Safety** | ✅ **Complete** | Confirmation modals, path locking, secret redaction. |
+| **Explanation** | ✅ **Complete** | v1.0.1 Phase 20 (LAW 20) |
+| **Intent Modes** | ✅ **Complete** | v1.0.1 Phase 21 (LAW 21) |
+| **Memory QC** | ✅ **Complete** | v1.0.1 Phase 22 (LAW 22) |
+| **Observability** | ✅ **Complete** | v1.0.1 Phase 23 (LAW 23) |
 
 ---
 
 ## 5. CONCLUSION
 
 Siya has evolved from a set of abstract "Laws" into a concrete, functioning operating system. Every phase defined in the `DETAILED IMPLEMENTATION PLAN` has been executed, verified, and documented. The codebase contains no "stubs" or "placeholders" in its critical paths. It is a fully realized implementation of a deterministic, human-sovereign AI system running on the edge.
+
+**v1.0.1 Status:** Phases 20-23 are now **fully implemented** including all interface updates (Web, CLI, TUI) enforcing LAW 19 (Interface Consistency). The system is in a state of Perfect Execution.

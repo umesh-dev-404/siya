@@ -64,6 +64,10 @@ function cacheElements() {
     elements.notificationsPanel = document.getElementById('notifications-panel');
     elements.notificationsList = document.getElementById('notifications-list');
     elements.notificationBadge = document.getElementById('notification-badge');
+    elements.modeSelect = document.getElementById('mode-select');
+    elements.postureWidget = document.getElementById('posture-widget');
+    elements.postureDot = document.getElementById('posture-dot');
+    elements.postureText = document.getElementById('posture-text');
 }
 
 function bindEvents() {
@@ -80,6 +84,11 @@ function bindEvents() {
 
     // Clear output
     document.getElementById('clear-output')?.addEventListener('click', clearOutput);
+
+    // Mode Switcher
+    elements.modeSelect?.addEventListener('change', async (e) => {
+        await setIntentMode(e.target.value);
+    });
 }
 
 // ===== CONNECTION =====
@@ -139,9 +148,12 @@ async function initializeMCP() {
 
             // Load notifications on startup
             await loadNotifications();
+            await loadIntentMode();
+            await loadPosture();
 
-            // Set up periodic notification refresh (every 30 seconds)
+            // Set up periodic refresh
             setInterval(loadNotifications, 30000);
+            setInterval(loadPosture, 60000);
         }
     } catch (error) {
         addOutput(`Connection failed: ${error.message}`, 'error');
@@ -824,6 +836,95 @@ window.confirmExecution = confirmExecution;
 window.clearOutput = clearOutput;
 window.toggleNotifications = toggleNotifications;
 window.acknowledgeNotification = acknowledgeNotification;
+// ===== PHASE 21: INTENT MODE =====
+async function loadIntentMode() {
+    try {
+        const response = await mcpRequest('tools/call', {
+            name: 'get_user_intent_mode',
+            arguments: {}
+        });
+
+        if (response.result?.content?.[0]?.text) {
+            const data = JSON.parse(response.result.content[0].text);
+            if (elements.modeSelect) {
+                elements.modeSelect.value = data.mode.toLowerCase();
+            }
+        }
+    } catch (error) {
+        console.error('Failed to load intent mode:', error);
+    }
+}
+
+async function setIntentMode(mode) {
+    try {
+        await mcpRequest('tools/call', {
+            name: 'set_user_intent_mode',
+            arguments: { mode: mode }
+        });
+        addOutput(`Switched to ${mode.toUpperCase()} mode`, 'success');
+        await loadIntentMode();
+    } catch (error) {
+        console.error('Failed to set intent mode:', error);
+        addOutput(`Failed to switch mode: ${error.message}`, 'error');
+    }
+}
+
+// ===== PHASE 23: OBSERVABILITY POSTURE =====
+async function loadPosture() {
+    try {
+        const response = await mcpRequest('tools/call', {
+            name: 'get_system_posture',
+            arguments: {}
+        });
+
+        if (response.result?.content?.[0]?.text) {
+            const data = JSON.parse(response.result.content[0].text);
+            updatePostureWidget(data.posture_level);
+        }
+    } catch (error) {
+        console.error('Failed to load posture:', error);
+    }
+}
+
+function updatePostureWidget(level) {
+    if (!elements.postureDot || !elements.postureText) return;
+
+    let color = 'var(--accent-success)';
+    let text = 'Normal';
+
+    if (level === 'DEGRADED') {
+        color = 'var(--accent-warning)';
+        text = 'Degraded';
+    } else if (level === 'CRITICAL') {
+        color = 'var(--accent-error)';
+        text = 'Critical';
+    } else if (level === 'SAFE') {
+        color = 'var(--accent-success)';
+        text = 'Safe';
+    }
+
+    elements.postureDot.style.backgroundColor = color;
+    elements.postureText.textContent = text;
+}
+
+// ===== PHASE 20: EXPLANATION =====
+async function explainAction(requestId) {
+    try {
+        addOutput(`Generating explanation for request ${requestId}...`, 'info');
+        const response = await mcpRequest('tools/call', {
+            name: 'explain_decision',
+            arguments: { request_id: requestId }
+        });
+
+        if (response.result?.content?.[0]?.text) {
+            const data = JSON.parse(response.result.content[0].text);
+            addOutput(`Explanation: ${data.explanation}`, 'success');
+        }
+    } catch (error) {
+        addOutput(`Failed to explain: ${error.message}`, 'error');
+    }
+}
+
 window.toggleMobileSidebar = toggleMobileSidebar;
 window.closeMobileSidebar = closeMobileSidebar;
 

@@ -61,6 +61,15 @@ All authoritative documentation is in the `docs/` directory:
 14. **systemd Timer Integration** ✅ (Scheduled automations)
 15. **Enhanced User Notifications** ✅ (Multi-channel + persistence)
 16. **Voice Interface** ✅ (TTS/STT, Tools)
+17. **Web Interface Redesign** ✅ (Neo-Brutalism, Full CLI Parity)
+18. **Full-Screen TUI** ✅ (Textual UI, LAW 19)
+19. **Interface Consistency** ✅ (LAW 19 Enforcement)
+
+### v1.0.1 Enhancements (Completed)
+20. **Decision Explanation Layer** ✅ Core Complete (LAW 20)
+21. **Explicit User Intent Modes** ✅ Core Complete (LAW 21)
+22. **Memory Quality Control** ✅ Core Complete (LAW 22)
+23. **Operator Observability Dashboard** ✅ Core Complete (LAW 23)
 
 ---
 
@@ -74,7 +83,8 @@ siya-cli --transport http --url http://<PI_IP>:8080 list-tools
 ---
 
 **Last Updated:** 2026-01-28  
-**Schema Version:** 1.0.0 (Locked)  
-**Project Status:** ✅ SYSTEM COMPLETE  
-**Current Phase:** Maintenance & Usage
+**Schema Version:** 1.0.1 (v1.0.1 spec implemented)  
+**Project Status:** ✅ v1.0.1 COMPLETE (ALL PHASES)  
+**Current Phase:** Maintenance & Optimization
   
+

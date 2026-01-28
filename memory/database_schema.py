@@ -30,9 +30,21 @@ CREATE TABLE IF NOT EXISTS memory (
     source_type TEXT CHECK(source_type IN ('intent_parsing', 'tool_execution', 'user_input', 'automation')),
     parent_memory_id TEXT,  -- For summaries (LAW 9)
     suggested_by TEXT CHECK(suggested_by IN ('AI', 'ORCHESTRATOR', 'TOOL')),
-    FOREIGN KEY (parent_memory_id) REFERENCES memory(id)
+    -- Phase 22: Memory Quality Control (v1.0.1)
+    confidence_original REAL DEFAULT 1.0 CHECK(confidence_original >= 0.0 AND confidence_original <= 1.0),
+    confidence_current REAL DEFAULT 1.0 CHECK(confidence_current >= 0.0 AND confidence_current <= 1.0),
+    last_evaluated TEXT,  -- ISO 8601 timestamp of last quality evaluation
+    last_accessed TEXT,  -- ISO 8601 timestamp of last access
+    access_count INTEGER DEFAULT 0,
+    decay_rate REAL DEFAULT 0.05,  -- Default 5% per day
+    lineage_id TEXT,  -- Reference to original memory before summarization
+    is_summarized INTEGER DEFAULT 0 CHECK(is_summarized IN (0, 1)),
+    summarization_level INTEGER DEFAULT 0,  -- 0 = original, 1+ = summarized
+    FOREIGN KEY (parent_memory_id) REFERENCES memory(id),
+    FOREIGN KEY (lineage_id) REFERENCES memory(id)
 );
 """
+
 
 MEMORY_INDEXES: Final[list[str]] = [
     "CREATE INDEX IF NOT EXISTS idx_memory_key ON memory(key);",
@@ -41,6 +53,11 @@ MEMORY_INDEXES: Final[list[str]] = [
     "CREATE INDEX IF NOT EXISTS idx_memory_expires_at ON memory(expires_at);",
     "CREATE INDEX IF NOT EXISTS idx_memory_source_request_id ON memory(source_request_id);",
     "CREATE INDEX IF NOT EXISTS idx_memory_parent_memory_id ON memory(parent_memory_id);",
+    # Phase 22: Memory Quality Control (v1.0.1)
+    "CREATE INDEX IF NOT EXISTS idx_memory_lineage_id ON memory(lineage_id);",
+    "CREATE INDEX IF NOT EXISTS idx_memory_confidence_current ON memory(confidence_current);",
+    "CREATE INDEX IF NOT EXISTS idx_memory_last_evaluated ON memory(last_evaluated);",
+    "CREATE INDEX IF NOT EXISTS idx_memory_is_summarized ON memory(is_summarized);",
 ]
 
 AUDIT_LOG_TABLE_SCHEMA: Final[str] = """
@@ -72,7 +89,7 @@ CREATE TABLE IF NOT EXISTS audit_log (
     correlation_id TEXT NOT NULL,
     user_id TEXT,
     interface TEXT CHECK(interface IN ('CLI', 'WEB', 'API', 'VOICE')),
-    layer TEXT CHECK(layer IN ('AI', 'MCP', 'ORCHESTRATOR', 'TOOL', 'MEMORY', 'INTERFACE'))
+    layer TEXT CHECK(layer IN ('AI', 'MCP', 'ORCHESTRATOR', 'TOOL', 'MEMORY', 'INTERFACE', 'SYSTEM'))
 );
 """
 

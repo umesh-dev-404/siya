@@ -15,17 +15,19 @@ Enforces:
 from memory.access_layer import MemoryAccessLayer
 from memory.database import Database
 from memory.database_schema import MemoryTier
-from memory.memory_manager import MemoryManager
 from memory.supabase_sync import SupabaseSync
 from memory.summarizer import MemorySummarizer
 from memory.write_controller import WriteController
 
+# MemoryManager imported lazily to avoid circular import with audit module
+# Import directly when needed: from memory.memory_manager import MemoryManager
+
 __all__ = [
     "Database",
     "MemoryAccessLayer",
-    "MemoryManager",
     "MemorySummarizer",
     "MemoryTier",
     "SupabaseSync",
     "WriteController",
 ]
+
