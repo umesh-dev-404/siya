@@ -198,6 +198,18 @@ Maintained per dev-rules.md §8.2 (Error Correction Discipline).
 **Solution:** Added `loadNotifications()` call in `initializeMCP()` after tools load. Also added 30-second periodic refresh with `setInterval`.  
 **Files Modified:** `web/static/app.js`
 
+### Fix: Mobile Notifications Panel Covering Entire Sidebar
+**Symptom:** On mobile viewport, notifications panel covered the entire sidebar, blocking access to tools  
+**Cause:** Notifications panel CSS had `bottom: var(--footer-height)` causing it to fill the entire height  
+**Solution:** Limited panel to `max-height: 50vh`, set `bottom: auto`, and added scrollable notifications list  
+**Files Modified:** `web/static/styles.css`
+
+### Fix: Clear Notifications Tool Not Clearing Recent Notifications
+**Symptom:** `clear_notifications` tool reported 0 cleared even when notifications were visible  
+**Cause:** Tool only cleared notifications older than 30 days AND already acknowledged  
+**Solution:** Added `clear_all` boolean parameter that immediately clears all acknowledged notifications regardless of age  
+**Files Modified:** `tools/notification_tools.py`, `tools/tool_registration.py`
+
 ---
 
 ## Template for Future Entries

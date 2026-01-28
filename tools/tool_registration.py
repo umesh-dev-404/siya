@@ -85,7 +85,10 @@ def register_notification_tools(executor: ToolExecutor) -> None:
     ))
     executor.register("acknowledge_notification", lambda args: acknowledge_notification(args["notification_id"]))
     executor.register("acknowledge_all_notifications", lambda args: acknowledge_all_notifications())
-    executor.register("clear_notifications", lambda args: clear_notifications(args.get("days_old", 30)))
+    executor.register("clear_notifications", lambda args: clear_notifications(
+        days_old=args.get("days_old", 30),
+        clear_all=args.get("clear_all", False),
+    ))
     executor.register("send_notification", lambda args: send_notification(
         title=args["title"],
         message=args["message"],

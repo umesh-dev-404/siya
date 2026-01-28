@@ -845,9 +845,19 @@ code,
         font-size: 1.25rem;
     }
 
-    /* Notifications panel full width */
+    /* Notifications panel - limit height on mobile */
     .notifications-panel {
         width: 100%;
+        max-height: 50vh;
+        top: var(--header-height);
+        bottom: auto;
+        border-bottom: var(--border-width) solid var(--border-color);
+        border-left: none;
+    }
+
+    .notifications-panel .notifications-list {
+        max-height: calc(50vh - 60px);
+        overflow-y: auto;
     }
 
     /* Footer simplify */

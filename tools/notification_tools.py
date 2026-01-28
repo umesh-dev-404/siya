@@ -126,12 +126,13 @@ def acknowledge_all_notifications() -> Dict[str, Any]:
         }
 
 
-def clear_notifications(days_old: int = 30) -> Dict[str, Any]:
+def clear_notifications(days_old: int = 30, clear_all: bool = False) -> Dict[str, Any]:
     """
-    Clear old notifications.
+    Clear notifications.
     
     Args:
-        days_old: Clear notifications older than this (default 30)
+        days_old: Clear notifications older than this (default 30, ignored if clear_all=True)
+        clear_all: If True, clear ALL acknowledged notifications regardless of age
         
     Returns:
         Result dictionary with count
@@ -141,15 +142,27 @@ def clear_notifications(days_old: int = 30) -> Dict[str, Any]:
     """
     try:
         from notifications.notification_manager import get_notification_manager
+        from notifications.notification_store import get_notification_store
         
-        manager = get_notification_manager()
-        count = manager.cleanup(days=days_old)
-        
-        return {
-            "success": True,
-            "cleared_count": count,
-            "days_old": days_old,
-        }
+        if clear_all:
+            # Clear all acknowledged notifications
+            store = get_notification_store()
+            count = store.clear_all(acknowledged_only=True)
+            return {
+                "success": True,
+                "cleared_count": count,
+                "mode": "all_acknowledged",
+            }
+        else:
+            # Original behavior: clear old acknowledged notifications
+            manager = get_notification_manager()
+            count = manager.cleanup(days=days_old)
+            return {
+                "success": True,
+                "cleared_count": count,
+                "days_old": days_old,
+                "mode": "older_than_days",
+            }
         
     except Exception as e:
         logger.error(f"Failed to clear notifications: {e}")
@@ -273,13 +286,18 @@ NOTIFICATION_TOOL_SCHEMAS = [
     },
     {
         "name": "clear_notifications",
-        "description": "Clear old acknowledged notifications.",
+        "description": "Clear acknowledged notifications. Use clear_all=True to clear all acknowledged notifications immediately.",
         "permission_level": "WRITE",
         "requires_confirmation": True,  # LAW 1: Deletes data
         "parameters": {
             "days_old": {
                 "type": "integer",
-                "description": "Clear notifications older than this many days",
+                "description": "Clear notifications older than this many days (ignored if clear_all=True)",
+                "required": False,
+            },
+            "clear_all": {
+                "type": "boolean",
+                "description": "If True, clear ALL acknowledged notifications regardless of age",
                 "required": False,
             },
         },
