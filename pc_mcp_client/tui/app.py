@@ -9,6 +9,7 @@ from typing import Any, Dict, List, Optional
 
 from textual.app import App, ComposeResult
 from textual.binding import Binding
+from textual import work
 from textual.containers import Container, Horizontal, Vertical, ScrollableContainer
 from textual.widgets import (
     Header,
@@ -422,15 +423,16 @@ class SiyaApp(App):
         
         self._final_execute(tool_name, args)
     
+    @work(thread=True)
     def _final_execute(self, tool_name: str, args: Dict[str, Any]) -> None:
-        """Final tool execution step."""
-        self.log_output(f"\n[bold cyan]Executing: {tool_name}[/bold cyan]")
+        """Final tool execution step (runs in worker thread to avoid blocking UI)."""
+        self.call_from_thread(self.log_output, f"\n[bold cyan]Executing: {tool_name}[/bold cyan]")
         
         try:
             result = self.client.tools_call(tool_name, args)
-            self._display_result(tool_name, result)
+            self.call_from_thread(self._display_result, tool_name, result)
         except Exception as e:
-            self.log_output(f"[red]Error: {e}[/red]")
+            self.call_from_thread(self.log_output, f"[red]Error: {e}[/red]")
     
     def _display_result(self, tool_name: str, result: Any) -> None:
         """Display tool result."""

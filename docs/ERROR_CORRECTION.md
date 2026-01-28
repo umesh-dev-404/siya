@@ -174,6 +174,12 @@ Maintained per dev-rules.md §8.2 (Error Correction Discipline).
 **Solution:** Refactored to use callback-based `push_screen` instead of `push_screen_wait`. Added helper methods: `_continue_execute`, `_do_execute`, `_final_execute` for staged execution flow.  
 **Files Modified:** `pc_mcp_client/tui/app.py`
 
+### Fix: TUI Freezes After Clicking Execute on Modal
+**Symptom:** After entering arguments and clicking Execute, entire terminal freezes (no keyboard/mouse input)  
+**Cause:** `_final_execute` called blocking HTTP request `self.client.tools_call()` on main thread  
+**Solution:** Added `@work(thread=True)` decorator to `_final_execute` so HTTP calls run in background thread. Used `call_from_thread` for all UI updates from worker.  
+**Files Modified:** `pc_mcp_client/tui/app.py`
+
 ---
 
 ## Template for Future Entries
