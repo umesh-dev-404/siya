@@ -136,6 +136,12 @@ async function initializeMCP() {
             state.initialized = true;
             renderToolGroups();
             addOutput('Connected to Siya. Select a tool from the sidebar.', 'success');
+
+            // Load notifications on startup
+            await loadNotifications();
+
+            // Set up periodic notification refresh (every 30 seconds)
+            setInterval(loadNotifications, 30000);
         }
     } catch (error) {
         addOutput(`Connection failed: ${error.message}`, 'error');

@@ -192,6 +192,12 @@ Maintained per dev-rules.md §8.2 (Error Correction Discipline).
 **Solution:** Rewrote `formatResult` to detect AI responses by checking for `structuredContent`, then extracting only `status` and `summary` fields. Also added `skipKeys` array to avoid displaying internal keys.  
 **Files Modified:** `web/static/app.js`
 
+### Fix: Web Interface Shows No Notifications While Pi Has Them
+**Symptom:** Pi server had notifications but web interface showed "No notifications"  
+**Cause:** `loadNotifications()` was only called when the notifications panel was opened, never on startup  
+**Solution:** Added `loadNotifications()` call in `initializeMCP()` after tools load. Also added 30-second periodic refresh with `setInterval`.  
+**Files Modified:** `web/static/app.js`
+
 ---
 
 ## Template for Future Entries
