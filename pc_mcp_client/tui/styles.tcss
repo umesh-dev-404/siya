@@ -51,13 +51,14 @@
 
 /* Input bar */
 #input-bar {
-    dock: bottom;
     height: 3;
     padding: 0 1;
+    margin-top: 1;
 }
 
 #command-input {
     width: 100%;
+    border: solid $primary;
 }
 
 /* Confirmation Modal */

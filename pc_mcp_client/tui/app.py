@@ -210,15 +210,39 @@ class SiyaApp(App):
         """Handle tool selection from tree."""
         node = event.node
         
-        # If node allows expand (is a branch/category), toggle it
+        # If node allows expand (is a branch/category), Textual handles expand/collapse natively
+        # We only need to handle leaf nodes (tools)
         if node.allow_expand:
-            node.toggle()
+            # Category node - do nothing, Textual's default behavior handles it
             return
         
         # Leaf node (tool) - get tool name from data attribute
         tool_name = node.data
         if tool_name:
             await self.execute_tool(tool_name)
+    
+    @on(Input.Submitted)
+    async def on_input_submitted(self, event: Input.Submitted) -> None:
+        """Handle command input when Enter is pressed."""
+        command = event.value.strip()
+        if not command:
+            return
+        
+        # Clear the input
+        event.input.clear()
+        
+        # Try to find and execute the tool by name
+        tool_name = command.lower()
+        
+        # Check if it's a valid tool name
+        for tool in self.tools:
+            if tool["name"].lower() == tool_name:
+                await self.execute_tool(tool["name"])
+                return
+        
+        # Not a tool - show help
+        self.log_output(f"[yellow]Unknown command: {command}[/yellow]")
+        self.log_output("[dim]Type a tool name from the sidebar to execute it.[/dim]")
     
     async def execute_tool(self, tool_name: str, args: Optional[Dict[str, Any]] = None) -> None:
         """Execute a tool."""

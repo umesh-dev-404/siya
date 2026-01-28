@@ -150,6 +150,18 @@ Maintained per dev-rules.md §8.2 (Error Correction Discipline).
 **Solution:** Removed redundant arrow from category labels, stored tool_name in node.data for reliable retrieval, used node.allow_expand to detect categories  
 **Files Modified:** `pc_mcp_client/tui/app.py`
 
+### Fix: Tree Category Expands Then Immediately Collapses
+**Symptom:** Pressing Enter on a category would expand it for a split second then immediately collapse  
+**Cause:** Handler called `node.toggle()` which toggled once, then Textual's native Enter behavior toggled again, resulting in no visible change  
+**Solution:** Removed `node.toggle()` call - let Textual's default behavior handle expand/collapse naturally. Handler now only processes leaf node (tool) selections.  
+**Files Modified:** `pc_mcp_client/tui/app.py`
+
+### Fix: Input Bar Hidden Behind Footer and Non-Functional
+**Symptom:** Command input bar was hidden behind footer, and typing commands + Enter did nothing  
+**Cause:** CSS used `dock: bottom` which placed input behind footer. No handler for Input.Submitted event.  
+**Solution:** Removed `dock: bottom` from input bar CSS, added `margin-top: 1`, added border. Implemented `on_input_submitted` handler that executes tools by name.  
+**Files Modified:** `pc_mcp_client/tui/app.py`, `pc_mcp_client/tui/styles.tcss`
+
 ---
 
 ## Template for Future Entries

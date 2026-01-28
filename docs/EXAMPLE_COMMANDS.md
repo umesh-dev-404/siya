@@ -145,6 +145,13 @@ siya --reset      # Reset saved config (e.g., switch networks)
 | `Enter` | Execute tool (on leaf) |
 | `Escape` | Back/Close |
 
+### Command Input Bar
+Type a tool name and press Enter to execute it:
+```
+get_system_status   # executes get_system_status tool
+resource_monitor    # executes resource_monitor tool
+```
+
 ### Remote Access (Tailscale)
 ```powershell
 siya --reset
