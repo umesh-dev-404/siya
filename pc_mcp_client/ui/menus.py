@@ -122,18 +122,6 @@ def _format_tool_label(tool: Dict[str, Any]) -> str:
     """Format a tool for display in menu."""
     name = tool["name"]
     
-    # Get clean description - remove category tags like [system], [file], etc.
-    desc = tool.get("description", "")
-    # Strip category prefix if present (e.g., "[system] Get..." -> "Get...")
-    if desc.startswith("["):
-        bracket_end = desc.find("]")
-        if bracket_end != -1:
-            desc = desc[bracket_end + 1:].strip()
-    
-    # Truncate to reasonable length
-    if len(desc) > 35:
-        desc = desc[:35] + "..."
-    
     # Check if requires confirmation
     schema = tool.get("inputSchema", {})
     requires_confirm = schema.get("properties", {}).get("_confirmed") is not None
@@ -141,12 +129,10 @@ def _format_tool_label(tool: Dict[str, Any]) -> str:
     # Get icon based on category
     icon = _get_tool_icon(name)
     
-    # Build label - clean format without Rich markup
+    # Build label - just icon and name, no description
     label = f"{icon} {name}"
     if requires_confirm:
         label += " (!)"
-    if desc:
-        label += f" - {desc}"
     
     return label
 

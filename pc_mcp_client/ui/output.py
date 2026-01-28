@@ -27,13 +27,21 @@ def show_success(title: str, content: Any) -> None:
         content: Content to display (dict, list, or string)
     """
     formatted = _format_content(content)
-    panel = Panel(
-        formatted,
-        title=f"[bold green]✓ {title}[/bold green]",
-        border_style="green",
-        padding=(1, 2),
-    )
-    console.print(panel)
+    formatted_str = str(formatted)
+    
+    # For large outputs, print header + content directly (no panel) for scrollability
+    if len(formatted_str) > 500 or formatted_str.count('\n') > 15:
+        console.print(f"\n[bold green]--- {title} ---[/bold green]")
+        console.print(formatted)
+        console.print(f"[bold green]--- end ---[/bold green]\n")
+    else:
+        panel = Panel(
+            formatted,
+            title=f"[bold green]{title}[/bold green]",
+            border_style="green",
+            padding=(0, 1),
+        )
+        console.print(panel)
 
 
 def show_error(title: str, message: str) -> None:
