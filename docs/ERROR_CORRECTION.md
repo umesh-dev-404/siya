@@ -168,6 +168,12 @@ Maintained per dev-rules.md §8.2 (Error Correction Discipline).
 **Solution:** Added `ArgumentModal` class that shows input fields for required arguments before execution. Updated `execute_tool` method to check for missing required args and show modal.  
 **Files Modified:** `pc_mcp_client/tui/app.py`, `pc_mcp_client/tui/styles.tcss`
 
+### Fix: TUI NoActiveWorker Error on Modal
+**Symptom:** Selecting any tool with arguments threw `NoActiveWorker: push_screen must be run from a worker when wait_for_dismiss is True`  
+**Cause:** Textual's `push_screen_wait` requires a worker context when called from event handlers  
+**Solution:** Refactored to use callback-based `push_screen` instead of `push_screen_wait`. Added helper methods: `_continue_execute`, `_do_execute`, `_final_execute` for staged execution flow.  
+**Files Modified:** `pc_mcp_client/tui/app.py`
+
 ---
 
 ## Template for Future Entries

@@ -368,25 +368,62 @@ class SiyaApp(App):
                           if not k.startswith("_") and k != "requires_confirmation"}
         
         if user_properties and (missing_required or not args):
-            # Show argument modal
-            modal_args = await self.push_screen_wait(ArgumentModal(tool_name, schema))
-            if modal_args is None:
-                self.log_output(f"[yellow]Cancelled: {tool_name}[/yellow]")
-                return
-            args = modal_args
+            # Show argument modal with callback
+            def on_args_collected(modal_args: Optional[Dict[str, Any]]) -> None:
+                if modal_args is None:
+                    self.log_output(f"[yellow]Cancelled: {tool_name}[/yellow]")
+                else:
+                    # Continue execution with collected args
+                    self.call_later(lambda: self._continue_execute(tool_name, tool, modal_args))
+            
+            self.push_screen(ArgumentModal(tool_name, schema), on_args_collected)
+            return
         
+        # Continue with execution
+        await self._do_execute(tool_name, tool, args)
+    
+    def _continue_execute(self, tool_name: str, tool: Dict[str, Any], args: Dict[str, Any]) -> None:
+        """Continue execution after arguments collected."""
         # Check if requires confirmation
+        properties = tool.get("inputSchema", {}).get("properties", {})
         needs_confirm = properties.get("_confirmed") is not None
         
         if needs_confirm and not args.get("_confirmed"):
-            # Show confirmation modal
-            confirmed = await self.push_screen_wait(ConfirmModal(tool_name, args))
-            if not confirmed:
-                self.log_output(f"[yellow]Cancelled: {tool_name}[/yellow]")
-                return
-            args["_confirmed"] = True
+            # Show confirmation modal with callback
+            def on_confirmed(confirmed: bool) -> None:
+                if not confirmed:
+                    self.log_output(f"[yellow]Cancelled: {tool_name}[/yellow]")
+                else:
+                    args["_confirmed"] = True
+                    self.call_later(lambda: self._final_execute(tool_name, args))
+            
+            self.push_screen(ConfirmModal(tool_name, args), on_confirmed)
+            return
         
-        # Execute
+        self._final_execute(tool_name, args)
+    
+    async def _do_execute(self, tool_name: str, tool: Dict[str, Any], args: Dict[str, Any]) -> None:
+        """Do the actual execution (async entry point)."""
+        # Check if requires confirmation
+        properties = tool.get("inputSchema", {}).get("properties", {})
+        needs_confirm = properties.get("_confirmed") is not None
+        
+        if needs_confirm and not args.get("_confirmed"):
+            # Show confirmation modal with callback
+            def on_confirmed(confirmed: bool) -> None:
+                if not confirmed:
+                    self.log_output(f"[yellow]Cancelled: {tool_name}[/yellow]")
+                else:
+                    args["_confirmed"] = True
+                    self._final_execute(tool_name, args)
+            
+            self.push_screen(ConfirmModal(tool_name, args), on_confirmed)
+            return
+        
+        self._final_execute(tool_name, args)
+    
+    def _final_execute(self, tool_name: str, args: Dict[str, Any]) -> None:
+        """Final tool execution step."""
         self.log_output(f"\n[bold cyan]Executing: {tool_name}[/bold cyan]")
         
         try:
