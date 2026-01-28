@@ -545,12 +545,52 @@ function formatResult(data) {
     }
 
     if (typeof data === 'object' && data !== null) {
+        // Handle MCP structured content (AI model responses)
+        if (data.structuredContent && typeof data.structuredContent === 'object') {
+            const sc = data.structuredContent;
+            let html = '<div class="result-card ai-result">';
+
+            // Show status
+            if (sc.status) {
+                html += `<div class="result-row"><span class="result-label">Status:</span> <span class="status-badge status-ok">${escapeHtml(sc.status)}</span></div>`;
+            }
+
+            // Show main summary (the actual AI output)
+            if (sc.summary) {
+                html += `<div class="result-row ai-summary"><span class="result-label">Result:</span></div>`;
+                html += `<div class="ai-output">${escapeHtml(sc.summary)}</div>`;
+            }
+
+            html += '</div>';
+            return html;
+        }
+
+        // Handle content array (text responses)
+        if (data.content && Array.isArray(data.content)) {
+            let html = '<div class="result-card">';
+            for (const item of data.content) {
+                if (item && item.text) {
+                    html += `<div class="result-text">${escapeHtml(item.text)}</div>`;
+                }
+            }
+            html += '</div>';
+            return html;
+        }
+
+        // Default: format as key-value pairs (skip internal keys)
         let html = '<div class="result-card">';
+        const skipKeys = ['content', 'structuredContent', 'isError', '_meta'];
 
         for (const [key, value] of Object.entries(data)) {
+            if (skipKeys.includes(key)) continue;
             const label = formatLabel(key);
             const formattedValue = formatValue(key, value);
             html += `<div class="result-row"><span class="result-label">${label}:</span> ${formattedValue}</div>`;
+        }
+
+        // Show error indicator
+        if (data.isError) {
+            html += `<div class="result-row error"><span class="result-label">Error:</span> <span class="value-false">Yes</span></div>`;
         }
 
         html += '</div>';

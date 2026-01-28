@@ -439,15 +439,42 @@ class SiyaApp(App):
         self.log_output(f"[green]--- {tool_name} ---[/green]")
         
         if isinstance(result, dict):
-            for key, value in result.items():
-                if isinstance(value, dict):
-                    self.log_output(f"[cyan]{key}:[/cyan]")
-                    for k, v in value.items():
-                        self.log_output(f"  {k}: {v}")
-                elif isinstance(value, list):
-                    self.log_output(f"[cyan]{key}:[/cyan] {len(value)} items")
-                else:
-                    self.log_output(f"[cyan]{key}:[/cyan] {value}")
+            # Handle MCP structured content responses
+            content = result.get("content", [])
+            if content and isinstance(content, list):
+                for item in content:
+                    if isinstance(item, dict):
+                        # Extract text content
+                        text = item.get("text", "")
+                        if text:
+                            self.log_output(text)
+            
+            # Handle structuredContent (AI model responses)
+            structured = result.get("structuredContent")
+            if structured and isinstance(structured, dict):
+                status = structured.get("status", "")
+                if status:
+                    self.log_output(f"[cyan]status:[/cyan] {status}")
+                
+                # Display summary (main AI output)
+                summary = structured.get("summary", "")
+                if summary:
+                    self.log_output(f"\n{summary}")
+                
+                # Skip other fields to avoid repetition
+            elif not content:
+                # Fallback: display dict keys (excluding already shown)
+                for key, value in result.items():
+                    if key in ("content", "structuredContent", "isError"):
+                        continue
+                    if isinstance(value, (dict, list)):
+                        self.log_output(f"[cyan]{key}:[/cyan] {type(value).__name__}")
+                    else:
+                        self.log_output(f"[cyan]{key}:[/cyan] {value}")
+            
+            # Show error status
+            if result.get("isError"):
+                self.log_output("[red]Error occurred during execution[/red]")
         else:
             self.log_output(str(result))
         

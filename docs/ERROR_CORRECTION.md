@@ -180,6 +180,18 @@ Maintained per dev-rules.md §8.2 (Error Correction Discipline).
 **Solution:** Added `@work(thread=True)` decorator to `_final_execute` so HTTP calls run in background thread. Used `call_from_thread` for all UI updates from worker.  
 **Files Modified:** `pc_mcp_client/tui/app.py`
 
+### Fix: AI Model Output Repeating Multiple Times in TUI
+**Symptom:** When executing AI tools like `summarize_text`, the output displayed multiple times  
+**Cause:** `_display_result` iterated over all dict keys including nested `content` and `structuredContent` which contained duplicate text  
+**Solution:** Rewrote `_display_result` to properly parse MCP response structure, extracting only the `summary` field from `structuredContent` and avoiding duplicate display.  
+**Files Modified:** `pc_mcp_client/tui/app.py`
+
+### Fix: AI Model Output Repeating in Web Interface
+**Symptom:** When executing AI tools in web interface, the output displayed multiple times  
+**Cause:** `formatResult` in `app.js` iterated over all object keys including nested `content` and `structuredContent`  
+**Solution:** Rewrote `formatResult` to detect AI responses by checking for `structuredContent`, then extracting only `status` and `summary` fields. Also added `skipKeys` array to avoid displaying internal keys.  
+**Files Modified:** `web/static/app.js`
+
 ---
 
 ## Template for Future Entries
