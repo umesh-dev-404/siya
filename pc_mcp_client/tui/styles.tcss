@@ -112,6 +112,52 @@ ConfirmModal {
     margin: 0 1;
 }
 
+/* Argument Modal */
+ArgumentModal {
+    align: center middle;
+}
+
+#arg-dialog {
+    width: 70;
+    height: auto;
+    max-height: 80%;
+    border: thick $primary;
+    background: $surface;
+    padding: 1 2;
+}
+
+#arg-modal-title {
+    text-align: center;
+    text-style: bold;
+    color: $primary;
+    margin-bottom: 1;
+}
+
+#arg-modal-hint {
+    text-align: center;
+    margin-bottom: 1;
+}
+
+#arg-inputs {
+    margin-bottom: 1;
+    height: auto;
+}
+
+.arg-label {
+    margin-top: 1;
+    color: $text;
+}
+
+#arg-buttons {
+    align: center middle;
+    height: 3;
+    margin-top: 1;
+}
+
+#arg-buttons Button {
+    margin: 0 1;
+}
+
 /* Tree styling */
 Tree {
     padding: 0;

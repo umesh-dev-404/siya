@@ -152,6 +152,13 @@ get_system_status   # executes get_system_status tool
 resource_monitor    # executes resource_monitor tool
 ```
 
+### Argument Prompt Modals
+When a tool requires arguments (e.g., `directory_list`, `file_read`), a modal prompts for input:
+- Required fields are marked with `*`
+- Press Enter or click Execute to run
+- Press Escape or Cancel to abort
+
+
 ### Remote Access (Tailscale)
 ```powershell
 siya --reset

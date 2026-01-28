@@ -20,14 +20,16 @@
 - ✅ Orchestration engine (Phase 1)
 - ✅ Model Control Plane (Phase 2)
 - ✅ Memory & Observability (Phase 3)
-- ✅ AI Integration (Phase 5)
-- ✅ Interfaces (Phase 6)
-- ✅ Automation Framework (Phase 7)
+- ✅ AI Integration (Phase 10 - Real llama.cpp)
+- ✅ Interfaces (Phase 17 - Web/CLI Parity)
+- ✅ Automation Framework (Phase 14 - Systemd Timers)
 - ✅ Failure Handling (Phase 8)
+- ✅ Voice Interface (Phase 16)
+- ✅ Supabase Sync (Phase 13)
 
 ### Locked Components
 - **Schema Version:** 1.0.0
-- **Tool Registry:** Locked (no new tools)
+- **Tool Registry:** Populated (Phase 11)
 - **Python Version:** 3.11.9 (compatible with 3.11-3.12)
 
 ---
@@ -46,15 +48,13 @@ See `RECOVERY_CHECKLIST.md` for recovery procedures.
 
 ## KNOWN LIMITATIONS
 
-### Phase-Specific Limitations
-- **AI Model:** Stub only (no real llama.cpp integration)
-- **Supabase Sync:** Stubbed (no real network)
-- **Tool Execution:** Framework only (no actual tools)
-- **User Notification:** Logging only (full notification in later phases)
-
 ### Hardware Requirements
 - Raspberry Pi 5 (8 GB RAM minimum)
 - Full testing requires Pi hardware
+
+### Performance
+- AI Inference: 10-30s latency per query
+- Boot time: ~15s cold start
 
 ---
 

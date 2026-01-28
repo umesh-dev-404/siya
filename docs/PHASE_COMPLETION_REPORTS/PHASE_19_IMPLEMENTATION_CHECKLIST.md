@@ -84,6 +84,12 @@
 - Modal overlay for confirmation-required tools
 - `y` to confirm, `n` or `Escape` to cancel
 
+### 6. Argument Prompt Modal  
+- Modal for tools requiring input (e.g., `directory_list`, `file_read`)
+- Dynamically generates input fields from tool schema
+- Required fields marked with `*`
+- Type conversion (string, integer, boolean)
+
 ---
 
 ## Usage

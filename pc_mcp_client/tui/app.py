@@ -93,6 +93,94 @@ class ConfirmModal(ModalScreen):
         self.dismiss(False)
 
 
+class ArgumentModal(ModalScreen[Optional[Dict[str, Any]]]):
+    """Modal for collecting required tool arguments."""
+    
+    BINDINGS = [
+        Binding("enter", "submit", "Submit"),
+        Binding("escape", "cancel", "Cancel"),
+    ]
+    
+    def __init__(self, tool_name: str, tool_schema: Dict[str, Any]):
+        super().__init__()
+        self.tool_name = tool_name
+        self.tool_schema = tool_schema
+        self.input_fields: Dict[str, str] = {}
+    
+    def compose(self) -> ComposeResult:
+        properties = self.tool_schema.get("properties", {})
+        required = self.tool_schema.get("required", [])
+        
+        # Build input fields for each required property
+        input_widgets = []
+        for prop_name, prop_schema in properties.items():
+            # Skip internal properties
+            if prop_name.startswith("_") or prop_name == "requires_confirmation":
+                continue
+            
+            is_required = prop_name in required
+            prop_type = prop_schema.get("type", "string")
+            description = prop_schema.get("description", "")
+            default_val = prop_schema.get("default", "")
+            
+            req_marker = " *" if is_required else ""
+            label_text = f"{prop_name}{req_marker}: {description}"
+            
+            input_widgets.append(Static(label_text, classes="arg-label"))
+            input_widgets.append(Input(
+                placeholder=f"Enter {prop_name}...",
+                value=str(default_val) if default_val else "",
+                id=f"input-{prop_name}"
+            ))
+            self.input_fields[prop_name] = prop_type
+        
+        yield Container(
+            Static(f"📝 Arguments for {self.tool_name}", id="arg-modal-title"),
+            Static("[dim](* = required)[/dim]", id="arg-modal-hint"),
+            Vertical(*input_widgets, id="arg-inputs"),
+            Horizontal(
+                Button("Execute", variant="success", id="btn-submit"),
+                Button("Cancel", variant="error", id="btn-cancel"),
+                id="arg-buttons"
+            ),
+            id="arg-dialog"
+        )
+    
+    def action_submit(self) -> None:
+        self._collect_and_dismiss()
+    
+    def action_cancel(self) -> None:
+        self.dismiss(None)
+    
+    @on(Button.Pressed, "#btn-submit")
+    def on_submit(self) -> None:
+        self._collect_and_dismiss()
+    
+    @on(Button.Pressed, "#btn-cancel")
+    def on_cancel(self) -> None:
+        self.dismiss(None)
+    
+    def _collect_and_dismiss(self) -> None:
+        """Collect all input values and dismiss."""
+        args = {}
+        for prop_name, prop_type in self.input_fields.items():
+            try:
+                input_widget = self.query_one(f"#input-{prop_name}", Input)
+                value = input_widget.value.strip()
+                if value:
+                    # Type conversion based on schema
+                    if prop_type == "integer":
+                        args[prop_name] = int(value)
+                    elif prop_type == "number":
+                        args[prop_name] = float(value)
+                    elif prop_type == "boolean":
+                        args[prop_name] = value.lower() in ("true", "1", "yes")
+                    else:
+                        args[prop_name] = value
+            except Exception:
+                pass
+        self.dismiss(args)
+
 class ToolSidebar(Static):
     """Sidebar with tool categories."""
     
@@ -260,13 +348,35 @@ class SiyaApp(App):
             self.log_output(f"[red]Tool not found: {tool_name}[/red]")
             return
         
-        # Build arguments
+        # Get schema
+        schema = tool.get("inputSchema", {})
+        properties = schema.get("properties", {})
+        required = schema.get("required", [])
+        
+        # Check if arguments are needed
         if args is None:
             args = {}
         
+        # Filter out internal properties for required check
+        user_required = [r for r in required if not r.startswith("_") and r != "requires_confirmation"]
+        
+        # Check if any required args are missing
+        missing_required = [r for r in user_required if r not in args]
+        
+        # If tool has properties (needs input) and args are empty, show modal
+        user_properties = {k: v for k, v in properties.items() 
+                          if not k.startswith("_") and k != "requires_confirmation"}
+        
+        if user_properties and (missing_required or not args):
+            # Show argument modal
+            modal_args = await self.push_screen_wait(ArgumentModal(tool_name, schema))
+            if modal_args is None:
+                self.log_output(f"[yellow]Cancelled: {tool_name}[/yellow]")
+                return
+            args = modal_args
+        
         # Check if requires confirmation
-        schema = tool.get("inputSchema", {})
-        needs_confirm = schema.get("properties", {}).get("_confirmed") is not None
+        needs_confirm = properties.get("_confirmed") is not None
         
         if needs_confirm and not args.get("_confirmed"):
             # Show confirmation modal

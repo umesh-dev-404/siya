@@ -162,6 +162,12 @@ Maintained per dev-rules.md §8.2 (Error Correction Discipline).
 **Solution:** Removed `dock: bottom` from input bar CSS, added `margin-top: 1`, added border. Implemented `on_input_submitted` handler that executes tools by name.  
 **Files Modified:** `pc_mcp_client/tui/app.py`, `pc_mcp_client/tui/styles.tcss`
 
+### Fix: TUI Tools Fail with "Missing required argument"
+**Symptom:** Executing tools like `directory_list`, `file_read` in TUI failed with "MCP_ERROR -32602: Missing required argument: path"  
+**Cause:** TUI executed tools without prompting for required arguments; only Web interface had input forms  
+**Solution:** Added `ArgumentModal` class that shows input fields for required arguments before execution. Updated `execute_tool` method to check for missing required args and show modal.  
+**Files Modified:** `pc_mcp_client/tui/app.py`, `pc_mcp_client/tui/styles.tcss`
+
 ---
 
 ## Template for Future Entries

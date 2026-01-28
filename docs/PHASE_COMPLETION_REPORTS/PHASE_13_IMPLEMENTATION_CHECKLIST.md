@@ -25,9 +25,9 @@
 ### ✅ Database Preparation
 - [x] `scripts/supabase_schema.sql` created
 - [x] `.env.example` template created
-- [ ] User provides Supabase credentials
-- [ ] Run schema in Supabase SQL Editor
-- [ ] Create `.env` with credentials
+- [x] User provides Supabase credentials
+- [x] Run schema in Supabase SQL Editor
+- [x] Create `.env` with credentials
 - [x] Service configured to load .env (python-dotenv)
 
 ---
@@ -67,12 +67,12 @@
 - [x] Unit tests
 
 ### Step 5: Integration & Testing
-- [ ] Integrate with `memory/tier_manager.py`
-- [ ] Add manual sync trigger tool
-- [ ] Add sync status tool
-- [ ] Integration tests with mock Supabase
-- [ ] Verify offline-first (works without network)
-- [ ] End-to-end sync verification
+- [x] Integrate with `memory/tier_manager.py`
+- [x] Add manual sync trigger tool
+- [x] Add sync status tool
+- [x] Integration tests with mock Supabase
+- [x] Verify offline-first (works without network)
+- [x] End-to-end sync verification
 
 ---
 
@@ -102,14 +102,14 @@
 
 ## EXIT CRITERIA
 
-- [ ] Supabase client connects and authenticates
-- [ ] Sync queue persists across restarts
-- [ ] L2 → L3 push operational
-- [ ] L3 → L2 pull operational
-- [ ] Conflicts detected and resolved
-- [ ] Offline-first verified
-- [ ] All sync operations logged
-- [ ] Unit tests passing
+- [x] Supabase client connects and authenticates
+- [x] Sync queue persists across restarts
+- [x] L2 → L3 push operational
+- [x] L3 → L2 pull operational
+- [x] Conflicts detected and resolved
+- [x] Offline-first verified
+- [x] All sync operations logged
+- [x] Unit tests passing
 
 ---
 
