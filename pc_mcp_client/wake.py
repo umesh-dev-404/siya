@@ -41,20 +41,25 @@ def first_run_setup() -> Optional[str]:
     from InquirerPy import inquirer
     
     console.print("\n[bold cyan]Welcome to Siya![/bold cyan]")
-    console.print("[dim]First-time setup - let's configure your connection.[/dim]\n")
+    console.print("[dim]First-time setup - let's configure your connection.[/dim]")
+    console.print("[dim]Note: Use port 8080 for CLI (API), port 3000 is for web browser.[/dim]\n")
     
     try:
         url = inquirer.text(
-            message="Enter your Pi server URL:",
-            default="http://192.168.1.39:8080",
-            validate=lambda x: x.startswith("http"),
-            invalid_message="URL must start with http:// or https://",
+            message="Enter your Pi API URL (port 8080):",
+            default="http://<your-pi-ip>:8080",
+            validate=lambda x: x.startswith("http") and ":8080" in x,
+            invalid_message="URL must start with http:// and include port 8080",
         ).execute()
         
-        if url:
+        if url and "<your-pi-ip>" not in url:
             save_config({"url": url, "transport": "http"})
             console.print(f"\n[green]Config saved to {CONFIG_FILE}[/green]")
+            console.print("[dim]Run 'siya --reset' to change this later.[/dim]")
             return url
+        else:
+            console.print("[yellow]Please enter your actual Pi IP address.[/yellow]")
+            return None
     except KeyboardInterrupt:
         console.print("\n[dim]Setup cancelled.[/dim]")
         return None
@@ -68,6 +73,11 @@ def main() -> int:
     
     Auto-connects to saved server or runs first-time setup.
     """
+    # Handle --reset flag first
+    if "--reset" in sys.argv:
+        reset_config()
+        return 0
+    
     # Check for saved config
     config = get_config()
     url = config.get("url")

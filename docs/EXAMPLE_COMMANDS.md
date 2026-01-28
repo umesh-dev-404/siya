@@ -125,5 +125,30 @@ http://192.168.1.39:3000
 
 ---
 
+## 7. INTERACTIVE CLI (Phase 18)
+
+### Simple Wake Command
+```powershell
+siya              # First run prompts for Pi URL, then auto-connects
+siya --reset      # Reset saved config (e.g., switch networks)
+```
+
+### Menu Navigation
+- **Arrow keys:** Navigate menu
+- **Type:** Filter/search tools
+- **Enter:** Select tool
+- **Ctrl+C:** Back/cancel
+
+### Remote Access (Tailscale)
+```powershell
+siya --reset
+siya
+# Enter Tailscale URL: http://100.67.9.101:8080
+```
+
+> **Port Note:** CLI uses **8080** (API), Web uses **3000** (browser)
+
+---
+
 **Last Updated:** 2026-01-28
 **Schema Version:** 1.0.0

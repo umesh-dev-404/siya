@@ -567,7 +567,63 @@ Test-NetConnection -ComputerName 192.168.1.39 -Port 8080
 - Add authentication (future phase)
 - Use HTTPS (future phase)
 - Restrict to local network via firewall
-- Consider VPN for remote access
+- Consider VPN for remote access (see Tailscale below)
+
+---
+
+## REMOTE ACCESS VIA TAILSCALE
+
+Tailscale provides secure remote access to your Pi from anywhere without exposing ports to the internet.
+
+### Setup Tailscale on Pi
+
+```bash
+# Install Tailscale
+curl -fsSL https://tailscale.com/install.sh | sh
+
+# Authenticate
+sudo tailscale up
+
+# Get Tailscale IP
+tailscale ip -4
+# Example output: 100.67.9.101
+```
+
+### Access Siya via Tailscale
+
+| Service | Tailscale URL |
+|---------|---------------|
+| **API Server (CLI)** | `http://<tailscale-ip>:8080` |
+| **Web Interface** | `http://<tailscale-ip>:3000` |
+
+**Example with Tailscale IP `100.67.9.101`:**
+```bash
+# Web Interface (browser)
+http://100.67.9.101:3000
+
+# CLI Interactive Mode
+siya --reset                    # Reset old config
+siya                            # Enter new URL: http://100.67.9.101:8080
+
+# CLI Direct Commands
+siya-cli --transport http --url http://100.67.9.101:8080 call get_system_status
+```
+
+### Switching Between Networks
+
+When switching between LAN and Tailscale:
+
+```powershell
+# Reset saved CLI config
+siya --reset
+
+# Run siya and enter new URL when prompted
+siya
+# Enter: http://100.67.9.101:8080 (Tailscale)
+# Or:    http://192.168.1.39:8080 (LAN)
+```
+
+> **Important:** The CLI uses port **8080** (API), not port 3000 (Web).
 
 ---
 
