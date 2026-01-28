@@ -144,6 +144,12 @@ Maintained per dev-rules.md §8.2 (Error Correction Discipline).
 **Solution:** Updated `pc_mcp_client/tui/app.py` to use correct method names and parse response correctly (`result.get("tools", [])`)  
 **Files Modified:** `pc_mcp_client/tui/app.py`
 
+### Fix: Tree Categories Not Expanding on Enter
+**Symptom:** Pressing Enter on a category in the TUI tree didn't expand it to show tools  
+**Cause:** Label included redundant "▸" arrow (Textual provides native arrow), and tool name extraction was unreliable  
+**Solution:** Removed redundant arrow from category labels, stored tool_name in node.data for reliable retrieval, used node.allow_expand to detect categories  
+**Files Modified:** `pc_mcp_client/tui/app.py`
+
 ---
 
 ## Template for Future Entries

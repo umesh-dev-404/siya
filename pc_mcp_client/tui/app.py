@@ -106,7 +106,8 @@ class ToolSidebar(Static):
         tree.root.expand()
         
         for category, tool_names in TOOL_CATEGORIES.items():
-            category_node = tree.root.add(f"▸ {category}", expand=False)
+            # Add category as expandable node (no extra arrow - Textual provides one)
+            category_node = tree.root.add(category, expand=False)
             for tool_name in tool_names:
                 if tool_name in self.tool_lookup:
                     tool = self.tool_lookup[tool_name]
@@ -115,7 +116,8 @@ class ToolSidebar(Static):
                     schema = tool.get("inputSchema", {})
                     needs_confirm = schema.get("properties", {}).get("_confirmed") is not None
                     suffix = " (!)" if needs_confirm else ""
-                    category_node.add_leaf(f"{icon} {tool_name}{suffix}")
+                    # Store tool_name in data for reliable retrieval
+                    category_node.add_leaf(f"{icon} {tool_name}{suffix}", data=tool_name)
         
         yield tree
 
@@ -207,17 +209,15 @@ class SiyaApp(App):
     async def on_tree_select(self, event: Tree.NodeSelected) -> None:
         """Handle tool selection from tree."""
         node = event.node
-        label = str(node.label)
         
-        # If node allows expand (is a branch), it's a category - toggle it
+        # If node allows expand (is a branch/category), toggle it
         if node.allow_expand:
             node.toggle()
             return
         
-        # Leaf node (tool) - extract name from label "icon tool_name" or "icon tool_name (!)"
-        parts = label.split(" ", 1)
-        if len(parts) > 1:
-            tool_name = parts[1].replace(" (!)", "").strip()
+        # Leaf node (tool) - get tool name from data attribute
+        tool_name = node.data
+        if tool_name:
             await self.execute_tool(tool_name)
     
     async def execute_tool(self, tool_name: str, args: Optional[Dict[str, Any]] = None) -> None:
