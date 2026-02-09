@@ -7,7 +7,7 @@ Enforces LAW 20 — POST-HOC EXPLANATION ONLY.
 
 import json
 import pytest
-from datetime import datetime
+from datetime import datetime, timezone
 from unittest.mock import MagicMock, patch
 from uuid import uuid4
 
@@ -97,7 +97,7 @@ class TestExplanationService:
                 "request_id": request_id,
                 "event_type": "CONFIRMATION_REQUESTED",
                 "event_data": json.dumps({"tool_name": "trigger_sync"}),
-                "timestamp": datetime.utcnow().isoformat() + "Z",
+                "timestamp": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
             }
         ]
         service._audit_logger.get_events_by_request_id = MagicMock(return_value=mock_events)
@@ -130,7 +130,7 @@ class TestExplanationService:
                 "request_id": request_id,
                 "event_type": "CONFIRMATION_REQUESTED",
                 "event_data": json.dumps({"tool_name": "trigger_sync"}),
-                "timestamp": datetime.utcnow().isoformat() + "Z",
+                "timestamp": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
             }
         ]
         service._audit_logger.get_events_by_request_id = MagicMock(return_value=mock_events)

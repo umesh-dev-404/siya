@@ -8,7 +8,7 @@ Per CONTINUATION_PLAN Phase 23: Operator Observability Dashboard.
 """
 
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Dict, Optional
 
 logger = logging.getLogger(__name__)
@@ -60,7 +60,7 @@ class ObservabilityService:
             - uptime: System uptime information
             - timestamp: When snapshot was taken
         """
-        timestamp = datetime.utcnow().isoformat() + "Z"
+        timestamp = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
         
         return {
             "timestamp": timestamp,
@@ -173,11 +173,11 @@ class ObservabilityService:
         """Get system uptime information."""
         try:
             import psutil
-            boot_time = datetime.fromtimestamp(psutil.boot_time())
-            uptime = datetime.utcnow() - boot_time
+            boot_time = datetime.fromtimestamp(psutil.boot_time(), tz=timezone.utc)
+            uptime = datetime.now(timezone.utc) - boot_time
             
             return {
-                "boot_time": boot_time.isoformat() + "Z",
+                "boot_time": boot_time.isoformat().replace("+00:00", "Z"),
                 "uptime_seconds": int(uptime.total_seconds()),
                 "uptime_human": self._format_uptime(uptime.total_seconds()),
             }

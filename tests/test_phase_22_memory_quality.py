@@ -6,7 +6,7 @@ Enforces LAW 22 — MEMORY QUALITY PRESERVATION.
 """
 
 import pytest
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from unittest.mock import MagicMock, patch
 from uuid import uuid4
 
@@ -26,7 +26,7 @@ class TestMemoryQualityDataclass:
 
     def test_memory_quality_creation(self):
         """Test creating a MemoryQuality instance."""
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
         quality = MemoryQuality(
             confidence_original=1.0,
             confidence_current=0.8,
@@ -61,7 +61,7 @@ class TestConfidenceDecayModel:
     def test_no_decay_at_creation(self):
         """Test that confidence is unchanged at creation time."""
         model = ConfidenceDecayModel()
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
         
         confidence = model.calculate_current_confidence(
             original_confidence=1.0,
@@ -75,7 +75,7 @@ class TestConfidenceDecayModel:
     def test_decay_after_one_day(self):
         """Test confidence decay after one day."""
         model = ConfidenceDecayModel(decay_rate=0.05)
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
         yesterday = now - timedelta(days=1)
         
         confidence = model.calculate_current_confidence(
@@ -91,7 +91,7 @@ class TestConfidenceDecayModel:
     def test_decay_after_one_week(self):
         """Test confidence decay after one week."""
         model = ConfidenceDecayModel(decay_rate=0.05)
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
         week_ago = now - timedelta(days=7)
         
         confidence = model.calculate_current_confidence(
@@ -107,7 +107,7 @@ class TestConfidenceDecayModel:
     def test_access_reinforcement(self):
         """Test that access count boosts confidence."""
         model = ConfidenceDecayModel(decay_rate=0.05)
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
         week_ago = now - timedelta(days=7)
         
         # Without access
@@ -133,7 +133,7 @@ class TestConfidenceDecayModel:
     def test_access_reinforcement_capped(self):
         """Test that access reinforcement is capped at 0.1."""
         model = ConfidenceDecayModel(decay_rate=0.05)
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
         week_ago = now - timedelta(days=7)
         
         # With many accesses
@@ -151,7 +151,7 @@ class TestConfidenceDecayModel:
     def test_confidence_never_exceeds_one(self):
         """Test that confidence never exceeds 1.0."""
         model = ConfidenceDecayModel()
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
         
         confidence = model.calculate_current_confidence(
             original_confidence=1.0,
@@ -165,7 +165,7 @@ class TestConfidenceDecayModel:
     def test_confidence_never_negative(self):
         """Test that confidence never goes negative."""
         model = ConfidenceDecayModel(decay_rate=1.0)  # Very high decay
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
         long_ago = now - timedelta(days=365)
         
         confidence = model.calculate_current_confidence(
@@ -180,7 +180,7 @@ class TestConfidenceDecayModel:
     def test_needs_summarization_low_confidence(self):
         """Test that low confidence triggers summarization need."""
         model = ConfidenceDecayModel()
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
         
         needs_summary = model.needs_summarization(
             confidence=0.2,  # Below threshold
@@ -193,7 +193,7 @@ class TestConfidenceDecayModel:
     def test_needs_summarization_old_age(self):
         """Test that old age triggers summarization need."""
         model = ConfidenceDecayModel()
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
         old = now - timedelta(days=100)  # Beyond max age
         
         needs_summary = model.needs_summarization(
@@ -207,7 +207,7 @@ class TestConfidenceDecayModel:
     def test_no_summarization_needed(self):
         """Test that healthy memory doesn't need summarization."""
         model = ConfidenceDecayModel()
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
         recent = now - timedelta(days=7)
         
         needs_summary = model.needs_summarization(

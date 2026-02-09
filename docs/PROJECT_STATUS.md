@@ -344,6 +344,10 @@
 
 ## RECENT MAINTENANCE (2026-01-28)
 
+### ✅ Fix: datetime.utcnow() deprecation (2026-01-26)
+- **Issue:** DeprecationWarning in Phase 20–23 tests and production code (observability, memory quality).
+- **Fix:** Replaced with `datetime.now(timezone.utc)`; UTC parsing uses `.replace("Z", "+00:00")` for timezone-aware handling. See `docs/ERROR_CORRECTION.md`.
+
 ### ✅ Fix: AI Output Display
 - **Issue:** TUI and Web Interface displayed duplicate/redundant AI output json fields.
 - **Fix:** Refactored display logic in `tui/app.py` and `web/static/app.js` to properly parse MCP `structuredContent` and display only the clean summary.

@@ -10,7 +10,7 @@ Per CONTINUATION_PLAN Phase 22: Memory Quality Control.
 import logging
 import math
 from dataclasses import dataclass
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, Optional
 
 logger = logging.getLogger(__name__)
@@ -104,13 +104,13 @@ class ConfidenceDecayModel:
             original_confidence: Original confidence (0.0 to 1.0).
             created_at: When memory was created.
             access_count: Number of times accessed.
-            now: Current time (defaults to utcnow).
+            now: Current time (defaults to utc now).
         
         Returns:
             Current confidence after decay (0.0 to 1.0).
         """
         if now is None:
-            now = datetime.utcnow()
+            now = datetime.now(timezone.utc)
         
         # Calculate days elapsed
         elapsed = now - created_at
@@ -150,7 +150,7 @@ class ConfidenceDecayModel:
             True if summarization is needed.
         """
         if now is None:
-            now = datetime.utcnow()
+            now = datetime.now(timezone.utc)
         
         # Check confidence threshold
         if confidence < SUMMARIZATION_THRESHOLD:
@@ -180,7 +180,7 @@ class ConfidenceDecayModel:
         Returns:
             List of (day, confidence) tuples.
         """
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
         projections = []
         
         for day in range(0, days_ahead + 1, 7):  # Weekly intervals
@@ -225,12 +225,13 @@ class MemoryQualityManager:
         Returns:
             Quality metadata dictionary.
         """
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
+        iso = now.isoformat().replace("+00:00", "Z")
         return {
             "confidence_original": initial_confidence,
             "confidence_current": initial_confidence,
-            "created_at": now.isoformat() + "Z",
-            "last_accessed": now.isoformat() + "Z",
+            "created_at": iso,
+            "last_accessed": iso,
             "access_count": 0,
             "decay_rate": self._decay_model._decay_rate,
             "lineage_id": None,
@@ -253,11 +254,11 @@ class MemoryQualityManager:
         Returns:
             Updated quality metadata.
         """
-        now = datetime.utcnow()
-        
+        now = datetime.now(timezone.utc)
+        now_iso = now.isoformat().replace("+00:00", "Z")
         # Parse created_at
-        created_at_str = quality_metadata.get("created_at", now.isoformat() + "Z")
-        created_at = datetime.fromisoformat(created_at_str.rstrip("Z"))
+        created_at_str = quality_metadata.get("created_at", now_iso)
+        created_at = datetime.fromisoformat(created_at_str.replace("Z", "+00:00"))
         
         # Increment access count
         access_count = quality_metadata.get("access_count", 0) + 1
@@ -274,7 +275,7 @@ class MemoryQualityManager:
         return {
             **quality_metadata,
             "confidence_current": round(new_confidence, 3),
-            "last_accessed": now.isoformat() + "Z",
+            "last_accessed": now.isoformat().replace("+00:00", "Z"),
             "access_count": access_count,
         }
     
@@ -297,7 +298,7 @@ class MemoryQualityManager:
         if not created_at_str:
             return False
         
-        created_at = datetime.fromisoformat(created_at_str.rstrip("Z"))
+        created_at = datetime.fromisoformat(created_at_str.replace("Z", "+00:00"))
         
         return self._decay_model.needs_summarization(
             confidence=confidence,
@@ -321,14 +322,15 @@ class MemoryQualityManager:
         Returns:
             New quality metadata for summarized memory.
         """
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
+        iso = now.isoformat().replace("+00:00", "Z")
         summarization_level = quality_metadata.get("summarization_level", 0) + 1
         
         return {
             "confidence_original": 0.5,  # Summarized memories start at 0.5
             "confidence_current": 0.5,
-            "created_at": now.isoformat() + "Z",
-            "last_accessed": now.isoformat() + "Z",
+            "created_at": iso,
+            "last_accessed": iso,
             "access_count": 0,
             "decay_rate": self._decay_model._decay_rate,
             "lineage_id": original_id,

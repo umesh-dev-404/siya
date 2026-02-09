@@ -9,7 +9,7 @@ Per CONTINUATION_PLAN Phase 22: Memory Quality Control.
 
 import json
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 from uuid import uuid4
 
@@ -75,19 +75,19 @@ class MemorySummarizer:
         
         # Build summarized memory record
         new_id = str(uuid4())
-        now = datetime.utcnow()
-        
+        now = datetime.now(timezone.utc)
+        iso = now.isoformat().replace("+00:00", "Z")
         summarized_record = {
             "id": new_id,
             "content": summary_content,
-            "created_at": now.isoformat() + "Z",
+            "created_at": iso,
             "type": memory_metadata.get("type", "general"),
             "source": "summarization",
             "metadata": {
                 "original_id": memory_id,
                 "original_created_at": memory_metadata.get("created_at"),
                 "original_type": memory_metadata.get("type"),
-                "summarization_timestamp": now.isoformat() + "Z",
+                "summarization_timestamp": iso,
                 "summarization_reason": self._get_summarization_reason(quality_metadata),
             },
             "quality": new_quality,
@@ -175,7 +175,8 @@ class MemorySummarizer:
         if created_at_str:
             try:
                 created_at = datetime.fromisoformat(created_at_str.rstrip("Z"))
-                age_days = (datetime.utcnow() - created_at).days
+                now_utc = datetime.now(timezone.utc).replace(tzinfo=None)
+                age_days = (now_utc - created_at).days
                 if age_days > 90:
                     return f"age_exceeded (days: {age_days})"
             except ValueError:

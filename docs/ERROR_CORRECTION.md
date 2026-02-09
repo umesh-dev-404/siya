@@ -240,6 +240,16 @@ Maintained per dev-rules.md §8.2 (Error Correction Discipline).
 
 ---
 
+## Session: 2026-01-26 (Phase 20–23 datetime deprecation)
+
+### Error: datetime.utcnow() deprecation (Python 3.12+)
+**Symptom:** `DeprecationWarning: datetime.datetime.utcnow() is deprecated` when running Phase 20–23 tests.  
+**Cause:** Python 3.12+ deprecates naive UTC; docs recommend `datetime.now(timezone.utc)`.  
+**Solution:** Replaced `datetime.utcnow()` with `datetime.now(timezone.utc)` and ensured stored/parsed datetimes use UTC consistently (parse with `.replace("Z", "+00:00")` for timezone-aware). Uptime calculation in observability now uses timezone-aware boot_time.  
+**Files Modified:** `system/observability_service.py`, `memory/memory_quality.py`, `memory/memory_summarizer.py`, `tests/test_phase_20_explanation.py`, `tests/test_phase_22_memory_quality.py`
+
+---
+
 ## Template for Future Entries
 
 ### Error N: [Short Title]
