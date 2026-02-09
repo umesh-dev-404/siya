@@ -125,6 +125,12 @@ def main(argv: list[str] | None = None) -> int:
     # Phase 20: Explanation
     sub_explain = sub.add_parser("explain", help="Explain a specific decision or action (LAW 20).")
     sub_explain.add_argument("request_id", help="The UUID of the request to explain.")
+    sub_explain.add_argument(
+        "--decision-type",
+        default="confirmation_required",
+        choices=["permission_denied", "confirmation_required", "execution_failed", "queued"],
+        help="Type of decision to explain (default: confirmation_required).",
+    )
 
     # Phase 21: Intent Mode
     sub_mode = sub.add_parser("mode", help="Get or set the User Intent Mode (LAW 21).")
@@ -226,7 +232,10 @@ def main(argv: list[str] | None = None) -> int:
 
         if args.cmd == "explain":
             print(f"Generating explanation for {args.request_id}...")
-            resp = client.tools_call("explain_decision", {"request_id": args.request_id})
+            resp = client.tools_call(
+                "explain_decision",
+                {"request_id": args.request_id, "decision_type": args.decision_type},
+            )
             result = resp.get("result", {})
             
             # Try to print just the explanation text if possible
