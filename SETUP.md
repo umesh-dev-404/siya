@@ -323,6 +323,7 @@ siya/
 - See `docs/DEPLOYMENT.md` for deployment instructions
 - See `docs/RECOVERY_CHECKLIST.md` for recovery procedures
 - See `docs/RELEASE.md` for release information
+- See `docs/EVOLUTION_ROADMAP.md` for post–Phase 23 roadmap (platform/channel strategy, setup wizard; OpenClaw-inspired capabilities adopted/adapted in Siya where law-aligned)
 
 ---
 

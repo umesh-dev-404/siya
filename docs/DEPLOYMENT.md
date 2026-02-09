@@ -23,6 +23,8 @@ This document describes the complete deployment process for Siya on Raspberry Pi
 - Network access configuration
 - Model setup (see `AI_MODEL_GUIDE.md` for detailed model information)
 
+**Platform scope:** Windows PC is the supported **client** (CLI/TUI/HTTP to Pi). No Mac in current plan. See `docs/EVOLUTION_ROADMAP.md` §4.1 and §3.7 (OpenClaw on Windows reference). OpenClaw-inspired capabilities (e.g. setup wizard) are adopted/adapted in Siya where law-aligned; product name remains Siya.
+
 **Per DIP Phase 9: Production Lock & Baseline**
 
 **Status:** ✅ Deployment completed and operational (2026-01-27)

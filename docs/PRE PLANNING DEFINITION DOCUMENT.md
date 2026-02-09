@@ -113,7 +113,7 @@ Future multi-user support must not require changes to core architecture—only c
   - Local web interface (hosted on the Pi)
   - CLI
   - HTTP API
-- Mobile and desktop apps (future)
+- Mobile and desktop apps (future): **own Android app** planned; **no** third-party messaging; **no Mac** in current plan. See `docs/EVOLUTION_ROADMAP.md` §4.1. OpenClaw-inspired capabilities (e.g. setup wizard) are adopted/adapted in Siya where law-aligned; product name remains Siya.
 
 **Interface Architecture:**
 - MCP Server is the core interface layer
@@ -206,6 +206,7 @@ The following are explicitly **out of scope**:
 - Cloud-scale multi-user support (initially)
 - High-frequency real-time systems
 - Social or conversational optimization
+- Third-party messaging channels (WhatsApp, Telegram, Discord, iMessage, Slack, etc.); Mac in current plan (future only). See `docs/EVOLUTION_ROADMAP.md` §4.1.
 
 ---
 

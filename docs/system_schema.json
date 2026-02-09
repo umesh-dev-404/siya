@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://siya.local/system_schema.json",
   "title": "Siya Canonical System Schema",
-  "description": "Binding JSON schema for all AI outputs, tool requests, errors, confirmations, memory writes, audit logs, and orchestration steps. This schema enforces Canonical System Laws and must be strictly followed.",
+  "description": "Binding JSON schema for all AI outputs, tool requests, errors, confirmations, memory writes, audit logs, and orchestration steps. This schema enforces Canonical System Laws and must be strictly followed. OpenClaw-inspired capabilities adopted in Siya must conform to this schema (see docs/EVOLUTION_ROADMAP.md).",
   "version": "1.0.1",
   "oneOf": [
     {

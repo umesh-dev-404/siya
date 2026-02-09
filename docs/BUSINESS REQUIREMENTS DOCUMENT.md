@@ -166,6 +166,8 @@ The system **must provide** the following high-level capabilities.
 - All interfaces connect to MCP Server internally
 - Prevent interface-specific privilege escalation
 - Maintain interface synchronization (no drift between CLI/API/Web)
+- **Platform & channel strategy (locked):** No third-party messaging (WhatsApp, Telegram, etc.). Own Android app planned; no Mac in current plan. See `docs/EVOLUTION_ROADMAP.md` §4.1.
+- **OpenClaw-inspired adoption:** Siya adopts/adapts OpenClaw-inspired capabilities (setup wizard, operator UX, tooling) where they align with Siya's laws and strategy; product name remains Siya. See `docs/EVOLUTION_ROADMAP.md`.
 
 ---
 

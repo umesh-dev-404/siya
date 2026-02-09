@@ -199,6 +199,11 @@ Siya must provide a **first-party PC MCP CLI client** that replicates Claude-lik
 - Versioned tool schemas
 - Interface consistency (CLI/API/Web connect to MCP Server internally, LAW 19)
 
+### 8.5 Platform & channel strategy (locked)
+
+- Interfaces today: CLI, HTTP API, Web, TUI. **Own Android app** planned; **no** third-party messaging (WhatsApp, Telegram, Discord, iMessage, Slack, etc.). **No Mac** in current plan. See `docs/EVOLUTION_ROADMAP.md` §4.1.
+- OpenClaw-inspired capabilities (setup wizard, operator UX, tooling) are adopted/adapted in Siya where law-aligned; product name remains Siya.
+
 ---
 
 ## 9. TOOL SYSTEM REQUIREMENTS

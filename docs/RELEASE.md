@@ -12,6 +12,8 @@
 **Deployment Date:** 2026-01-27  
 **Deployment Status:** ✅ Deployed and Operational on Raspberry Pi 5
 
+OpenClaw-inspired capabilities (e.g. setup wizard) are adopted/adapted in Siya where law-aligned; product name remains Siya. See `docs/EVOLUTION_ROADMAP.md`.
+
 ---
 
 ## WHAT'S INCLUDED

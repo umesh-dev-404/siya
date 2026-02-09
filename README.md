@@ -39,6 +39,7 @@ All authoritative documentation is in the `docs/` directory:
 - **DEPLOYMENT.md** — Complete deployment guide (includes PC-to-Pi bridge)
 - **AI_MODEL_GUIDE.md** — AI setup and optimization
 - **EXAMPLE_COMMANDS.md** — Examples for testing 26+ tools
+- **EVOLUTION_ROADMAP.md** — Post–Phase 23 roadmap (channel strategy, setup wizard)
 
 ---
 
@@ -79,6 +80,8 @@ Siya can be governed remotely from your PC via the **PC MCP Client**:
 ```bash
 siya-cli --transport http --url http://<PI_IP>:8080 list-tools
 ```
+
+**Interfaces:** CLI, HTTP API, Web, TUI. Own Android app planned; no third-party messaging; no Mac in current plan. OpenClaw-inspired capabilities (e.g. setup wizard) are adopted/adapted in Siya where law-aligned; product name remains Siya. See `docs/EVOLUTION_ROADMAP.md`.
 
 ---
 

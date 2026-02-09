@@ -17,6 +17,8 @@ Its purpose is to ensure:
 
 If a law cannot be mapped to code, the law is unenforced and therefore invalid.
 
+OpenClaw-inspired capabilities adopted in Siya must comply with these law–code mappings; see `docs/EVOLUTION_ROADMAP.md`.
+
 ---
 
 ## 2. MAPPING PHILOSOPHY

@@ -12,6 +12,8 @@
 **Status:** Production Baseline Ready  
 **Date:** 2026-01-26
 
+**Platform & channel strategy (locked):** Interfaces today: CLI, HTTP API, Web, TUI. **Own Android app** planned; **no** third-party messaging (WhatsApp, Telegram, Discord, iMessage, Slack, etc.). **No Mac** in current plan (future only). See `docs/EVOLUTION_ROADMAP.md` §4.1. **OpenClaw-inspired adoption:** Siya adopts/adapts OpenClaw-inspired capabilities (setup wizard, operator UX, tooling) where law-aligned; product name remains Siya.
+
 ---
 
 ## COMPLETED PHASES
@@ -401,6 +403,7 @@
 - `docs/DETAILED IMPLEMENTATION PLAN.md` — Implementation plan (updated with Phases 10-16)
 - `docs/ERROR_CORRECTION.md` — Error tracking and solutions log
 - `docs/NEXT_PHASES_ROADMAP.md` — Post-baseline implementation roadmap
+- `docs/EVOLUTION_ROADMAP.md` — Post–Phase 23 capability expansion (channel strategy, setup wizard, Windows; MODE A)
 
 ### Phase Reports
 - `docs/PHASE_COMPLETION_REPORTS/PHASE_0_COMPLETION_STATUS.md`

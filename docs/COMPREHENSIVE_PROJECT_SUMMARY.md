@@ -9,7 +9,7 @@
 
 ## 1. EXECUTIVE SYSTEM OVERVIEW
 
-**Siya** is not merely a chatbot; it is a **Personal Governance Operating System**. It fundamentally reimagines the relationship between user and AI by inverting the typical power dynamic. Instead of an autonomous agent that acts on your behalf with opaque logic, Siya is a **deterministic processor** that requires explicit human sovereignty for every significant state change.
+**Siya** is not merely a chatbot; it is a **Personal Governance Operating System**. Siya adopts OpenClaw-inspired capabilities (setup wizard, operator UX, tooling) where law-aligned; product name remains Siya. See `docs/EVOLUTION_ROADMAP.md`. It fundamentally reimagines the relationship between user and AI by inverting the typical power dynamic. Instead of an autonomous agent that acts on your behalf with opaque logic, Siya is a **deterministic processor** that requires explicit human sovereignty for every significant state change.
 
 It is architected as a **Model Context Protocol (MCP) Server**, a standard that decouples the "brain" (AI) from the "body" (Tools/System). This ensures that the AI model (Qwen 2.5 3B) is never trusted with direct execution authority. It allows the system to run **Local-First**, ensuring all data, logic, and execution happen physically on the user's Raspberry Pi 5, with the cloud (Supabase) used solely for encrypted synchronization.
 
@@ -158,7 +158,7 @@ The project was executed in strict, gated phases. Each phase required verificati
 *   **`static/app.js`**: 500+ lines of Vanilla JS. Handles the `fetch()` calls to the API, renders the DOM elements for tools, and manages the WebSocket-like polling for status.
 
 ### `pc_mcp_client/`
-*   **`wake.py`**: The entry point. It checks for a `.siya/config.json`. If missing, it runs the "First Run Wizard". If present, it autoloads the URL and key.
+*   **`wake.py`**: The entry point. It checks for a `.siya/config.json`. If missing, it runs the "First Run Wizard". If present, it autoloads the URL and key. (Future: full onboarding wizard will align with OpenClaw-style guided setup; product name stays Siya, e.g. `siya onboard`. See `docs/EVOLUTION_ROADMAP.md`.)
 *   **`interactive.py`**: The event loop for the TUI. Listens for keypresses and renders the `rich` Layout panels.
 
 ---

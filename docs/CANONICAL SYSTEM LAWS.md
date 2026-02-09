@@ -24,6 +24,8 @@ These laws are **above**:
 
 If any component violates a law in this document, that component is **invalid by definition**.
 
+**OpenClaw-inspired work:** Any capability adopted or adapted from OpenClaw (see `docs/EVOLUTION_ROADMAP.md`) must comply with these laws; no exception.
+
 ---
 
 ## 2. LAW HIERARCHY

@@ -71,6 +71,8 @@ You can now use `siya-cli` normally from any folder on the new PC.
 siya-cli --transport http --url http://<PI_IP>:8080 server-info
 ```
 
+**Platform scope:** Mobile interface will be a **Siya-owned Android app** (planned). No third-party messaging (WhatsApp, Telegram, etc.). See `docs/EVOLUTION_ROADMAP.md` §4.1. OpenClaw-inspired capabilities (e.g. setup wizard) are adopted/adapted in Siya where law-aligned; product name remains Siya.
+
 ---
 
-**Last Updated:** 2026-01-27
+**Last Updated:** 2026-01-26

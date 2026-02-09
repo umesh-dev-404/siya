@@ -1,7 +1,7 @@
 # Error Correction Log
 
 This document tracks errors encountered during development/testing and their solutions.
-Maintained per dev-rules.md §8.2 (Error Correction Discipline).
+Maintained per dev-rules.md §8.2 (Error Correction Discipline). OpenClaw-inspired capabilities adopted in Siya; see `docs/EVOLUTION_ROADMAP.md`.
 
 ---
 

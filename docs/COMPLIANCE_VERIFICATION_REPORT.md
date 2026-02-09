@@ -1,4 +1,8 @@
 # COMPLIANCE VERIFICATION REPORT
+
+*Siya adopts OpenClaw-inspired capabilities where law-aligned; see `docs/EVOLUTION_ROADMAP.md`.*
+
+---
 ## Project: Siya
 ## Date: 2026-01-28
 ## Status: ✅ FULLY COMPLIANT THROUGH PHASE 23 (COMPLETE)

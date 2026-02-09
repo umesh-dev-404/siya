@@ -92,7 +92,7 @@ At no point does the AI bypass control layers or execute actions autonomously. C
   - Local web interface
   - HTTP API
 - Voice (future)
-- Mobile and desktop applications (future)
+- Mobile and desktop applications (future): **own Android app** planned; **no** third-party messaging; **no Mac** in current plan. See `docs/EVOLUTION_ROADMAP.md` §4.1. OpenClaw-inspired capabilities (setup wizard, operator UX) are adopted/adapted in Siya where law-aligned; product name remains Siya.
 
 **Interface Architecture:**
 - MCP Server is the core interface layer

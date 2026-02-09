@@ -1,234 +1,391 @@
-# EXAMPLE COMMANDS
-## Project: Siya
-## Tool: PC MCP Client (siya-cli)
-
-This document provides example commands for verification and usage of the 13+ implemented tools.
-
-**Prerequisite:**
-Ensure the PC MCP Client is installed globally:
-```powershell
-cd D:\Projects\siya
-pip install -e .
-```
-*Note: If `siya-cli` is not found, ensure your Python Scripts folder is in your PATH (see `SETUP.md`).*
-
-All commands assume the Pi Server is running at `http://192.168.1.39:8080`. Update the URL as needed.
+# EXAMPLE COMMANDS FOR TESTING
+## Testing Siya from Your PC
 
 ---
 
-## 1. CONNECTION CHECK
+## OVERVIEW
 
-### Verify Server Connectivity
-```powershell
-siya-cli --transport http --url http://192.168.1.39:8080 server-info
-```
-*Expected Output:* `✅ Connected to MCP Server... Server Status: Online`
+This document provides example commands you can test from your PC while Siya runs on your Raspberry Pi.
 
-### List Available Tools
-```powershell
-siya-cli --transport http --url http://192.168.1.39:8080 list-tools
-```
+**Current System Status:**
+- ✅ API server running (port 8080)
+- ✅ Web interface running (port 3000)
+- ✅ Intent parsing (Phase 10: Real AI model operational - 10-30s response time)
+- ✅ System prompt integrated (from `docs/System Prompt.md`)
+- ✅ Orchestration flow (task queue working)
+- ✅ Natural language input supported
+- ✅ Tool execution (starter tools registered)
+
+**Note:** This is only the initial starter set. Siya will scale to many more tools and features in later phases. OpenClaw-inspired capabilities (e.g. setup wizard) are adopted/adapted in Siya where law-aligned; see `docs/EVOLUTION_ROADMAP.md`.
 
 ---
 
-## 2. SYSTEM TOOLS
+## QUICK START
 
-### Get System Status
-```powershell
-siya-cli --transport http --url http://192.168.1.39:8080 call get_system_status
-```
+**Replace `192.168.1.39` with your Pi's current IP address.**
 
-### Resource Monitor (with Processes)
-```powershell
-siya-cli --transport http --url http://192.168.1.39:8080 call resource_monitor --args "{\"include_processes\": true}"
-```
+Find Pi IP:
+```bash
+# From Pi
+hostname -I
 
-### Query Logs
-```powershell
-siya-cli --transport http --url http://192.168.1.39:8080 call log_query --args "{\"limit\": 5}"
+# Or from PC (if you know Pi hostname)
+ssh YOUR_PI_USERNAME@raspberrypi "hostname -I"
 ```
 
 ---
 
-## 3. FILE OPERATIONS (SAFE)
+## TEST 1: HEALTH CHECK
 
-### List Directory
+**Purpose:** Verify API server is running and accessible.
+
+**Windows PowerShell:**
 ```powershell
-siya-cli --transport http --url http://192.168.1.39:8080 call directory_list --args "{\"path\": \"/opt/siya\"}"
+Invoke-WebRequest -Uri http://192.168.1.39:8080/health
 ```
 
-### Read File
-```powershell
-siya-cli --transport http --url http://192.168.1.39:8080 call file_read --args "{\"path\": \"/opt/siya/README.md\"}"
+**Linux/Mac/Git Bash:**
+```bash
+curl http://192.168.1.39:8080/health
 ```
 
-### Write File (Requires Confirmation)
-```powershell
-siya-cli --transport http --url http://192.168.1.39:8080 call file_write --args "{\"path\": \"/opt/siya/test_write.txt\", \"content\": \"Hello Siya\"}"
-```
-*Expect:* `pending_confirmation` status (LAW 1).
-
----
-
-## 4. AUTOMATION TOOLS
-
-### List Automations
-```powershell
-siya-cli --transport http --url http://192.168.1.39:8080 call list_automations
-```
-
-### Trigger Automation
-```powershell
-siya-cli --transport http --url http://192.168.1.39:8080 call trigger_automation --args "{\"automation_id\": \"daily_summary\"}"
-```
-*Expect:* `pending_confirmation` status (LAW 1).
-
----
-
-## 5. INTELLIGENCE TOOLS
-
-### Fetch Mails (Offline)
-```powershell
-siya-cli --transport http --url http://192.168.1.39:8080 call fetch_mails
-```
-
-### Summarize Text
-```powershell
-siya-cli --transport http --url http://192.168.1.39:8080 call summarize_text --args "{\"text\": \"Siya is a local-first personal assistant operating system focused on privacy.\"}"
+**Expected Response:**
+```json
+{
+  "status": "healthy",
+  "service": "siya-api"
+}
 ```
 
 ---
 
-## 6. NOTIFICATION TOOLS
+## TEST 2: BASIC COMMAND FLOW
 
-### List Notifications
+**Purpose:** Test the full command flow (API → CLI → Orchestrator → AI Intent Parsing → Tool Execution).
+
+**Windows PowerShell:**
 ```powershell
-siya-cli --transport http --url http://192.168.1.39:8080 call list_notifications --args "{\"unread_only\": false}"
+$body = @{command="hello"} | ConvertTo-Json
+Invoke-WebRequest -Uri http://192.168.1.39:8080/command -Method POST -Body $body -ContentType "application/json"
 ```
 
-### Acknowledge All Notifications
-```powershell
-siya-cli --transport http --url http://192.168.1.39:8080 call acknowledge_all_notifications
+**Linux/Mac/Git Bash:**
+```bash
+curl -X POST http://192.168.1.39:8080/command \
+  -H "Content-Type: application/json" \
+  -d '{"command": "hello"}'
 ```
 
-### Clear All Acknowledged Notifications
-```powershell
-siya-cli --transport http --url http://192.168.1.39:8080 call clear_notifications --args "{\"clear_all\": true}"
+**Expected Response:**
+```json
+{
+  "status": "success",
+  "message": "OK: { ...tool output... }"
+}
 ```
-*Expect:* `pending_confirmation` status (LAW 1 - destructive action).
 
-### Clear Old Notifications (30+ days)
-```powershell
-siya-cli --transport http --url http://192.168.1.39:8080 call clear_notifications --args "{\"days_old\": 30}"
+**What Happens:**
+1. API receives command
+2. CLI processes it
+3. Orchestrator submits user input
+4. AI parses intent (real model if loaded)
+5. Tool request validated/authorized
+6. Tool executes (starter tools)
+7. Response returned
+
+---
+
+## TEST 2A: RUN A STARTER TOOL (SYSTEM STATUS)
+
+**Purpose:** Verify tool execution is real.
+
+```bash
+curl -X POST http://192.168.1.39:8080/command \
+  -H "Content-Type: application/json" \
+  -d '{"command": "get system status"}'
+```
+
+**Expected:** Response includes `get_system_status` output (resources JSON).
+
+---
+
+## TEST 2B: LIST TOOLS
+
+```bash
+curl -X POST http://192.168.1.39:8080/command \
+  -H "Content-Type: application/json" \
+  -d '{"command": "list tools"}'
+```
+
+**Expected:** Response includes a tool list containing `get_system_status`, `tools_list`, `summarize_text`, `fetch_mails`, `summarize_mails`.
+
+---
+
+## TEST 2D: MAILS (OFFLINE-FIRST LOCAL STORE)
+
+**Purpose:** Test the example “mails” integration without any network setup.
+
+**Default mail store path (created in repo):** `data/mails.json`
+
+**Format:** JSON array of objects; recommended fields:
+- `id`, `from`, `to`, `subject`, `date`, `snippet`, `body`
+
+**Fetch mails:**
+```bash
+curl -X POST http://192.168.1.39:8080/command \
+  -H "Content-Type: application/json" \
+  -d '{"command": "fetch mails"}'
+```
+
+**Summarize mails:**
+```bash
+curl -X POST http://192.168.1.39:8080/command \
+  -H "Content-Type: application/json" \
+  -d '{"command": "summarize mails"}'
+```
+
+**Note:** Network-based mail fetching (IMAP/Gmail API) will be added later with LAW 16 enforcement.
+
+---
+
+## TEST 2C: MCP STDIO (OPTIONAL)
+
+**Purpose:** Run Siya as an MCP STDIO server (for MCP clients).
+
+On the Pi:
+```bash
+cd /opt/siya
+source venv/bin/activate
+python -m mcp.stdio_main
+```
+
+**Note:** You can also enable STDIO inside the systemd runtime by setting:
+`SIYA_ENABLE_MCP_STDIO=1` (advanced; typically STDIO servers are launched by the client).
+
+---
+
+## TEST 2E: FIRST-PARTY PC MCP CLI CLIENT (COMING NEXT)
+
+**Purpose:** Use Siya’s own PC MCP CLI client (Claude-like MCP client behavior) for full control.
+
+**Status:** Planned (next implementation step). The client will:
+- Run MCP lifecycle (`initialize` → `notifications/initialized`)
+- Call `tools/list` and `tools/call`
+- Provide selective output formatting on PC
+
+---
+sri.j.uk@gmail.com
+Srini/5823
+## TEST 3: NATURAL LANGUAGE QUESTIONS
+
+**Purpose:** Test AI intent parsing with natural language.
+
+**Examples:**
+
+```bash
+# Question about capabilities
+curl -X POST http://192.168.1.39:8080/command \
+  -H "Content-Type: application/json" \
+  -d '{"command": "what can you do?"}'
+
+# Request for help
+curl -X POST http://192.168.1.39:8080/command \
+  -H "Content-Type: application/json" \
+  -d '{"command": "help me with something"}'
+
+# General inquiry
+curl -X POST http://192.168.1.39:8080/command \
+  -H "Content-Type: application/json" \
+  -d '{"command": "I need assistance"}'
+```
+
+**Expected:** All commands will be parsed and queued. Intent parsing is in stub mode, so it will attempt to match tool names (none exist yet) and return a basic intent structure.
+
+---
+
+## TEST 4: TASK EXECUTION FLOW
+
+**Purpose:** Test orchestrator task queue and execution flow.
+
+**Examples:**
+
+```bash
+# Simple task request
+curl -X POST http://192.168.1.39:8080/command \
+  -H "Content-Type: application/json" \
+  -d '{"command": "execute a task"}'
+
+# Different phrasings
+curl -X POST http://192.168.1.39:8080/command \
+  -H "Content-Type: application/json" \
+  -d '{"command": "I need to do something"}'
+
+curl -X POST http://192.168.1.39:8080/command \
+  -H "Content-Type: application/json" \
+  -d '{"command": "perform an action"}'
+```
+
+**Expected:** Commands are parsed, tasks are queued, and execution flow is tested (though tool execution is stubbed).
+
+---
+
+## TEST 5: ERROR HANDLING
+
+**Purpose:** Test system error handling and validation.
+
+**Examples:**
+
+```bash
+# Missing command field
+curl -X POST http://192.168.1.39:8080/command \
+  -H "Content-Type: application/json" \
+  -d '{}'
+
+# Invalid JSON
+curl -X POST http://192.168.1.39:8080/command \
+  -H "Content-Type: application/json" \
+  -d '{invalid json}'
+
+# Empty command
+curl -X POST http://192.168.1.39:8080/command \
+  -H "Content-Type: application/json" \
+  -d '{"command": ""}'
+```
+
+**Expected:** Appropriate error responses with clear error messages.
+
+---
+
+## TEST 6: WEB INTERFACE
+
+**Purpose:** Test web interface connectivity and API integration.
+
+1. **Open browser on PC:** `http://192.168.1.39:3000`
+2. **Check connection status:** Should show "Connected" (after CORS fix applied)
+3. **Try sending commands through web UI**
+
+**Note:** Web interface uses the same API endpoints internally.
+
+---
+
+## UNDERSTANDING THE RESPONSES
+
+### Success Response
+```json
+{
+  "status": "success",
+  "message": "Command processed. Task ID: <uuid>"
+}
+```
+
+### Error Response
+```json
+{
+  "status": "error",
+  "message": "Error description here"
+}
 ```
 
 ---
 
-## 7. WEB INTERFACE (Phase 17)
+## WHAT'S HAPPENING UNDER THE HOOD
 
-The Neo-Brutalism web interface provides full CLI parity at port 3000.
+When you send a command:
 
-### Access Web UI
-```
-http://192.168.1.39:3000
-```
+1. **Service Initialization** (on startup)
+   - `service_main.py` creates Orchestrator and calls `orchestrator.start()`
+   - `service_main.py` creates CLI and calls `cli.start()`
+   - This ensures Orchestrator and CLI are ready to process commands
 
-### Features
-- **Sidebar:** Categorized tool browser with search
-- **Tool Panel:** Dynamic forms based on tool schemas
-- **Confirmation Modal:** LAW 1 enforcement with Yes/Cancel buttons
-- **Output Panel:** Human-readable formatted results
-- **Notifications:** 
-  - Desktop: Slide-out panel from right side
-  - Mobile: Collapsible section at bottom of sidebar (tap to expand/collapse)
+2. **API Layer** (`/command` endpoint)
+   - Receives HTTP POST request
+   - Validates JSON format
+   - Calls `APIServer.handle_command()`
 
-### Using the Web Interface
-1. Open `http://<pi-ip>:3000` in browser
-2. Select a tool from the sidebar (e.g., SYNC → Get Sync Status)
-3. Fill in any required parameters
-4. Click "EXECUTE TOOL"
-5. For confirmation-required tools → Modal appears → Click "Yes, Execute"
-6. View formatted results in Output panel
+3. **CLI Layer**
+   - `CLI.run_single_command()` processes command (ensures CLI is started)
+   - Calls `CLI.process_command()`
+   - Calls `Orchestrator.submit_user_input()`
 
----
+4. **Orchestrator**
+   - `Orchestrator.submit_user_input()` receives command (orchestrator must be started)
+   - Calls `AIInterface.parse_user_intent()` (real AI model if loaded, otherwise stub mode)
 
-## 8. FULL-SCREEN TUI (Phase 18-19)
+5. **AI Intent Parsing** (Real AI Model or Stub Mode)
+   - `IntentParser.parse_intent()` uses real AI model if loaded
+   - Loads system prompt from `docs/System Prompt.md`
+   - Builds prompt and calls model for inference
+   - Returns intent structure (validated against schema)
+   - Falls back to stub mode if model not loaded
 
-### Launch TUI
-```powershell
-siya              # First run prompts for Pi URL, then launches TUI
-siya --reset      # Reset saved config (e.g., switch networks)
-```
+6. **Tool Request Conversion**
+   - Orchestrator converts intent to tool request
+   - Checks tool registry
+   - Creates tool request with parsed action
 
-### Keyboard Shortcuts
-| Key | Action |
-|-----|--------|
-| `Ctrl+Q` | Quit |
-| `Ctrl+H` | Help |
-| `Ctrl+R` | Refresh tools |
-| `Ctrl+L` | Clear output |
-| `↑↓` | Navigate sidebar |
-| `Space` / `Enter` | Expand/Collapse category |
-| `Enter` | Execute tool (on leaf) |
-| `Escape` | Back/Close |
+7. **Task Execution**
+   - Task queued in `TaskQueue`
+   - `Orchestrator.process_next_task()` processes task
+   - Tool execution runs (if tool exists) or returns appropriate response
 
-### Command Input Bar
-Type a tool name and press Enter to execute it:
-```
-get_system_status   # executes get_system_status tool
-resource_monitor    # executes resource_monitor tool
-```
-
-### Argument Prompt Modals
-When a tool requires arguments (e.g., `directory_list`, `file_read`), a modal prompts for input:
-- Required fields are marked with `*`
-- Press Enter or click Execute to run
-- Press Escape or Cancel to abort
-
-
-### Remote Access (Tailscale)
-```powershell
-siya --reset
-siya
-# Enter Tailscale URL: http://100.67.9.101:8080
-```
-
-> **Port Note:** CLI uses **8080** (API), Web uses **3000** (browser)
+8. **Response**
+   - Success/error message returned through layers
+   - All actions logged for auditability (LAW 13)
 
 ---
 
-## 9. v1.0.1 TOOLS (NEW)
- 
-> **Note:** These features were added in the Phase 20-23 Interface Update.
+## CURRENT LIMITATIONS
 
-### Explain Decision (Phase 20)
-```powershell
-# Explain why a previous request was denied or required confirmation
-siya-cli explain <REQUEST_UUID>
-```
- 
-### Get System Posture (Phase 23)
-```powershell
-# Get read-only system status snapshot
-siya-cli posture
-```
-*Returns: Posture Level (SAFE/DEGRADED/CRITICAL) and component health.*
+**Current Status:**
+- Intent parsing uses real AI model (Qwen 2.5 3B Instruct)
+- Natural language input supported
+- Starter tools are registered and execute (system/status, list_tools, summarize_text, mails demo)
 
-### Intent Mode (Phase 21)
-```powershell
-# Check current mode
-siya-cli mode
+**What Works:**
+- ✅ Service initialization (Orchestrator and CLI started automatically)
+- ✅ API server and endpoints
+- ✅ Command flow (API → CLI → Orchestrator)
+- ✅ Intent parsing (real AI model if loaded, stub mode otherwise)
+- ✅ Task queue and execution flow
+- ✅ Error handling and validation
+- ✅ Complete audit logging
 
-# Set mode to Operational
-siya-cli mode operational
-
-# Set mode to Informational (Read-Only)
-siya-cli mode informational
-```
-*Intent modes: informational (default), operational, destructive*
+**What's Stubbed:**
+- ⚠️ Confirmation UX (requires_confirmation path not implemented end-to-end yet)
+- ⚠️ Memory operations (Phase 3)
+- ⚠️ Scheduling (Phase 7)
 
 ---
 
-**Last Updated:** 2026-01-28
-**Schema Version:** 1.0.1 (v1.0.1 Compliant)
+## MONITORING ON PI
 
+**View service logs:**
+```bash
+# On Pi
+sudo journalctl -u siya -f
+```
+
+**Check service status:**
+```bash
+# On Pi
+sudo systemctl status siya
+```
+
+**View recent logs:**
+```bash
+# On Pi
+sudo journalctl -u siya -n 50 --no-pager
+```
+
+---
+
+## NEXT STEPS
+
+Once tools are registered in later phases, you'll be able to:
+- Execute actual tool operations
+- See tool-specific responses
+- Test permission and authorization flows
+- Verify tool execution results
+
+**Last Updated:** 2026-01-27  
+**Status:** Ready for testing (stub mode)

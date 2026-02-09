@@ -10,6 +10,8 @@ This checklist provides step-by-step recovery procedures for Siya system failure
 
 **Per DIP Phase 9: Production Lock & Baseline**
 
+OpenClaw-inspired capabilities are adopted/adapted in Siya where law-aligned; see `docs/EVOLUTION_ROADMAP.md`.
+
 ---
 
 ## RECOVERY SCENARIOS

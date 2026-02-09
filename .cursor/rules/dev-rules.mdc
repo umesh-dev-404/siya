@@ -403,6 +403,7 @@ If unsafe → do not proceed.
 • Deployment instructions → `docs/DEPLOYMENT.md` (includes GitHub setup, network access)  
 • AI model information → `docs/AI_MODEL_GUIDE.md` (setup, testing, optimization, selection)  
 • Project status → `docs/PROJECT_STATUS.md` or `README.md`  
+• Evolution roadmap, platform/channel strategy → `docs/EVOLUTION_ROADMAP.md`  
 • Troubleshooting → Add to relevant existing doc, not new file  
 
 ### When to Create New Files
@@ -418,6 +419,8 @@ ONLY when:
 • **One topic, one file** (when possible)  
 • **Clear sections, not many files**  
 • **Update existing docs, don't duplicate**  
+• **Platform & channel strategy (locked):** When documenting interfaces, clients, or future features, reflect the locked strategy: **no** third-party messaging (WhatsApp, Telegram, Discord, iMessage, Slack, etc.); **own Android app** planned; **no Mac** in current plan; setup wizard (when implemented) like OpenClaw, name **Siya**. Authoritative source: `docs/EVOLUTION_ROADMAP.md` §4.1.
+• **OpenClaw-inspired adoption:** Siya adopts/adapts OpenClaw-inspired capabilities (setup wizard, operator UX, tooling) where they align with Siya’s laws and strategy; product name remains Siya. Document this when updating roadmap-related or capability docs.
 
 Before creating a new doc file, ask:
 > "Can this information go in an existing file instead?"
@@ -477,6 +480,7 @@ Never silently rewrite files.
 • Deployment instructions → `docs/DEPLOYMENT.md` (includes GitHub setup, network access)  
 • AI model information → `docs/AI_MODEL_GUIDE.md` (setup, testing, optimization, selection)  
 • Project status → `docs/PROJECT_STATUS.md` or `README.md`  
+• Evolution roadmap, platform/channel strategy → `docs/EVOLUTION_ROADMAP.md`  
 • Troubleshooting → Add to relevant existing doc, not new file  
 
 ### When to Create New Files
@@ -492,6 +496,8 @@ ONLY when:
 • **One topic, one file** (when possible)  
 • **Clear sections, not many files**  
 • **Update existing docs, don't duplicate**  
+• **Platform & channel strategy (locked):** When documenting interfaces, clients, or future features, reflect the locked strategy: **no** third-party messaging; **own Android app** planned; **no Mac** in current plan; setup wizard like OpenClaw, name **Siya**. See `docs/EVOLUTION_ROADMAP.md` §4.1.
+• **OpenClaw-inspired adoption:** Siya adopts/adapts OpenClaw-inspired capabilities where law-aligned; product name remains Siya. Reflect this in roadmap and capability docs.
 
 Before creating a new doc file, ask:
 > "Can this information go in an existing file instead?"

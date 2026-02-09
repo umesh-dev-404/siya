@@ -3,6 +3,10 @@
 
 ---
 
+**Context:** Siya is adopting OpenClaw-inspired capabilities (e.g. setup wizard, operator workflows) where law-aligned; product name remains Siya. See `docs/EVOLUTION_ROADMAP.md`.
+
+---
+
 ## OVERVIEW
 
 This guide covers everything about the AI model in Siya:

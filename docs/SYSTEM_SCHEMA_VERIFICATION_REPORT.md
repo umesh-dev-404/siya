@@ -7,7 +7,7 @@
 
 ## EXECUTIVE SUMMARY
 
-The `system_schema.json` file has been comprehensively verified against all Siya documentation requirements. **All critical requirements are met, all Canonical System Laws are enforced, and the schema is ready for use as the binding contract.**
+The `system_schema.json` file has been comprehensively verified against all Siya documentation requirements. **All critical requirements are met, all Canonical System Laws are enforced, and the schema is ready for use as the binding contract.** OpenClaw-inspired capabilities adopted in Siya must conform to this schema; see `docs/EVOLUTION_ROADMAP.md`.
 
 ---
 

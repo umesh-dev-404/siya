@@ -4,6 +4,8 @@
 **Client:** PC (Powershell/CMD)
 **Server:** Raspberry Pi 5
 
+*Siya adopts OpenClaw-inspired capabilities where law-aligned; see `docs/EVOLUTION_ROADMAP.md`.*
+
 ---
 
 ## 1. Prerequisites

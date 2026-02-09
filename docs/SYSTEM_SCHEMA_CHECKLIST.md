@@ -2,6 +2,8 @@
 ## Project: Siya
 ## Purpose: Comprehensive verification of system_schema.json against all documentation requirements
 
+*OpenClaw-inspired capabilities adopted in Siya must conform to this schema; see `docs/EVOLUTION_ROADMAP.md`.*
+
 ---
 
 ## 1. FOUNDATIONAL REQUIREMENTS
