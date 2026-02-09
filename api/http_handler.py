@@ -66,6 +66,12 @@ class SiyaHTTPHandler(BaseHTTPRequestHandler):
                 logger.info(f"Health check response: {response}")
                 self._send_json_response(200, response)
                 logger.info("Health check response sent")
+            elif parsed_path.path == "/onboard/status":
+                # Onboarding status (CLI/Web parity, LAW 19)
+                response = self._api_server.handle_onboard_status() if self._api_server else {
+                    "onboarded": False,
+                }
+                self._send_json_response(200, response)
             else:
                 logger.warning(f"GET to unknown path: {parsed_path.path}")
                 self._send_json_response(404, {"status": "error", "message": "Not found"})
@@ -133,6 +139,26 @@ class SiyaHTTPHandler(BaseHTTPRequestHandler):
                         )
                     except Exception:
                         logger.error("Failed to send error response", exc_info=True)
+            elif parsed_path.path == "/onboard":
+                # Onboarding apply (CLI/Web parity, LAW 19). Requires confirm=true.
+                try:
+                    content_length = int(self.headers.get("Content-Length", 0))
+                    if content_length == 0:
+                        self._send_json_response(400, {"status": "error", "message": "Empty request body"})
+                        return
+                    body = self.rfile.read(content_length)
+                    request_data = json.loads(body.decode("utf-8"))
+                    if not self._api_server:
+                        self._send_json_response(500, {"status": "error", "message": "API server not initialized"})
+                        return
+                    response = self._api_server.handle_onboard_apply(request_data)
+                    self._send_json_response(200, response)
+                except json.JSONDecodeError as e:
+                    logger.error(f"Invalid JSON in /onboard: {e}")
+                    self._send_json_response(400, {"status": "error", "message": "Invalid JSON"})
+                except Exception as e:
+                    logger.error(f"POST /onboard failed: {e}", exc_info=True)
+                    self._send_json_response(500, {"status": "error", "message": "Internal server error"})
             else:
                 logger.warning(f"POST to unknown path: {parsed_path.path}")
                 self._send_json_response(404, {"status": "error", "message": "Not found"})

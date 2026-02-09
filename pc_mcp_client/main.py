@@ -232,13 +232,13 @@ def main(argv: list[str] | None = None) -> int:
             # Try to print just the explanation text if possible
             if "content" in result:
                 try:
-                     content_text = result["content"][0]["text"]
-                     data = json.loads(content_text)
-                     print(f"\nEXPLANATION:\n{data.get('explanation', content_text)}")
-                     return 0
-                except:
-                     pass
-            
+                    content_text = result["content"][0]["text"]
+                    data = json.loads(content_text)
+                    print(f"\nEXPLANATION:\n{data.get('explanation', content_text)}")
+                    return 0
+                except (KeyError, IndexError, json.JSONDecodeError, TypeError):
+                    pass
+
             _print_json(resp)
             return 0
 
@@ -257,7 +257,7 @@ def main(argv: list[str] | None = None) -> int:
                         data = json.loads(content_text)
                         print(f"Current Mode: {data.get('mode', 'UNKNOWN').upper()}")
                         return 0
-                    except:
+                    except (KeyError, IndexError, json.JSONDecodeError, TypeError):
                         pass
                 _print_json(resp)
             return 0
@@ -272,9 +272,9 @@ def main(argv: list[str] | None = None) -> int:
                     print(f"System Posture: {data.get('posture_level', 'UNKNOWN')}")
                     components = data.get('components', {})
                     for k, v in components.items():
-                         print(f" - {k}: {v}")
+                        print(f" - {k}: {v}")
                     return 0
-                except:
+                except (KeyError, IndexError, json.JSONDecodeError, TypeError):
                     pass
             _print_json(resp)
             return 0

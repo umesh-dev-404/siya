@@ -114,12 +114,12 @@ class TestOfflineFirstBehavior:
         """Test that sync operations don't fail when offline."""
         from sync.sync_manager import SyncManager
         from sync.supabase_client import SupabaseClient, SyncConfig
-        
+
         # Create unconfigured client (simulates offline)
         config = SyncConfig(supabase_url="", supabase_anon_key="")
         client = SupabaseClient(config=config)
         manager = SyncManager(supabase=client)
-        
+
         # Push should succeed (just nothing to do)
         result = manager.push(caller="orchestrator")
         assert result.success is True

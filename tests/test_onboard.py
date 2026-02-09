@@ -2,7 +2,7 @@
 
 import pytest
 
-from cli.onboard import ONBOARD_MARKER, get_marker_path, is_onboarded
+from cli.onboard import ONBOARD_MARKER, apply_onboarding, get_marker_path, is_onboarded
 
 
 class TestOnboardDetection:
@@ -23,3 +23,25 @@ class TestOnboardDetection:
         monkeypatch.setattr("cli.onboard._project_root", lambda: tmp_path)
         (tmp_path / ONBOARD_MARKER).write_text("onboarded\n")
         assert is_onboarded() is True
+
+
+class TestApplyOnboarding:
+    """apply_onboarding() writes .env and marker."""
+
+    def test_apply_creates_marker_and_env(self, tmp_path, monkeypatch):
+        """apply_onboarding() creates marker and .env with SIYA_DATA_DIR."""
+        monkeypatch.setattr("cli.onboard._project_root", lambda: tmp_path)
+        apply_onboarding(str(tmp_path / "data"), use_supabase=False)
+        assert (tmp_path / ONBOARD_MARKER).exists()
+        env = tmp_path / ".env"
+        assert env.exists()
+        content = env.read_text(encoding="utf-8")
+        assert "SIYA_DATA_DIR" in content
+
+    def test_apply_raises_on_empty_data_dir(self, tmp_path, monkeypatch):
+        """apply_onboarding() raises ValueError when data_dir is empty or blank."""
+        monkeypatch.setattr("cli.onboard._project_root", lambda: tmp_path)
+        with pytest.raises(ValueError, match="required"):
+            apply_onboarding("")
+        with pytest.raises(ValueError, match="required"):
+            apply_onboarding("   ")

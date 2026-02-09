@@ -638,6 +638,75 @@ code,
     border-top: var(--border-width) solid var(--border-color);
 }
 
+/* ===== ONBOARDING OVERLAY (CLI/Web parity) ===== */
+.onboarding-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.75);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.onboarding-card {
+    background: var(--bg-secondary);
+    border: var(--border-width) solid var(--border-color);
+    box-shadow: var(--shadow-hard-lg);
+    padding: var(--space-xl);
+    max-width: 440px;
+    width: 90%;
+}
+
+.onboarding-card h2 {
+    margin-bottom: var(--space-sm);
+}
+
+.onboarding-desc {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    margin-bottom: var(--space-lg);
+}
+
+.onboarding-form label {
+    display: block;
+    margin-top: var(--space-md);
+    margin-bottom: var(--space-xs);
+    font-weight: 600;
+}
+
+.onboarding-form input[type="text"],
+.onboarding-form input[type="password"] {
+    width: 100%;
+}
+
+.onboarding-check {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+}
+
+.onboarding-check input {
+    width: auto;
+}
+
+.onboarding-actions {
+    margin-top: var(--space-lg);
+}
+
+.onboarding-message {
+    margin-top: var(--space-md);
+    font-size: 0.9rem;
+}
+
+.onboarding-message.error {
+    color: var(--accent-error);
+}
+
+.onboarding-message.success {
+    color: var(--accent-success);
+}
+
 /* ===== NOTIFICATIONS PANEL ===== */
 .notifications-panel {
     position: fixed;

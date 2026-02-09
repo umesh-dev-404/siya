@@ -5,6 +5,7 @@ Per Phase 19: Full-screen terminal UI using Textual.
 Provides responsive layout with sidebar, output panel, and input bar.
 """
 
+import logging
 from typing import Any, Dict, List, Optional
 
 from textual.app import App, ComposeResult
@@ -314,9 +315,9 @@ class SiyaApp(App):
                 
                 color = "green" if mode == "INFORMATIONAL" else "yellow" if mode == "OPERATIONAL" else "red"
                 self.call_from_thread(self._update_widget, "#mode-status", f"Mode: [{color}]{mode}[/{color}]")
-        except:
-            pass
-            
+        except Exception as e:
+            logging.getLogger(__name__).debug("refresh_status get_user_intent_mode failed: %s", e)
+
         # Get Posture
         try:
             resp = self.client.tools_call("get_system_posture", {})
@@ -328,29 +329,29 @@ class SiyaApp(App):
                 
                 color = "green" if level == "SAFE" else "yellow" if level == "DEGRADED" else "red"
                 self.call_from_thread(self._update_widget, "#posture-status", f"Posture: [{color}]{level}[/{color}]")
-        except:
-            pass
+        except Exception as e:
+            logging.getLogger(__name__).debug("refresh_status get_system_posture failed: %s", e)
 
     def _safe_json_load(self, text: str) -> Dict[str, Any]:
         try:
             import json
             return json.loads(text)
-        except:
+        except (TypeError, ValueError):
             return {}
 
     def _update_widget(self, widget_id: str, content: str) -> None:
         try:
             self.query_one(widget_id, Static).update(content)
-        except:
-            pass
+        except Exception as e:
+            logging.getLogger(__name__).debug("_update_widget %s failed: %s", widget_id, e)
     
     def log_output(self, message: str) -> None:
         """Add message to output panel."""
         try:
             output = self.query_one("#output", OutputPanel)
             output.write(message)
-        except Exception:
-            pass
+        except Exception as e:
+            logging.getLogger(__name__).debug("log_output failed: %s", e)
     
     @on(Tree.NodeSelected)
     async def on_tree_select(self, event: Tree.NodeSelected) -> None:

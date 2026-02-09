@@ -31,6 +31,7 @@ const TOOL_CATEGORIES = {
 let state = {
     connected: false,
     initialized: false,
+    onboarded: true, // assume true until we fetch /onboard/status
     tools: [],
     selectedTool: null,
     pendingConfirmation: null,
@@ -68,6 +69,14 @@ function cacheElements() {
     elements.postureWidget = document.getElementById('posture-widget');
     elements.postureDot = document.getElementById('posture-dot');
     elements.postureText = document.getElementById('posture-text');
+    elements.onboardingOverlay = document.getElementById('onboarding-overlay');
+    elements.onboardDataDir = document.getElementById('onboard-data-dir');
+    elements.onboardUseSupabase = document.getElementById('onboard-use-supabase');
+    elements.onboardSupabaseFields = document.getElementById('onboard-supabase-fields');
+    elements.onboardSupabaseUrl = document.getElementById('onboard-supabase-url');
+    elements.onboardSupabaseKey = document.getElementById('onboard-supabase-key');
+    elements.onboardApply = document.getElementById('onboard-apply');
+    elements.onboardMessage = document.getElementById('onboard-message');
 }
 
 function bindEvents() {
@@ -89,6 +98,14 @@ function bindEvents() {
     elements.modeSelect?.addEventListener('change', async (e) => {
         await setIntentMode(e.target.value);
     });
+
+    // Onboarding (CLI/Web parity)
+    elements.onboardUseSupabase?.addEventListener('change', () => {
+        if (elements.onboardSupabaseFields) {
+            elements.onboardSupabaseFields.style.display = elements.onboardUseSupabase?.checked ? 'block' : 'none';
+        }
+    });
+    elements.onboardApply?.addEventListener('click', applyOnboarding);
 }
 
 // ===== CONNECTION =====
@@ -104,6 +121,15 @@ async function checkConnection() {
             setConnected(data.status === 'healthy');
 
             if (state.connected && !state.initialized) {
+                const statusRes = await fetch(`${API_BASE_URL}/onboard/status`, { method: 'GET', headers: { 'Accept': 'application/json' } });
+                if (statusRes.ok) {
+                    const statusData = await statusRes.json();
+                    state.onboarded = statusData.onboarded === true;
+                }
+                if (!state.onboarded) {
+                    showOnboardingOverlay();
+                    return;
+                }
                 await initializeMCP();
             }
         } else {
@@ -111,6 +137,55 @@ async function checkConnection() {
         }
     } catch (error) {
         setConnected(false);
+    }
+}
+
+function showOnboardingOverlay() {
+    if (elements.onboardingOverlay) elements.onboardingOverlay.style.display = 'flex';
+}
+
+function hideOnboardingOverlay() {
+    if (elements.onboardingOverlay) elements.onboardingOverlay.style.display = 'none';
+}
+
+async function applyOnboarding() {
+    const msgEl = elements.onboardMessage;
+    if (!msgEl) return;
+    msgEl.textContent = '';
+    msgEl.classList.remove('error', 'success');
+
+    const dataDir = (elements.onboardDataDir?.value || 'data').trim() || 'data';
+    const useSupabase = elements.onboardUseSupabase?.checked === true;
+    const supabaseUrl = (elements.onboardSupabaseUrl?.value || '').trim();
+    const supabaseKey = (elements.onboardSupabaseKey?.value || '').trim();
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/onboard`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+            body: JSON.stringify({
+                confirm: true,
+                data_dir: dataDir,
+                use_supabase: useSupabase,
+                supabase_url: supabaseUrl,
+                supabase_key: supabaseKey
+            })
+        });
+        const data = await response.json();
+
+        if (data.status === 'success') {
+            msgEl.textContent = 'Config written. Reloading…';
+            msgEl.classList.add('success');
+            state.onboarded = true;
+            hideOnboardingOverlay();
+            await initializeMCP();
+        } else {
+            msgEl.textContent = data.message || 'Failed to apply onboarding';
+            msgEl.classList.add('error');
+        }
+    } catch (err) {
+        msgEl.textContent = err.message || 'Network error';
+        msgEl.classList.add('error');
     }
 }
 

@@ -16,6 +16,7 @@ Features:
 
 import json
 import logging
+import os
 import sqlite3
 import threading
 import uuid
@@ -24,6 +25,12 @@ from datetime import datetime, timezone
 from enum import Enum
 from pathlib import Path
 from typing import Any, Final, Optional
+
+
+def _default_sync_queue_db_path() -> Path:
+    """Sync queue DB path: SIYA_DATA_DIR/sync_queue.db when set (align with onboarding), else data/sync_queue.db."""
+    data_dir = os.getenv("SIYA_DATA_DIR", "data")
+    return Path(data_dir).expanduser() / "sync_queue.db"
 
 logger = logging.getLogger(__name__)
 
@@ -138,7 +145,7 @@ class SyncQueue:
     LAW 16: Offline-first (queue locally, sync when available).
     """
 
-    db_path: Path = field(default_factory=lambda: Path("data/sync_queue.db"))
+    db_path: Path = field(default_factory=_default_sync_queue_db_path)
     device_id: str = ""
     max_retries: int = 3
     _conn: Optional[sqlite3.Connection] = field(default=None, repr=False)

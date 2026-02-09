@@ -59,18 +59,13 @@ def explain_decision(
         )
     """
     try:
-        # Get database connection
-        database = Database()
-        
-        # Create explanation service
-        service = ExplanationService(database)
-        
-        # Generate explanation
-        explanation = service.explain_decision(
-            request_id=request_id,
-            decision_type=decision_type,
-        )
-        
+        with Database() as database:
+            service = ExplanationService(database)
+            explanation = service.explain_decision(
+                request_id=request_id,
+                decision_type=decision_type,
+            )
+
         logger.info(
             f"Generated explanation for request {request_id}",
             extra={
@@ -79,12 +74,12 @@ def explain_decision(
                 "confidence": explanation.get("confidence"),
             },
         )
-        
+
         return {
             "status": "ok",
             "explanation": explanation,
         }
-        
+
     except ExplanationUnavailable as e:
         logger.warning(f"Explanation unavailable: {e}")
         return {

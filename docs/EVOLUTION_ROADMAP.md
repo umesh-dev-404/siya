@@ -538,6 +538,7 @@ Guided first-run setup for Siya (OpenClaw-inspired): CLI wizard that collects da
 - [x] Marker file created after successful write; first-run detection documented.
 - [x] No tool execution from wizard; no change to orchestrator/MCP from wizard.
 - [x] Existing tests pass.
+- [x] **CLI/Web parity (LAW 19, dev-rules §6.6):** Onboarding available via API (`GET /onboard/status`, `POST /onboard`) and web UI (wizard shown when not onboarded); core logic in `cli.onboard` shared by CLI and API.
 
 ### 18.4 Out of scope for first slice
 

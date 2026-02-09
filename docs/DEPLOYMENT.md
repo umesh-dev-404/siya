@@ -277,16 +277,12 @@ print(f'State consistent: {result[\"consistent\"]}')
 
 ### Onboarding (first-run setup)
 
-Optional guided setup: run the onboarding wizard to set data directory and optional Supabase. Writes `.env` and a marker file only after you confirm (LAW 1).
+Optional guided setup: set data directory and optional Supabase. Writes `.env` and a marker file only after you confirm (LAW 1). **CLI and Web are in sync** (dev-rules §6.6, LAW 19): the same flow is available from both.
 
-```bash
-# From project root (or after pip install)
-python -m cli.onboard
-# or
-siya-onboard
-```
+- **CLI:** `python -m cli.onboard` or `siya-onboard` (re-run with `--force` to update choices).
+- **Web:** Open the web interface (port 3000); if not yet onboarded, the setup wizard is shown automatically. Complete the form and click "Write config and finish".
 
-Re-run with `siya-onboard --force` to update choices. See `docs/EVOLUTION_ROADMAP.md` §18.
+API: `GET /onboard/status` returns `{ "onboarded": true|false }`. `POST /onboard` with `{ "confirm": true, "data_dir", "use_supabase", "supabase_url?", "supabase_key?" }` applies config (same logic as CLI). See `docs/EVOLUTION_ROADMAP.md` §18.
 
 ### Environment Variables
 
@@ -294,7 +290,7 @@ Create `.env` file or set environment variables (or use onboarding above).
 **Note:** The system automatically loads `.env` files using `python-dotenv`.
 
 ```bash
-# Data directory (onboarding sets this; DB path is <SIYA_DATA_DIR>/siya.db; default ./siya.db if unset)
+# Data directory (onboarding sets this). When set, used by: memory DB, sync L2 DB, and sync queue DB (all under <SIYA_DATA_DIR>/). When unset: memory uses cwd (siya.db), sync uses data/ (siya.db, sync_queue.db).
 export SIYA_DATA_DIR=/opt/siya/data
 
 # Log level

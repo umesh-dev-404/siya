@@ -19,6 +19,31 @@
 </head>
 
 <body>
+    <!-- ===== ONBOARDING OVERLAY (CLI/Web parity, LAW 19) ===== -->
+    <div class="onboarding-overlay" id="onboarding-overlay" style="display: none;">
+        <div class="onboarding-card">
+            <h2>Siya setup</h2>
+            <p class="onboarding-desc">Set data directory and optional Supabase. Same as CLI <code>siya-onboard</code>.</p>
+            <div class="onboarding-form">
+                <label for="onboard-data-dir">Data directory</label>
+                <input type="text" id="onboard-data-dir" class="input" value="data" placeholder="data">
+                <label class="onboarding-check">
+                    <input type="checkbox" id="onboard-use-supabase"> Use Supabase for cloud sync
+                </label>
+                <div id="onboard-supabase-fields" style="display: none;">
+                    <label for="onboard-supabase-url">SUPABASE_URL</label>
+                    <input type="text" id="onboard-supabase-url" class="input" placeholder="https://xxx.supabase.co">
+                    <label for="onboard-supabase-key">SUPABASE_KEY (anon key)</label>
+                    <input type="password" id="onboard-supabase-key" class="input" placeholder="anon key">
+                </div>
+                <div class="onboarding-actions">
+                    <button class="btn btn-success" id="onboard-apply">Write config and finish</button>
+                </div>
+                <p id="onboard-message" class="onboarding-message"></p>
+            </div>
+        </div>
+    </div>
+
     <!-- ===== HEADER ===== -->
     <header class="header">
         <div class="header-logo">

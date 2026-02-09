@@ -18,6 +18,7 @@ Features:
 """
 
 import logging
+import os
 import sqlite3
 import threading
 from dataclasses import dataclass, field
@@ -25,6 +26,12 @@ from datetime import datetime, timezone
 from enum import Enum
 from pathlib import Path
 from typing import Any, Final, Optional
+
+
+def _default_l2_db_path() -> Path:
+    """L2 DB path: SIYA_DATA_DIR/siya.db when set (align with onboarding), else data/siya.db."""
+    data_dir = os.getenv("SIYA_DATA_DIR", "data")
+    return Path(data_dir).expanduser() / "siya.db"
 
 from sync.supabase_client import SupabaseClient, get_supabase_client
 from sync.sync_queue import (
@@ -89,7 +96,7 @@ class SyncManager:
 
     supabase: SupabaseClient = field(default_factory=get_supabase_client)
     queue: SyncQueue = field(default_factory=get_sync_queue)
-    l2_db_path: Path = field(default_factory=lambda: Path("data/siya.db"))
+    l2_db_path: Path = field(default_factory=_default_l2_db_path)
     device_id: str = ""
 
     _status: SyncStatus = field(default=SyncStatus.IDLE)
@@ -503,6 +510,10 @@ class SyncManager:
             "queue": queue_stats,
             "device_id": self.device_id,
         }
+
+    def close(self) -> None:
+        """Close queue database connection. Call when done with this manager (e.g. in tests)."""
+        self.queue.close()
 
 
 # Singleton instance

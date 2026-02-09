@@ -69,6 +69,36 @@ def _write_env(updates: dict[str, str]) -> None:
     logger.info("Onboarding config write: path=%s keys_written=%s", str(path), list(updates.keys()))
 
 
+def apply_onboarding(
+    data_dir: str,
+    use_supabase: bool = False,
+    supabase_url: str = "",
+    supabase_key: str = "",
+) -> None:
+    """
+    Apply onboarding config (write .env and marker). Shared by CLI wizard and API.
+    Per LAW 1: caller must have obtained explicit user confirmation before calling.
+
+    Args:
+        data_dir: Data directory path (where Siya stores DB).
+        use_supabase: Whether to write Supabase env vars.
+        supabase_url: SUPABASE_URL (used only if use_supabase).
+        supabase_key: SUPABASE_KEY (used only if use_supabase).
+
+    Raises:
+        ValueError: If data_dir is empty or invalid.
+    """
+    if not data_dir or not str(data_dir).strip():
+        raise ValueError("data_dir is required")
+    data_dir_resolved = str(Path(data_dir).expanduser().resolve())
+    updates: dict[str, str] = {"SIYA_DATA_DIR": data_dir_resolved}
+    if use_supabase:
+        updates["SUPABASE_URL"] = supabase_url or ""
+        updates["SUPABASE_KEY"] = supabase_key or ""
+    _write_env(updates)
+    get_marker_path().write_text("onboarded\n", encoding="utf-8")
+
+
 def run_wizard(*, force: bool = False) -> int:
     """
     Run onboarding wizard. Returns 0 on success, 1 on cancel/error.
@@ -117,13 +147,12 @@ def run_wizard(*, force: bool = False) -> int:
         print("Onboarding cancelled. No changes made.")
         return 0
 
-    # Write
-    updates: dict[str, str] = {"SIYA_DATA_DIR": data_dir}
-    if use_supabase:
-        updates["SUPABASE_URL"] = supabase_url
-        updates["SUPABASE_KEY"] = supabase_key
-    _write_env(updates)
-    get_marker_path().write_text("onboarded\n", encoding="utf-8")
+    # Write (shared logic with API)
+    try:
+        apply_onboarding(data_dir, use_supabase=use_supabase, supabase_url=supabase_url, supabase_key=supabase_key)
+    except (ValueError, OSError) as e:
+        print(f"Error: {e}")
+        return 1
     print("Config written. Marker file created. Onboarding complete.")
     return 0
 

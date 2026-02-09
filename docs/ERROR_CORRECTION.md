@@ -277,6 +277,34 @@ Maintained per dev-rules.md §8.2 (Error Correction Discipline). OpenClaw-inspir
 
 ---
 
+## Session: 2026-01-26 (Compliance scan and SIYA_DATA_DIR alignment)
+
+### Error 1: CLI onboard run_wizard did not return 1 on exception
+**Symptom:** Docstring states "Returns 0 on success, 1 on cancel/error"; if `apply_onboarding()` raised (e.g. ValueError, OSError), process exited with traceback instead of returning 1.  
+**Cause:** No try/except around `apply_onboarding()` in `run_wizard()`; exceptions propagated to caller.  
+**Solution:** Wrapped `apply_onboarding()` in try/except (ValueError, OSError); on exception print error and return 1.  
+**Files Modified:** `cli/onboard.py`
+
+### Error 2: Sync modules ignored SIYA_DATA_DIR
+**Symptom:** After onboarding sets `SIYA_DATA_DIR`, memory DB used it but sync L2 and sync_queue DBs used hardcoded `data/` under cwd — inconsistent data location.  
+**Cause:** `sync_manager.py` and `sync_queue.py` used `Path("data/siya.db")` and `Path("data/sync_queue.db")` with no env lookup.  
+**Solution:** Added `_default_l2_db_path()` and `_default_sync_queue_db_path()` that use `os.getenv("SIYA_DATA_DIR", "data")` with `expanduser()`; updated default_factory for `l2_db_path` and `db_path`.  
+**Files Modified:** `sync/sync_manager.py`, `sync/sync_queue.py`. `docs/DEPLOYMENT.md` updated to state SIYA_DATA_DIR is used by memory, sync L2, and sync queue.
+
+### Error 3: Bare except in pc_mcp_client (dev-rules §5.5)
+**Symptom:** Lint/compliance scan found bare `except:` in pc_mcp_client (TUI and main).  
+**Cause:** Catch-all used to avoid UI crash or fallback to JSON print; no exception type or logging.  
+**Solution:** Replaced with specific exception types where possible (`KeyError`, `IndexError`, `json.JSONDecodeError`, `TypeError` in main.py; `TypeError`, `ValueError` in _safe_json_load). Else `except Exception as e` with `logging.getLogger(__name__).debug(...)` so failures are visible and not silently swallowed.  
+**Files Modified:** `pc_mcp_client/tui/app.py`, `pc_mcp_client/main.py`
+
+### Error 4: ResourceWarning — unclosed sqlite3 connection (dev-rules §5.5)
+**Symptom:** `ResourceWarning: unclosed database in <sqlite3.Connection object at ...>` when running pytest (and optionally "Exception ignored while finalizing database connection").  
+**Cause:** (1) `tools/explanation_tools.py` created `Database()` and never closed it, so each `explain_decision` tool invocation leaked a connection. (2) Tests that create `SyncManager()` use the singleton `SyncQueue`, which opens a DB in `__post_init__`; that singleton is never closed at process exit.  
+**Solution:** (1) Use `with Database() as database:` in `explain_decision()` so the connection is always closed. (2) Add `SyncManager.close()` that calls `self.queue.close()` for callers that own their queue (e.g. long-running processes). Tests that use the default singleton do not call `manager.close()` to avoid closing the shared queue. A single ResourceWarning at interpreter shutdown from the singleton may still appear; it is a test-environment artifact.  
+**Files Modified:** `tools/explanation_tools.py`, `sync/sync_manager.py`
+
+---
+
 ## Template for Future Entries
 
 ### Error N: [Short Title]

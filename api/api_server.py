@@ -3,6 +3,7 @@ HTTP API Server
 
 HTTP API that mirrors CLI exactly.
 Per DIP Phase 6: API mirrors CLI exactly.
+Per dev-rules §6.6: CLI/Web parity — onboarding and other CLI flows exposed via API.
 
 Enforces:
 - LAW 1 — HUMAN SOVEREIGNTY (explicit confirmations)
@@ -10,12 +11,11 @@ Enforces:
 - Identical behavior to CLI
 """
 
-import json
 import logging
-from typing import Dict, Any
-from uuid import UUID
+from typing import Any, Dict
 
 from cli.cli import CLI
+from cli.onboard import apply_onboarding, is_onboarded
 
 logger = logging.getLogger(__name__)
 
@@ -100,3 +100,37 @@ class APIServer:
             "status": "healthy",
             "service": "siya-api",
         }
+
+    def handle_onboard_status(self) -> Dict[str, Any]:
+        """
+        Return onboarding status (same as CLI: marker file exists).
+        Per LAW 19: equivalent to CLI onboarding detection.
+        """
+        return {"onboarded": is_onboarded()}
+
+    def handle_onboard_apply(self, request_data: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Apply onboarding config. Requires confirm=true (LAW 1).
+        Delegates to cli.onboard.apply_onboarding (same logic as CLI wizard).
+        """
+        if request_data.get("confirm") is not True:
+            return {"status": "error", "message": "confirm is required and must be true (LAW 1)"}
+        data_dir = request_data.get("data_dir")
+        if not data_dir or not str(data_dir).strip():
+            return {"status": "error", "message": "data_dir is required"}
+        use_supabase = bool(request_data.get("use_supabase"))
+        supabase_url = str(request_data.get("supabase_url", "") or "")
+        supabase_key = str(request_data.get("supabase_key", "") or "")
+        try:
+            apply_onboarding(
+                data_dir=str(data_dir).strip(),
+                use_supabase=use_supabase,
+                supabase_url=supabase_url,
+                supabase_key=supabase_key,
+            )
+            return {"status": "success", "message": "Onboarding applied."}
+        except ValueError as e:
+            return {"status": "error", "message": str(e)}
+        except Exception as e:
+            logger.error(f"Onboard apply failed: {e}", exc_info=True)
+            return {"status": "error", "message": str(e)}

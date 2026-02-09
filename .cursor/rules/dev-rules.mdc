@@ -371,6 +371,16 @@ Never invent new UX rules without confirmation.
 
 ---
 
+### 6.6 CLI / Web parity (LAW 19)
+
+**Rule:** CLI logic and web application logic must be in sync. Everything that can be done in the CLI must be doable equivalently via the web application (through the API). Core behavior must live in shared code (e.g. API calls the same modules as CLI); the web UI is a client that invokes the API.
+
+- When adding a CLI-only flow (e.g. onboarding, a new command), add an equivalent API surface and web UI path so that the same outcome can be achieved from the web.
+- Do not duplicate business logic in the web layer; the API must delegate to the same core logic the CLI uses.
+- Reference: **LAW 19 — Interface Consistency** in `docs/CANONICAL SYSTEM LAWS.md`.
+
+---
+
 ## 7. TESTING RULES (BOTH SIDES)
 
 • Tests for behavior, not implementation  
