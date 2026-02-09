@@ -56,6 +56,8 @@ The `system_schema.json` file has been comprehensively verified against all Siya
   - Requires confirmation flag
   - Source tracking (user_direct, user_parsed, scheduled, automation)
   - Link to intent parsing output
+  - **capability_domain** (optional, Phase 24.1): file, memory, system, automation, content, integration, general — for display/filtering
+  - **side_effect_scope** (optional, Phase 24.2b): READ_ONLY, WRITE, EXECUTE, EXTERNAL — for display/filtering
   - additionalProperties: false
 
 ### ✅ 3. ERROR RESPONSE
@@ -210,8 +212,16 @@ The `system_schema.json` file has been comprehensively verified against all Siya
 - No law violations possible via schema
 
 ### ✅ LAW 18 — FORWARD COMPATIBILITY
-- Version field present (1.0.0)
+- Version field present (1.0.1)
 - Extensibility via versioning supported
+
+### ✅ Phase 24.1 — Capability domain (schema)
+- capability_domain definition added (enum); optional on tool_request
+- Matches mcp/tool_schema.CAPABILITY_DOMAINS; no execution/permission change
+
+### ✅ Phase 24.2b — Side-effect scope (schema)
+- side_effect_scope definition added (enum READ_ONLY, WRITE, EXECUTE, EXTERNAL); optional on tool_request
+- Matches mcp/tool_schema.SIDE_EFFECT_SCOPES; no execution/permission change; orchestrator populates from registry
 
 ---
 
@@ -311,8 +321,10 @@ The `system_schema.json` file:
 **Schema Enforcement Points:**
 - `mcp/request_validator.py` — Validates tool_request and intent_parsing_output
 - `orchestrator/execution_state.py` — Matches schema execution_state enum
-- `mcp/tool_schema.py` — PermissionLevel matches schema permission_level enum
-- `memory/database_schema.py` — MemoryTier matches schema memory_tier enum
+- `orchestrator/orchestrator.py` — Builds tool_request with optional capability_domain and side_effect_scope from tool registry (Phase 24.1, 24.2b)
+- `mcp/tool_schema.py` — PermissionLevel matches schema permission_level enum; capability_domain matches schema capability_domain enum (Phase 24.1); side_effect_scope matches schema side_effect_scope enum (Phase 24.2b)
+- `memory/database_schema.py` — MemoryTier matches schema memory_tier enum; L2 memory table includes Phase 22 columns (lineage_id, etc.)
+- `scripts/supabase_schema.sql` — L3 (Supabase) memory table aligned with database_schema.py; idempotent: ALTER TABLE ADD COLUMN IF NOT EXISTS for Phase 22 when upgrading; DROP POLICY IF EXISTS / DROP TRIGGER IF EXISTS before recreate so script is safe to re-run (SQL editor may warn "destructive" for DROP—policies/trigger are recreated immediately, no data loss)
 - `audit/audit_logger.py` — Event types match schema audit_log_entry.event_type enum
 - `ai/intent_parser.py` — Produces schema-compliant intent_parsing_output (LAW 3)
 - `ai/ai_interface.py` — Coordinates intent parsing with schema validation
@@ -320,7 +332,7 @@ The `system_schema.json` file:
 ---
 
 **Report Generated:** 2026-01-26
-**Last Updated:** 2026-01-28 (Deployment Complete & Sync Update)
+**Last Updated:** 2026-01-26 (Phase 24.1: capability_domain; Phase 24.2b: side_effect_scope in system_schema.json; verification report updated)
 **Schema Version:** 1.0.1 (LOCKED)
 **Verification Status:** ✅ COMPLETE
 **Implementation Status:** ✅ PRODUCTION BASELINE COMPLETE AND DEPLOYED

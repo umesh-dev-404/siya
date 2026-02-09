@@ -51,6 +51,8 @@ def make_log_query_tool() -> ToolSchema:
         permission_level=PermissionLevel.READ,
         requires_confirmation=False,
         category="system",
+        capability_domain="system",
+        side_effect_scope="READ_ONLY",
     )
 
 

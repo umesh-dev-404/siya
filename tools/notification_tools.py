@@ -261,6 +261,8 @@ NOTIFICATION_TOOL_SCHEMAS = [
             },
         },
         "handler": list_notifications,
+        "capability_domain": "system",
+        "side_effect_scope": "READ_ONLY",
     },
     {
         "name": "acknowledge_notification",
@@ -275,6 +277,8 @@ NOTIFICATION_TOOL_SCHEMAS = [
             },
         },
         "handler": acknowledge_notification,
+        "capability_domain": "system",
+        "side_effect_scope": "WRITE",
     },
     {
         "name": "acknowledge_all_notifications",
@@ -283,6 +287,8 @@ NOTIFICATION_TOOL_SCHEMAS = [
         "requires_confirmation": False,
         "parameters": {},
         "handler": acknowledge_all_notifications,
+        "capability_domain": "system",
+        "side_effect_scope": "WRITE",
     },
     {
         "name": "clear_notifications",
@@ -302,6 +308,8 @@ NOTIFICATION_TOOL_SCHEMAS = [
             },
         },
         "handler": clear_notifications,
+        "capability_domain": "system",
+        "side_effect_scope": "WRITE",
     },
     {
         "name": "send_notification",
@@ -331,5 +339,7 @@ NOTIFICATION_TOOL_SCHEMAS = [
             },
         },
         "handler": send_notification,
+        "capability_domain": "system",
+        "side_effect_scope": "EXTERNAL",
     },
 ]

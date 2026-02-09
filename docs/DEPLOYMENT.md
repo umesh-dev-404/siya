@@ -275,14 +275,27 @@ print(f'State consistent: {result[\"consistent\"]}')
 
 ## CONFIGURATION
 
+### Onboarding (first-run setup)
+
+Optional guided setup: run the onboarding wizard to set data directory and optional Supabase. Writes `.env` and a marker file only after you confirm (LAW 1).
+
+```bash
+# From project root (or after pip install)
+python -m cli.onboard
+# or
+siya-onboard
+```
+
+Re-run with `siya-onboard --force` to update choices. See `docs/EVOLUTION_ROADMAP.md` §18.
+
 ### Environment Variables
 
-Create `.env` file or set environment variables.
+Create `.env` file or set environment variables (or use onboarding above).
 **Note:** The system automatically loads `.env` files using `python-dotenv`.
 
 ```bash
-# Database path
-export SIYA_DB_PATH=/opt/siya/siya.db
+# Data directory (onboarding sets this; DB path is <SIYA_DATA_DIR>/siya.db; default ./siya.db if unset)
+export SIYA_DATA_DIR=/opt/siya/data
 
 # Log level
 export SIYA_LOG_LEVEL=INFO
@@ -863,6 +876,10 @@ sudo systemctl status siya
 2. Check permissions: `ls -la /opt/siya/siya.db`
 3. Check disk space: `df -h`
 
+### Optional: Supabase (L3) schema
+
+If using L3 memory sync, run `scripts/supabase_schema.sql` in the Supabase SQL Editor. The script is **idempotent** (safe to re-run): it adds missing Phase 22 columns (e.g. `lineage_id`) when the table already exists, and uses `DROP POLICY IF EXISTS` / `DROP TRIGGER IF EXISTS` before recreating RLS policies and the `updated_at` trigger. The SQL editor may warn "Query has destructive operation"—that refers to these DROP statements; each dropped object is recreated immediately on the next line. No table data is removed. See `docs/ERROR_CORRECTION.md` (Session 2026-01-26) and `memory/database_schema.py` for schema alignment.
+
 ---
 
 ## ROLLBACK PROCEDURE
@@ -876,7 +893,7 @@ If deployment fails:
 
 ---
 
-**Last Updated:** 2026-01-27
-**Baseline Version:** 1.0.0
+**Last Updated:** 2026-01-26
+**Baseline Version:** 1.0.1
 **Service Entry Point:** `service_main.py` (runs API server on port 8080 and web server on port 3000)
 **Deployment Status:** ✅ COMPLETED AND OPERATIONAL

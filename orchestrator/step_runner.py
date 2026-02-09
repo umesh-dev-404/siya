@@ -10,7 +10,7 @@ rollback on failure.
 
 import logging
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Callable, Optional
 from uuid import UUID, uuid4
 
@@ -96,7 +96,7 @@ class StepRunner:
 
         self._step_id = step_id
         self._current_state = ExecutionState.INIT
-        self._started_at = datetime.utcnow()
+        self._started_at = datetime.now(timezone.utc)
 
         logger.info(
             f"Step {self._step_id} started",
@@ -160,7 +160,7 @@ class StepRunner:
             )
 
         self.transition_to(ExecutionState.COMMIT)
-        completed_at = datetime.utcnow()
+        completed_at = datetime.now(timezone.utc)
 
         result = StepResult(
             step_id=self._step_id,
@@ -214,7 +214,7 @@ class StepRunner:
             )
 
         self.transition_to(ExecutionState.FAIL)
-        completed_at = datetime.utcnow()
+        completed_at = datetime.now(timezone.utc)
 
         result = StepResult(
             step_id=self._step_id,
@@ -260,7 +260,7 @@ class StepRunner:
 
         if ExecutionState.is_terminal(self._current_state.value):
             # Already terminal, return current state
-            completed_at = datetime.utcnow()
+            completed_at = datetime.now(timezone.utc)
             return StepResult(
                 step_id=self._step_id,
                 execution_state=self._current_state,
@@ -271,7 +271,7 @@ class StepRunner:
 
         old_state = self._current_state
         self.transition_to(ExecutionState.ABORT)
-        completed_at = datetime.utcnow()
+        completed_at = datetime.now(timezone.utc)
 
         result = StepResult(
             step_id=self._step_id,

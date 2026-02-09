@@ -12,7 +12,7 @@ This migration is non-breaking:
 
 import logging
 import sqlite3
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional
 
@@ -102,7 +102,7 @@ def migrate(db_path: str) -> bool:
             INSERT OR REPLACE INTO migrations (id, version, applied_at)
             VALUES (?, ?, ?)
             """,
-            (MIGRATION_ID, MIGRATION_VERSION, datetime.utcnow().isoformat() + "Z"),
+            (MIGRATION_ID, MIGRATION_VERSION, datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")),
         )
         
         conn.commit()

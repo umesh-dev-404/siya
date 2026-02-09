@@ -5,7 +5,7 @@ Phase 1 tests for core runtime skeleton.
 Tests deterministic execution, serial execution, and failure propagation.
 """
 
-from datetime import datetime
+from datetime import datetime, timezone
 from uuid import uuid4
 
 import pytest
@@ -72,7 +72,7 @@ class TestTaskQueue:
         task = Task(
             task_id=uuid4(),
             source=TaskSource.USER_DIRECT,
-            created_at=datetime.utcnow(),
+            created_at=datetime.now(timezone.utc),
         )
 
         assert queue.enqueue(task) is True
@@ -88,10 +88,10 @@ class TestTaskQueue:
         """Test that LAW 10 is enforced (only one task at a time)."""
         queue = TaskQueue()
         task1 = Task(
-            task_id=uuid4(), source=TaskSource.USER_DIRECT, created_at=datetime.utcnow()
+            task_id=uuid4(), source=TaskSource.USER_DIRECT, created_at=datetime.now(timezone.utc)
         )
         task2 = Task(
-            task_id=uuid4(), source=TaskSource.USER_DIRECT, created_at=datetime.utcnow()
+            task_id=uuid4(), source=TaskSource.USER_DIRECT, created_at=datetime.now(timezone.utc)
         )
 
         # Enqueue first task
@@ -112,7 +112,7 @@ class TestTaskQueue:
         """Test that dequeue fails if task is already executing."""
         queue = TaskQueue()
         task = Task(
-            task_id=uuid4(), source=TaskSource.USER_DIRECT, created_at=datetime.utcnow()
+            task_id=uuid4(), source=TaskSource.USER_DIRECT, created_at=datetime.now(timezone.utc)
         )
 
         queue.enqueue(task)

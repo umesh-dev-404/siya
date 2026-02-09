@@ -79,7 +79,15 @@
 - [x] requires_confirmation boolean
 - [x] Link to intent_parsing_output_id (if applicable)
 
-### 3.4 Law Compliance
+### 3.4 Capability Domain (Phase 24.1)
+- [x] capability_domain definition in schema (enum: file, memory, system, automation, content, integration, general)
+- [x] capability_domain optional on tool_request (for display/filtering; no execution change)
+
+### 3.5 Side-Effect Scope (Phase 24.2b)
+- [x] side_effect_scope definition in schema (enum: READ_ONLY, WRITE, EXECUTE, EXTERNAL)
+- [x] side_effect_scope optional on tool_request (for display/filtering; no execution change); orchestrator populates from registry
+
+### 3.6 Law Compliance
 - [x] LAW 4: Tool-only execution ✓
 - [x] LAW 5: Explicit permissions ✓
 - [x] LAW 13: Auditability (source tracking) ✓
@@ -275,6 +283,14 @@
 - [x] Enum: NONE, READ, WRITE, EXECUTE
 - [x] Tool-scoped permissions
 
+### 9.7 Capability Domain (Phase 24.1)
+- [x] Enum: file, memory, system, automation, content, integration, general
+- [x] Optional on tool_request; matches mcp/tool_schema.CAPABILITY_DOMAINS
+
+### 9.8 Side-Effect Scope (Phase 24.2b)
+- [x] Enum: READ_ONLY, WRITE, EXECUTE, EXTERNAL
+- [x] Optional on tool_request; matches mcp/tool_schema.SIDE_EFFECT_SCOPES; orchestrator populates from registry
+
 ---
 
 ## 10. CANONICAL SYSTEM LAWS MAPPING
@@ -459,9 +475,9 @@
 
 ---
 
-**Last Updated:** 2026-01-28
+**Last Updated:** 2026-01-26
 **Reviewed By:** System Schema Verification
-**Status:** ✅ COMPLETE
+**Status:** ✅ COMPLETE (Phase 24.1 capability_domain, Phase 24.2b side_effect_scope reflected in checklist)
 
 **Implementation Status:**
 - ✅ Phase 0: Schema created and verified
@@ -470,7 +486,10 @@
 - ✅ Phase 3: Schema used in memory (memory_tier, lineage structure)
 - ✅ Phase 5: Schema used in AI (intent_parsing_output validation)
 - ✅ Phase 6: Schema used in interfaces (API, CLI, Web)
-- ✅ Phase 9: Schema version locked (1.0.0)
+- ✅ Phase 9: Schema version locked (1.0.1)
+- ✅ Phase 24.1: capability_domain definition and optional tool_request property added
+- ✅ Phase 24.2b: side_effect_scope definition and optional tool_request property added; orchestrator populates from registry
+- ✅ L3/Supabase: `scripts/supabase_schema.sql` aligned with `memory/database_schema.py` (Phase 22: lineage_id, etc.); idempotent (ALTER ADD COLUMN IF NOT EXISTS; DROP POLICY/TRIGGER IF EXISTS then CREATE) so script safe to re-run
 - ✅ Deployment: Schema validated in production environment
 
 ---

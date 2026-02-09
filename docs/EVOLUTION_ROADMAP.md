@@ -287,7 +287,298 @@ When implementation starts for any phase:
 
 ---
 
-**Document version:** 1.1  
+## 11. MODE A — PHASE 24 DESIGN PROPOSAL (NON-BINDING)
+
+*This section is **PROPOSAL / NON-BINDING**. It is the output of MODE A (Design/Exploration) for the evolution flow A→B→C→D. Nothing here is implemented until MODE B locks scope and MODE C implements.*
+
+### 11.1 Phase 24 objective (from §6)
+
+**Phase 24 — Tool System v2 (Capability-Driven Tools):** Tools grouped into capability domains; explicit permissions and side-effect scope; preconditions/postconditions; dry-run/inspect. **Must not:** tool execution without orchestration; implicit permissions.
+
+### 11.2 Current state
+
+- **ToolSchema** (`mcp/tool_schema.py`): `name`, `description`, `input_schema`, `output_schema`, `permission_level`, `requires_confirmation`, `category`, `version`. No capability domain or side-effect scope.
+- **ToolRegistry** (`mcp/tool_registry.py`): Static registry; lock after bootstrap. LAW 4, 6 enforced.
+- **Tools** (`tools/`): 26+ tools in categories (file, memory, system, automation, etc.) via `category` field.
+
+### 11.3 Proposal: first slice (24.1) to reduce risk
+
+**Option A — Minimal (recommended for first cycle):** Add **capability_domain** only.
+
+- **Scope:** Add optional `capability_domain: Optional[str]` to `ToolSchema` (e.g. `"file"`, `"memory"`, `"system"`, `"automation"`, `"content"`, `"integration"`). Populate from existing `category` where present; default `"general"` for uncategorized. No change to execution path; no new permissions logic. Schema and registry only.
+- **Rationale:** Establishes the domain concept without behavior change. Reversible. Enables later Phase 24 work (preconditions, dry-run) to be domain-scoped.
+- **Laws:** LAW 4, 6 unchanged. No new law.
+
+**Option B — Domain + side-effect scope:** Option A plus add **side_effect_scope** enum to ToolSchema (`READ_ONLY` | `WRITE` | `EXECUTE` | `EXTERNAL`), derived from current `permission_level` and tool semantics. Still no execution-path change in 24.1; descriptive only.
+
+**Option C — Full Phase 24:** Capability domains, side-effect scope, preconditions/postconditions schema, dry-run/inspect modes. Large; better as multiple slices (24.1, 24.2, 24.3).
+
+### 11.4 Dependencies and risks
+
+- **Dependencies:** None for Option A. Existing tests (tool registry, MCP) should pass unchanged if domain is optional and backward-compatible.
+- **Risks:** Option A — low. Option B — slight schema drift if side_effect_scope and permission_level ever diverge. Option C — high scope; recommend slicing.
+- **Blind spots:** Dry-run and preconditions will require orchestrator and MCP contract changes; defer to 24.2+.
+
+### 11.5 Suggested next step (MODE B)
+
+Lock **Phase 24.1 — Capability domain (schema + registry only)** as the first implementation slice: add `capability_domain` to ToolSchema and populate from category; update `system_schema.json` if tool_request or tool listing exposes it; no execution or permission logic change. Then proceed to MODE B (specification) to lock exact fields and exit criteria.
+
+---
+
+## 12. MODE B — LOCKED SPECIFICATION: PHASE 24.1 (BINDING)
+
+*The following scope is **locked** after MODE B. MODE C implementation must conform to this specification. Any change requires explicit approval.*
+
+### 12.1 Phase 24.1 — Capability domain (schema + registry only)
+
+**Objective:** Introduce **capability_domain** for tools so that tools are grouped by domain. No change to execution, permissions, or orchestration behavior.
+
+### 12.2 Locked scope
+
+| Item | Specification |
+|------|----------------|
+| **ToolSchema** | Add optional field `capability_domain: Optional[str] = None`. Allowed values: `"file"`, `"memory"`, `"system"`, `"automation"`, `"content"`, `"integration"`, `"general"`. If absent, treat as `"general"`. |
+| **Population** | When registering tools, set `capability_domain` from existing `category` where mapping is obvious (e.g. category `"file"` → domain `"file"`); otherwise `"general"`. |
+| **Registry** | No change to registry lock or registration API. Registry continues to store ToolSchema; new field is optional and backward-compatible. |
+| **system_schema.json** | Optional update applied: added `capability_domain` definition (enum) and optional property on `tool_request`; verification report and checklist updated. |
+| **Execution path** | No change. Orchestrator and MCP do not branch on capability_domain. |
+| **Laws** | LAW 4, 6 unchanged. No new law. |
+
+### 12.3 Exit criteria
+
+- [x] `ToolSchema` in `mcp/tool_schema.py` has `capability_domain: Optional[str] = None` with allowed values as above.
+- [x] All tools registered in `tools/tool_registration.py` (and any other registration sites) pass a `capability_domain` consistent with their category (or `"general"`).
+- [x] Existing tests pass (tool registry, MCP, phase 11 tool tests).
+- [x] No new tests required for 24.1 unless a test explicitly asserts tool schema shape; then update assertion to allow capability_domain.
+
+*Phase 24.1 implemented 2026-01-26. See `docs/PHASE_COMPLETION_REPORTS/PHASE_24.1_COMPLETION_STATUS.md`.*
+
+### 12.4 Out of scope for 24.1
+
+- side_effect_scope, preconditions, postconditions, dry-run, inspect. (Defer to 24.2+.)
+- Changes to orchestration or permission logic.
+- Changes to system_schema.json tool_request or tool execution flow.
+
+---
+
+## 13. MODE A — PHASE 24.2 DESIGN PROPOSAL (NON-BINDING)
+
+*This section is **PROPOSAL / NON-BINDING**. Output of MODE A (Design/Exploration) for the next evolution slice. Nothing here is implemented until MODE B locks scope and MODE C implements.*
+
+### 13.1 Phase 24.2 objective (from §11, §12.4)
+
+Introduce **side-effect scope** for tools so that tools are explicitly classified by the kind of side effect they can cause. Descriptive only in 24.2: no execution or permission logic change (same constraint as 24.1).
+
+### 13.2 Current state (post–Phase 24.1)
+
+- **ToolSchema** has `capability_domain` (optional), `permission_level` (NONE, READ, WRITE, EXECUTE), `requires_confirmation`.
+- **tool_request** in system_schema.json has optional `capability_domain`; orchestrator populates it from registry.
+- No explicit "side-effect scope" field; permission_level is the closest.
+
+### 13.3 Proposal: first slice (24.2) options
+
+**Option 24.2a — side_effect_scope only (recommended for first cycle):**
+
+- **Scope:** Add optional `side_effect_scope: Optional[str] = None` to ToolSchema. Allowed values: `"READ_ONLY"`, `"WRITE"`, `"EXECUTE"`, `"EXTERNAL"`. Populate from existing `permission_level` and tool semantics (e.g. READ → READ_ONLY, WRITE → WRITE, EXECUTE → EXECUTE; tools that call network/OS get EXTERNAL). No change to execution path; no new permission checks. Schema and registry only; optional on tool_request in system_schema if we want clients to display it.
+- **Rationale:** Establishes side-effect classification without behavior change. Enables future dry-run or confirmation UX to be scope-aware. Reversible.
+- **Risks:** Schema drift if side_effect_scope and permission_level ever diverge; keep them aligned by derivation from permission_level + tool name/semantics.
+
+**Option 24.2b — side_effect_scope + system_schema + orchestrator:**
+
+- Option 24.2a plus: add `side_effect_scope` definition to system_schema.json and optional property on tool_request; orchestrator populates it when building tool_request (same pattern as capability_domain).
+- **Rationale:** Full contract and API consistency for clients (Web, TUI, CLI) to show or filter by side-effect scope.
+
+**Option 24.2c — Defer Phase 24.2:**
+
+- Do not implement side_effect_scope now. Move to another track (e.g. onboarding wizard, operator UX) and return to Phase 24.2 later.
+
+### 13.4 Dependencies and risks
+
+- **Dependencies:** Phase 24.1 complete. Existing tests should pass if field is optional.
+- **Risks:** 24.2a/24.2b — low. Keeping side_effect_scope derived from permission_level and tool semantics avoids divergence.
+- **Blind spots:** Preconditions, postconditions, dry-run remain out of scope for 24.2; they require orchestrator/MCP contract changes (24.3+).
+
+### 13.5 Suggested next step (MODE B)
+
+If you want to proceed with Phase 24.2: choose **24.2a** (schema + registry only) or **24.2b** (+ system_schema + orchestrator). Then MODE B will lock the chosen scope (allowed values, derivation rules, exit criteria). After your approval of the locked spec, MODE C implements; then MODE D reviews.
+
+If you prefer to **defer 24.2** (Option 24.2c), say so and we can run MODE A for a different phase (e.g. onboarding wizard, operator doctor UX) instead.
+
+---
+
+## 14. MODE B — LOCKED SPECIFICATION: PHASE 24.2 (BINDING)
+
+*The following scope is **locked** for Phase 24.2 (Option 24.2a). MODE C implementation must conform. Any change requires explicit approval.*
+
+### 14.1 Phase 24.2 — Side-effect scope (schema + registry only)
+
+**Objective:** Introduce **side_effect_scope** for tools so that tools are explicitly classified by the kind of side effect they can cause. Descriptive only: no change to execution, permissions, or orchestration behavior.
+
+### 14.2 Locked scope
+
+| Item | Specification |
+|------|----------------|
+| **ToolSchema** | Add optional field `side_effect_scope: Optional[str] = None`. Allowed values: `"READ_ONLY"`, `"WRITE"`, `"EXECUTE"`, `"EXTERNAL"`. If absent, treat as `"READ_ONLY"`. |
+| **Population** | When registering tools, set `side_effect_scope` from `permission_level` and tool semantics: NONE/READ → `"READ_ONLY"`; WRITE → `"WRITE"`; EXECUTE → `"EXECUTE"` for local execution tools, `"EXTERNAL"` for tools that trigger sync, automation, or network/OS (e.g. trigger_sync, trigger_automation, speak, listen). |
+| **Registry** | No change to registry lock or API. New field optional and backward-compatible. |
+| **system_schema.json** | No change for 24.2a (optional in a later slice). |
+| **Orchestrator** | No change. Does not populate or branch on side_effect_scope in 24.2a. |
+| **Execution path** | No change. |
+| **Laws** | LAW 4, 6 unchanged. No new law. |
+
+### 14.3 Exit criteria
+
+- [x] `ToolSchema` in `mcp/tool_schema.py` has `side_effect_scope: Optional[str] = None` with allowed values READ_ONLY, WRITE, EXECUTE, EXTERNAL.
+- [x] All tools registered pass a `side_effect_scope` consistent with derivation rules above.
+- [x] Existing tests pass. No new tests required unless a test asserts tool schema shape; then update assertion.
+
+### 14.4 Out of scope for 24.2a
+
+- Adding side_effect_scope to system_schema.json or tool_request (defer to 24.2b or later).
+- Orchestrator populating side_effect_scope on tool_request.
+- Preconditions, postconditions, dry-run, inspect (24.3+).
+
+---
+
+## 15. MODE A — NEXT PHASE DESIGN PROPOSAL (NON-BINDING)
+
+*This section is **PROPOSAL / NON-BINDING**. Output of MODE A for the next evolution slice. Nothing here is implemented until MODE B locks scope and MODE C implements.*
+
+### 15.1 Current state (post–Phase 24.2 and 24.2b)
+
+- **ToolSchema** has `capability_domain`, `side_effect_scope` (optional), `permission_level`, `requires_confirmation`.
+- **tool_request** has optional `capability_domain` and `side_effect_scope`; orchestrator populates both from registry (Phase 24.1, 24.2b).
+- **L3 schema:** `scripts/supabase_schema.sql` is idempotent (Phase 22 columns, RLS policies, trigger); aligned with `memory/database_schema.py`.
+- No tool preconditions/postconditions, no dry-run or inspect in orchestrator/MCP.
+
+### 15.2 Candidate next phases
+
+| Option | Scope | Effort | Notes |
+|--------|--------|--------|--------|
+| **24.2b** | Add `side_effect_scope` to system_schema.json and orchestrator (populate on tool_request, same pattern as capability_domain) | Small | Natural follow-on to 24.2a; no execution change. |
+| **24.3** | Tool preconditions, postconditions, dry-run, inspect (orchestrator + MCP contract) | Large | Requires schema for pre/post, dry-run mode in execution path, LAW 2/4 alignment. |
+| **Onboarding wizard** | OpenClaw-inspired: guided first-run setup (config, paths, optional services), no autonomy | Medium | LAW 1, 2; explicit steps, user confirms each. |
+| **Operator doctor UX** | OpenClaw-inspired: health narrative, “doctor” checks (config, migrations, logs, connectivity), read-only diagnostics | Medium | LAW 23 alignment; no remediation without user action. |
+
+### 15.3 Suggested next step (MODE B)
+
+- ~~To **extend 24.2** with API/contract consistency: choose **24.2b**~~ — **Done.** Phase 24.2b complete (§16).
+- To **defer tool metadata** and invest in operator/onboarding UX: choose **Onboarding wizard** or **Operator doctor UX** and run MODE A in more detail for the chosen track, then MODE B lock.
+- To **invest in tool safety/audit** (dry-run, pre/post): choose **24.3** and run a focused MODE A for 24.3 (scope slice, risks, exit criteria) before MODE B.
+
+### 15.4 Next action
+
+Choose one of the three tracks above and say which to proceed with. Then MODE A will expand that track (scope, risks, exit criteria); after your approval, MODE B locks the spec and MODE C implements.
+
+---
+
+## 17. MODE A — ONBOARDING WIZARD DESIGN PROPOSAL (NON-BINDING)
+
+*This section is **PROPOSAL / NON-BINDING**. Output of MODE A for the Onboarding wizard track. Nothing here is implemented until MODE B locks scope and MODE C implements.*
+
+### 17.1 Objective
+
+OpenClaw-inspired **guided first-run setup** for Siya: a wizard that walks the user through initial configuration (paths, optional services, model location) with **explicit steps and user confirmation at each step**. No autonomous decisions; no execution without user approval. Product name remains **Siya**.
+
+### 17.2 Laws and constraints
+
+- **LAW 1 (Human sovereignty):** Every wizard step that writes config or state requires explicit user confirmation. No auto-apply.
+- **LAW 2 (No autonomous execution):** Wizard does not trigger tools or automations on its own; it only suggests and waits for user to confirm.
+- **LAW 4, 6:** Any persistent change goes through declared tools or explicit config write; no hidden paths.
+
+### 17.3 Candidate scope (pick one or subset for first slice)
+
+| Item | Description | Effort |
+|------|-------------|--------|
+| **Detection** | Detect “first run” (e.g. no config file or empty, or explicit “onboard” command). Skip wizard if already onboarded. | Small |
+| **Steps (minimal)** | (1) Welcome / what the wizard does; (2) Data directory path (where Siya stores DB, logs); (3) Optional: Supabase (L3) — use or skip; (4) Optional: AI model path (or use default); (5) Summary and “Apply” (writes config only after user confirms). | Medium |
+| **CLI entry** | e.g. `siya onboard` or `siya wizard` (or first run of `siya` prompts “Run onboarding?”). | Small |
+| **Persistence** | Write only to agreed config (e.g. `config/server_config.py` or env file); no tool execution. | Small |
+| **Idempotency** | User can re-run wizard to change choices; overwrites config with confirmation. | Small |
+
+### 17.4 Out of scope for this proposal
+
+- Operator doctor (health checks); separate track (§15).
+- 24.3 (dry-run, pre/post); separate track.
+- Web/TUI wizard UI (can be Phase 2 after CLI wizard exists).
+
+### 17.5 Risks and dependencies
+
+- **Risks:** Wizard logic must not bypass confirmation; config write must be explicit and logged (LAW 13). First-run detection must be reliable so wizard doesn’t re-run every time.
+- **Dependencies:** Existing config loading (e.g. `config/server_config.py`, `.env`); no new persistence layer.
+
+### 17.6 Suggested next step (MODE B)
+
+If you want to implement the Onboarding wizard: choose a **first slice** (e.g. detection + 2–3 steps: data path, optional Supabase, apply). Then MODE B will lock that slice (exit criteria, steps, config contract); MODE C implements; MODE D reviews. If you prefer **Operator doctor UX** or **24.3** first, say so and we expand that track instead.
+
+---
+
+## 18. MODE B — LOCKED SPECIFICATION: ONBOARDING WIZARD FIRST SLICE (BINDING)
+
+*The following scope is **locked** for the Onboarding wizard first slice. MODE C implementation must conform. Any change requires explicit approval.*
+
+### 18.1 Objective
+
+Guided first-run setup for Siya (OpenClaw-inspired): CLI wizard that collects data directory path and optional Supabase preference, then writes config only after explicit user confirmation. No autonomous execution; no tool invocation. Product name: **Siya**.
+
+### 18.2 Locked scope
+
+| Item | Specification |
+|------|----------------|
+| **Onboarded detection** | Consider onboarded if marker file exists. Marker: project root `.siya_onboarded` or `~/.siya/.onboarded`. Wizard can be re-run by user request (e.g. `siya onboard` again) to update choices. |
+| **CLI entry** | New entry point: `python -m cli.main onboard` or `siya onboard` (script). No change to existing interactive CLI unless we add `onboard` as subcommand. Prefer separate entry `cli/onboard.py` with `main()` and script `siya-onboard = "cli.onboard:main"`. |
+| **Steps (order)** | (1) Welcome — what the wizard does; (2) Data directory — path where Siya stores DB (default `data` relative to project root or `~/.siya`); (3) Optional Supabase — skip or enter URL + key (stored in .env); (4) Summary — show choices; (5) Confirm — "Write config? (y/n)"; only on y proceed. |
+| **Persistence** | On confirm: write or append to `.env` in project root (or user home `~/.siya` if no project root): `SIYA_DATA_DIR`, `SUPABASE_URL`, `SUPABASE_KEY` (optional). Create marker file so first-run detection works. Do not execute tools; do not start services. |
+| **Laws** | LAW 1: explicit confirm before any write. LAW 13: log that config was written (audit). LAW 2: no autonomous execution. |
+
+### 18.3 Exit criteria
+
+- [x] Wizard runnable via `python -m cli.onboard` or `siya-onboard`.
+- [x] Steps: welcome, data dir, optional Supabase, summary, confirm; config written only after confirm.
+- [x] Marker file created after successful write; first-run detection documented.
+- [x] No tool execution from wizard; no change to orchestrator/MCP from wizard.
+- [x] Existing tests pass.
+
+### 18.4 Out of scope for first slice
+
+- Web/TUI wizard UI.
+- Operator doctor or health checks.
+- Writing to config/server_config.py (use .env only for first slice).
+
+---
+
+## 16. MODE B — LOCKED SPECIFICATION: PHASE 24.2b (BINDING)
+
+*The following scope is **locked** for Phase 24.2b. MODE C implementation must conform. Any change requires explicit approval.*
+
+### 16.1 Phase 24.2b — side_effect_scope in system_schema + orchestrator
+
+**Objective:** Add `side_effect_scope` to the system contract and API so clients (Web, TUI, CLI) can display or filter by it. Same pattern as `capability_domain`. No change to execution or permission logic.
+
+### 16.2 Locked scope
+
+| Item | Specification |
+|------|----------------|
+| **system_schema.json** | Add definition `side_effect_scope` (type string, enum READ_ONLY, WRITE, EXECUTE, EXTERNAL). Add optional property `side_effect_scope` on `tool_request` with `$ref` to that definition. Description: optional; when present, may be used for display or filtering. |
+| **Orchestrator** | When building `tool_request` in `_intent_to_tool_request`, read `side_effect_scope` from tool registry (tool_schema.side_effect_scope). If not None, set `tool_request["side_effect_scope"] = tool_schema.side_effect_scope`. Same pattern as capability_domain. |
+| **Execution path** | No change. |
+| **Laws** | No change. |
+
+### 16.3 Exit criteria
+
+- [x] system_schema.json has `side_effect_scope` definition and optional `side_effect_scope` on tool_request.
+- [x] Orchestrator populates `side_effect_scope` on tool_request from registry when present.
+- [x] Existing tests pass.
+
+### 16.4 Out of scope for 24.2b
+
+- Preconditions, postconditions, dry-run, inspect (24.3+).
+- Any branch or logic that uses side_effect_scope for execution or permission decisions.
+
+---
+
+**Document version:** 1.9  
 **Last updated:** 2026-01-26  
-**Status:** Proposal (MODE A). Not binding until explicitly approved.  
-**Changelog (v1.1):** Channel strategy locked: no third-party messaging; own Android app planned; no Mac now. Setup wizard: like OpenClaw, name Siya. Added OpenClaw Windows (WSL2) research (§3.7) and platform/channel strategy (§4.1).
+**Status:** Phase 24.1, 24.2, 24.2b complete. §18 Onboarding wizard first slice implemented (MODE C). Next: MODE D review; or 24.3 / Operator doctor.  
+**Changelog (v1.9):** §18 MODE B locked, MODE C implemented: cli/onboard.py, siya-onboard script, SIYA_DATA_DIR in memory/database.py.  
+**Changelog (v1.8):** Added §17 MODE A — Onboarding wizard design proposal (non-binding); scope, laws, risks, suggested next step.

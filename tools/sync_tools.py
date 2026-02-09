@@ -136,6 +136,8 @@ SYNC_TOOL_SCHEMAS = [
         "requires_confirmation": False,
         "parameters": {},
         "handler": get_sync_status,
+        "capability_domain": "integration",
+        "side_effect_scope": "READ_ONLY",
     },
     {
         "name": "trigger_sync",
@@ -151,6 +153,8 @@ SYNC_TOOL_SCHEMAS = [
             },
         },
         "handler": trigger_sync,
+        "capability_domain": "integration",
+        "side_effect_scope": "EXTERNAL",
     },
     {
         "name": "clear_sync_queue",
@@ -165,5 +169,7 @@ SYNC_TOOL_SCHEMAS = [
             },
         },
         "handler": clear_sync_queue,
+        "capability_domain": "integration",
+        "side_effect_scope": "WRITE",
     },
 ]

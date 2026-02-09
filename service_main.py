@@ -161,6 +161,8 @@ def main() -> int:
                 output_schema={"type": "object"},
                 permission_level=PermissionLevel.READ,
                 requires_confirmation=False,
+                capability_domain="system",
+                side_effect_scope="READ_ONLY",
             )
         )
         tool_registry.register(
@@ -171,6 +173,8 @@ def main() -> int:
                 output_schema={"type": "object"},
                 permission_level=PermissionLevel.READ,
                 requires_confirmation=False,
+                capability_domain="system",
+                side_effect_scope="READ_ONLY",
             )
         )
         tool_registry.register(
@@ -189,6 +193,8 @@ def main() -> int:
                 output_schema={"type": "object"},
                 permission_level=PermissionLevel.READ,
                 requires_confirmation=False,
+                capability_domain="content",
+                side_effect_scope="READ_ONLY",
             )
         )
         tool_registry.register(
@@ -203,6 +209,8 @@ def main() -> int:
                 output_schema={"type": "object"},
                 permission_level=PermissionLevel.READ,
                 requires_confirmation=False,
+                capability_domain="integration",
+                side_effect_scope="READ_ONLY",
             )
         )
         tool_registry.register(
@@ -222,6 +230,8 @@ def main() -> int:
                 output_schema={"type": "object"},
                 permission_level=PermissionLevel.READ,
                 requires_confirmation=False,
+                capability_domain="integration",
+                side_effect_scope="READ_ONLY",
             )
         )
 
@@ -245,7 +255,7 @@ def main() -> int:
         ]
 
         for schema_dict in new_tool_schemas:
-            # Register schema
+            # Register schema (Phase 24.1: capability_domain from schema_dict or "general")
             tool_schema = ToolSchema(
                 name=schema_dict["name"],
                 description=schema_dict["description"],
@@ -253,6 +263,8 @@ def main() -> int:
                 output_schema={"type": "object"},
                 permission_level=PermissionLevel[schema_dict["permission_level"]],
                 requires_confirmation=schema_dict["requires_confirmation"],
+                capability_domain=schema_dict.get("capability_domain", "general"),
+                side_effect_scope=schema_dict.get("side_effect_scope"),
             )
             # Fix: input_schema in ToolSchema expects JSON Schema overlay, 
             # but schema_dict["parameters"] is likely a properties dict?

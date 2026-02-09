@@ -235,6 +235,8 @@ TIMER_TOOL_SCHEMAS = [
         "requires_confirmation": False,
         "parameters": {},
         "handler": list_scheduled_automations,
+        "capability_domain": "automation",
+        "side_effect_scope": "READ_ONLY",
     },
     {
         "name": "schedule_automation",
@@ -274,6 +276,8 @@ TIMER_TOOL_SCHEMAS = [
             },
         },
         "handler": schedule_automation,
+        "capability_domain": "automation",
+        "side_effect_scope": "EXECUTE",
     },
     {
         "name": "unschedule_automation",
@@ -288,6 +292,8 @@ TIMER_TOOL_SCHEMAS = [
             },
         },
         "handler": unschedule_automation,
+        "capability_domain": "automation",
+        "side_effect_scope": "WRITE",
     },
     {
         "name": "get_schedule_status",
@@ -302,6 +308,8 @@ TIMER_TOOL_SCHEMAS = [
             },
         },
         "handler": get_schedule_status,
+        "capability_domain": "automation",
+        "side_effect_scope": "READ_ONLY",
     },
     {
         "name": "enable_schedule",
@@ -316,6 +324,8 @@ TIMER_TOOL_SCHEMAS = [
             },
         },
         "handler": enable_schedule,
+        "capability_domain": "automation",
+        "side_effect_scope": "WRITE",
     },
     {
         "name": "disable_schedule",
@@ -330,5 +340,7 @@ TIMER_TOOL_SCHEMAS = [
             },
         },
         "handler": disable_schedule,
+        "capability_domain": "automation",
+        "side_effect_scope": "WRITE",
     },
 ]

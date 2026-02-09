@@ -9,7 +9,7 @@ Per DIP Phase 2: Permission enforcement and confirmation gating.
 
 import logging
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from typing import Dict, Optional
 from uuid import UUID, uuid4
@@ -96,7 +96,7 @@ class PolicyEngine:
             Phase 2: All tools require confirmation if requires_confirmation is True.
             In later phases, actual permission checking logic will be implemented.
         """
-        checked_at = datetime.utcnow()
+        checked_at = datetime.now(timezone.utc)
 
         # LAW 5: Default stance is deny
         # Phase 2: Simplified logic - if tool requires confirmation, return REQUIRES_CONFIRMATION

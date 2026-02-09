@@ -74,6 +74,8 @@ def make_file_write_tool() -> ToolSchema:
         permission_level=PermissionLevel.WRITE,
         requires_confirmation=True,  # LAW 1: Human sovereignty
         category="file",
+        capability_domain="file",
+        side_effect_scope="WRITE",
     )
 
 

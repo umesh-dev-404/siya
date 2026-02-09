@@ -51,6 +51,8 @@ def make_memory_read_tool() -> ToolSchema:
         permission_level=PermissionLevel.READ,
         requires_confirmation=False,
         category="memory",
+        capability_domain="memory",
+        side_effect_scope="READ_ONLY",
     )
 
 

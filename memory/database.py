@@ -6,6 +6,7 @@ Per DIP Phase 3: SQLite runtime memory (WAL enabled).
 """
 
 import logging
+import os
 import sqlite3
 from pathlib import Path
 from typing import Optional
@@ -13,6 +14,14 @@ from typing import Optional
 from memory.database_schema import get_all_indexes, get_all_schemas
 
 logger = logging.getLogger(__name__)
+
+
+def _default_db_path() -> str:
+    """Default DB path: SIYA_DATA_DIR/siya.db if set, else siya.db (cwd)."""
+    data_dir = os.getenv("SIYA_DATA_DIR")
+    if data_dir:
+        return str(Path(data_dir).expanduser() / "siya.db")
+    return "siya.db"
 
 
 class Database:
@@ -25,14 +34,15 @@ class Database:
     - Persistent, queryable logs
     """
 
-    def __init__(self, db_path: str = "siya.db") -> None:
+    def __init__(self, db_path: Optional[str] = None) -> None:
         """
         Initialize database connection.
 
         Args:
-            db_path: Path to SQLite database file
+            db_path: Path to SQLite database file. If None, uses _default_db_path() (SIYA_DATA_DIR/siya.db or siya.db).
         """
-        self._db_path = Path(db_path)
+        raw = db_path if db_path is not None else _default_db_path()
+        self._db_path = Path(raw)
         self._connection: Optional[sqlite3.Connection] = None
 
     def connect(self) -> None:

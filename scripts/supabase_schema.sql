@@ -1,8 +1,10 @@
 -- ============================================
 -- SIYA L3 (SUPABASE) DATABASE SCHEMA
--- Version: 1.0.0
--- Generated from: docs/system_schema.json
+-- Version: 1.0.1
+-- Aligned with: docs/system_schema.json (v1.0.1)
 -- Compatible with: memory/database_schema.py
+-- Phase 22: memory_quality columns (lineage_id, etc.); Phase 24.1/24.2: capability_domain, side_effect_scope are app-layer only (not stored in L3)
+-- Idempotent: safe to re-run; ALTER TABLE ADD COLUMN IF NOT EXISTS adds Phase 22 columns when upgrading existing DBs.
 -- ============================================
 
 -- Enable required extensions
@@ -42,6 +44,21 @@ CREATE TABLE IF NOT EXISTS memory (
     synced_at TIMESTAMPTZ,  -- When last synced from device
     device_id TEXT  -- Source device identifier
 );
+
+-- ============================================
+-- MIGRATION: Phase 22 columns (idempotent)
+-- Run when memory table already exists from an older schema.
+-- ADD COLUMN IF NOT EXISTS: PostgreSQL 9.5+
+-- ============================================
+ALTER TABLE memory ADD COLUMN IF NOT EXISTS confidence_original REAL DEFAULT 1.0;
+ALTER TABLE memory ADD COLUMN IF NOT EXISTS confidence_current REAL DEFAULT 1.0;
+ALTER TABLE memory ADD COLUMN IF NOT EXISTS last_evaluated TIMESTAMPTZ;
+ALTER TABLE memory ADD COLUMN IF NOT EXISTS last_accessed TIMESTAMPTZ;
+ALTER TABLE memory ADD COLUMN IF NOT EXISTS access_count INTEGER DEFAULT 0;
+ALTER TABLE memory ADD COLUMN IF NOT EXISTS decay_rate REAL DEFAULT 0.05;
+ALTER TABLE memory ADD COLUMN IF NOT EXISTS lineage_id UUID REFERENCES memory(id);
+ALTER TABLE memory ADD COLUMN IF NOT EXISTS is_summarized INTEGER DEFAULT 0;
+ALTER TABLE memory ADD COLUMN IF NOT EXISTS summarization_level INTEGER DEFAULT 0;
 
 -- Indexes for L3 memory
 CREATE INDEX IF NOT EXISTS idx_memory_key ON memory(key);
@@ -151,6 +168,7 @@ CREATE INDEX IF NOT EXISTS idx_sync_queue_device_id ON sync_queue(device_id);
 -- ============================================
 -- ROW LEVEL SECURITY (RLS) - Single User System
 -- Enable RLS but allow all for single user
+-- Idempotent: drop then create so script can be re-run
 -- ============================================
 ALTER TABLE memory ENABLE ROW LEVEL SECURITY;
 ALTER TABLE audit_log ENABLE ROW LEVEL SECURITY;
@@ -158,15 +176,19 @@ ALTER TABLE log_summary ENABLE ROW LEVEL SECURITY;
 ALTER TABLE sync_queue ENABLE ROW LEVEL SECURITY;
 
 -- Allow all operations for authenticated users (single-user system)
+DROP POLICY IF EXISTS "Allow all for authenticated users" ON memory;
 CREATE POLICY "Allow all for authenticated users" ON memory
     FOR ALL TO authenticated USING (true) WITH CHECK (true);
 
+DROP POLICY IF EXISTS "Allow all for authenticated users" ON audit_log;
 CREATE POLICY "Allow all for authenticated users" ON audit_log
     FOR ALL TO authenticated USING (true) WITH CHECK (true);
 
+DROP POLICY IF EXISTS "Allow all for authenticated users" ON log_summary;
 CREATE POLICY "Allow all for authenticated users" ON log_summary
     FOR ALL TO authenticated USING (true) WITH CHECK (true);
 
+DROP POLICY IF EXISTS "Allow all for authenticated users" ON sync_queue;
 CREATE POLICY "Allow all for authenticated users" ON sync_queue
     FOR ALL TO authenticated USING (true) WITH CHECK (true);
 
@@ -183,6 +205,7 @@ BEGIN
 END;
 $$ language 'plpgsql';
 
+DROP TRIGGER IF EXISTS update_memory_updated_at ON memory;
 CREATE TRIGGER update_memory_updated_at
     BEFORE UPDATE ON memory
     FOR EACH ROW

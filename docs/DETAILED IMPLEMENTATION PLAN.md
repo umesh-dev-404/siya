@@ -58,6 +58,7 @@ They are never guessed or baked in prematurely.
 - **Interfaces today:** CLI, HTTP API, Web, TUI. **Own Android app** planned; **no** third-party messaging (WhatsApp, Telegram, Discord, iMessage, Slack, etc.). **No Mac** in current plan (future only).
 - **Setup wizard (future):** When implemented, behave like OpenClaw’s onboarding; product name stays **Siya** (e.g. `siya onboard`).
 - **OpenClaw-inspired adoption:** Siya adopts/adapts OpenClaw-inspired capabilities (wizard, operator workflows, tooling) where they align with Siya’s laws and strategy; product name remains Siya. See `docs/EVOLUTION_ROADMAP.md` §4.1.
+- **Evolution flow (A→B→C→D):** MODE A complete — Phase 24 design proposal (§11 of EVOLUTION_ROADMAP). MODE B complete — Phase 24.1 locked (§12 EVOLUTION_ROADMAP). MODE C complete — Phase 24.1 implemented (capability_domain). MODE D complete — tests pass; datetime.utcnow deprecation fixes; Phase 24.1 completion doc added.
 
 ---
 

@@ -48,6 +48,8 @@ def make_list_automations_tool() -> ToolSchema:
         permission_level=PermissionLevel.READ,
         requires_confirmation=False,
         category="automation",
+        capability_domain="automation",
+        side_effect_scope="READ_ONLY",
     )
 
 
@@ -132,6 +134,8 @@ def make_trigger_automation_tool() -> ToolSchema:
         permission_level=PermissionLevel.EXECUTE,
         requires_confirmation=True,  # LAW 1: Human sovereignty
         category="automation",
+        capability_domain="automation",
+        side_effect_scope="EXTERNAL",
     )
 
 

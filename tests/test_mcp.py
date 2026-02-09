@@ -5,7 +5,7 @@ Phase 2 tests for governance and control plane.
 Tests validation, authorization, permissions, and confirmation gating.
 """
 
-from datetime import datetime
+from datetime import datetime, timezone
 from uuid import uuid4
 
 import pytest
@@ -137,7 +137,7 @@ class TestRequestValidator:
         request = {
             "type": "tool_request",
             "request_id": str(uuid4()),
-            "timestamp": datetime.utcnow().isoformat() + "Z",
+            "timestamp": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
             "tool_name": "test_tool",
             "arguments": {},
             "requires_confirmation": False,
@@ -170,7 +170,7 @@ class TestRequestValidator:
         request = {
             "type": "tool_request",
             "request_id": str(uuid4()),
-            "timestamp": datetime.utcnow().isoformat() + "Z",
+            "timestamp": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
             "tool_name": "nonexistent_tool",
             "arguments": {},
             "requires_confirmation": False,
@@ -189,7 +189,7 @@ class TestRequestValidator:
         output = {
             "type": "intent_parsing_output",
             "request_id": str(uuid4()),
-            "timestamp": datetime.utcnow().isoformat() + "Z",
+            "timestamp": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
             "intent": {"action": "test_tool", "arguments": {}},
             "confidence": 0.9,
         }
@@ -257,7 +257,7 @@ class TestAuthorizationLayer:
         request = {
             "type": "tool_request",
             "request_id": str(uuid4()),
-            "timestamp": datetime.utcnow().isoformat() + "Z",
+            "timestamp": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
             "tool_name": "test_tool",
             "arguments": {},
             "requires_confirmation": False,
@@ -287,7 +287,7 @@ class TestAuthorizationLayer:
         request = {
             "type": "tool_request",
             "request_id": str(uuid4()),
-            "timestamp": datetime.utcnow().isoformat() + "Z",
+            "timestamp": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
             "tool_name": "test_tool",
             "arguments": {},
             "requires_confirmation": True,
@@ -327,7 +327,7 @@ class TestMCPServer:
         request = {
             "type": "tool_request",
             "request_id": str(uuid4()),
-            "timestamp": datetime.utcnow().isoformat() + "Z",
+            "timestamp": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
             "tool_name": "test_tool",
             "arguments": {},
             "requires_confirmation": False,
@@ -343,7 +343,7 @@ class TestMCPServer:
         request = {
             "type": "tool_request",
             "request_id": str(uuid4()),
-            "timestamp": datetime.utcnow().isoformat() + "Z",
+            "timestamp": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
             "tool_name": "nonexistent_tool",
             "arguments": {},
             "requires_confirmation": False,

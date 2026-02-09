@@ -12,6 +12,12 @@ from pathlib import Path
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
+try:
+    from dotenv import load_dotenv
+    load_dotenv()  # .env in cwd (e.g. after onboarding)
+except ImportError:
+    pass
+
 from ai.ai_interface import AIInterface
 from cli.cli import CLI
 from config.logging_config import setup_logging

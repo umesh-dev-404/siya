@@ -9,7 +9,7 @@ Per DIP Phase 3: Enforce orchestrator-only memory writes.
 
 import json
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 from uuid import uuid4
 
@@ -101,7 +101,7 @@ class WriteController:
             )
 
         memory_id = str(uuid4())
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
 
         conn = self._database.get_connection()
         cursor = conn.cursor()

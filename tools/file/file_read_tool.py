@@ -66,6 +66,8 @@ def make_file_read_tool() -> ToolSchema:
         permission_level=PermissionLevel.READ,
         requires_confirmation=False,
         category="file",
+        capability_domain="file",
+        side_effect_scope="READ_ONLY",
     )
 
 

@@ -9,7 +9,7 @@ Per DIP Phase 3: Log retention and summarization.
 
 import json
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 from uuid import uuid4
 
@@ -99,7 +99,7 @@ class AuditLogger:
             )
 
         log_id = str(uuid4())
-        timestamp = datetime.utcnow().isoformat() + "Z"
+        timestamp = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
 
         # Serialize event_data as JSON (must not contain secrets)
         event_data_json = json.dumps(event_data)

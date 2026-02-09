@@ -76,6 +76,29 @@
       ],
       "description": "Permission level for tool execution"
     },
+    "capability_domain": {
+      "type": "string",
+      "enum": [
+        "file",
+        "memory",
+        "system",
+        "automation",
+        "content",
+        "integration",
+        "general"
+      ],
+      "description": "v1.0.1 (Phase 24.1): Capability domain for tool grouping. Optional; when absent treat as general. Matches mcp/tool_schema.CAPABILITY_DOMAINS."
+    },
+    "side_effect_scope": {
+      "type": "string",
+      "enum": [
+        "READ_ONLY",
+        "WRITE",
+        "EXECUTE",
+        "EXTERNAL"
+      ],
+      "description": "v1.0.1 (Phase 24.2b): Side-effect scope of the tool. Optional; when present may be used for display or filtering. Matches mcp/tool_schema.SIDE_EFFECT_SCOPES."
+    },
     "user_intent_mode": {
       "type": "string",
       "enum": [
@@ -299,6 +322,14 @@
         "intent_parsing_output_id": {
           "type": "string",
           "description": "Request ID of the intent parsing output that generated this request (if applicable)"
+        },
+        "capability_domain": {
+          "$ref": "#/definitions/capability_domain",
+          "description": "Optional. Capability domain of the tool (Phase 24.1). When present, may be used for display or filtering."
+        },
+        "side_effect_scope": {
+          "$ref": "#/definitions/side_effect_scope",
+          "description": "Optional. Side-effect scope of the tool (Phase 24.2b). When present, may be used for display or filtering."
         }
       },
       "additionalProperties": false

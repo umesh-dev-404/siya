@@ -95,6 +95,8 @@ VOICE_TOOL_SCHEMAS = [
             },
         },
         "handler": speak_text,
+        "capability_domain": "content",
+        "side_effect_scope": "EXTERNAL",
     },
     {
         "name": "listen_for_input",
@@ -109,5 +111,7 @@ VOICE_TOOL_SCHEMAS = [
             },
         },
         "handler": listen_for_input,
+        "capability_domain": "content",
+        "side_effect_scope": "EXTERNAL",
     },
 ]

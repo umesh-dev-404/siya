@@ -33,6 +33,7 @@ dependencies = [
 [project.scripts]
 siya = "pc_mcp_client.wake:main"
 siya-cli = "pc_mcp_client.main:main"
+siya-onboard = "cli.onboard:main"
 
 # llama-cpp-python is optional and requires building on target platform
 # Install with: pip install llama-cpp-python

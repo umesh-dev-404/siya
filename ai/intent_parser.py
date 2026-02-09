@@ -12,7 +12,7 @@ AI is strictly an intent parser, not an agent.
 import json
 import logging
 import re
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, Optional
 from uuid import uuid4
@@ -77,7 +77,7 @@ class IntentParser:
             All outputs are validated against system_schema.json.
         """
         request_id = str(uuid4())
-        timestamp = datetime.utcnow().isoformat() + "Z"
+        timestamp = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
 
         # Try real AI parsing, fall back to stub
         if self._model_manager and self._model_manager.is_loaded():

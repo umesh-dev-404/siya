@@ -5,6 +5,16 @@ Maintained per dev-rules.md §8.2 (Error Correction Discipline). OpenClaw-inspir
 
 ---
 
+## Session: 2026-01-26 (datetime.utcnow Deprecation)
+
+### Error: DeprecationWarning for datetime.utcnow()
+**Symptom:** `DeprecationWarning: datetime.datetime.utcnow() is deprecated ... Use timezone-aware objects to represent datetimes in UTC` when running tests.  
+**Cause:** Python 3.12+ deprecates `datetime.utcnow()` in favour of timezone-aware UTC.  
+**Solution:** Replaced all `datetime.utcnow()` with `datetime.now(timezone.utc)`. For ISO strings previously built as `utcnow().isoformat() + "Z"`, use `datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")` to preserve Z suffix. Added `timezone` to datetime imports where needed.  
+**Files Modified:** `ai/intent_parser.py`, `orchestrator/orchestrator.py`, `orchestrator/step_runner.py`, `mcp/policy_engine.py`, `audit/audit_logger.py`, `memory/write_controller.py`, `memory/summarizer.py`, `migrations/001_add_memory_quality_columns.py`, `tests/test_mcp.py`, `tests/test_orchestrator.py`
+
+---
+
 ## Comprehensive Codebase Audit: 2026-01-28
 
 **Status:** ✅ NO BUGS FOUND
@@ -34,6 +44,23 @@ Maintained per dev-rules.md §8.2 (Error Correction Discipline). OpenClaw-inspir
 - `service_main.py`
 
 **Conclusion:** The codebase is clean, well-documented, and production-ready. All 18 Canonical Laws are properly enforced through code architecture and schema constraints.
+
+---
+
+## Session: 2026-01-26 (Supabase schema — lineage_id)
+
+### Error: column "lineage_id" does not exist (Supabase)
+**Symptom:** `ERROR: 42703: column "lineage_id" does not exist` when running `scripts/supabase_schema.sql`.  
+**Cause:** The script uses `CREATE TABLE IF NOT EXISTS memory (... lineage_id ...)`. If the `memory` table already existed from an older run (before Phase 22 columns were added), the table was not recreated, so Phase 22 columns (including `lineage_id`) were missing. The subsequent `CREATE INDEX ... ON memory(lineage_id)` then failed.  
+**Solution:** Added an idempotent migration block after the memory CREATE TABLE: `ALTER TABLE memory ADD COLUMN IF NOT EXISTS ...` for each Phase 22 column (confidence_original, confidence_current, last_evaluated, last_accessed, access_count, decay_rate, lineage_id, is_summarized, summarization_level). Re-running the script on an existing DB now adds missing columns before creating indexes.  
+**Files Modified:** `scripts/supabase_schema.sql`  
+**Schema sync:** `scripts/supabase_schema.sql` and `memory/database_schema.py` are aligned with Phase 22; `docs/system_schema.json` defines API/contract (lineage in memory_write_suggestion). L3 (Supabase) and L2 (SQLite) memory tables match for seamless sync.
+
+### Error: policy "Allow all for authenticated users" for table "memory" already exists (Supabase)
+**Symptom:** `ERROR: 42710: policy "Allow all for authenticated users" for table "memory" already exists` when re-running `scripts/supabase_schema.sql`.  
+**Cause:** CREATE POLICY is not idempotent; re-running the script tried to create the same RLS policies again.  
+**Solution:** Added `DROP POLICY IF EXISTS "Allow all for authenticated users" ON <table>;` before each CREATE POLICY so the script can be re-run. Also added `DROP TRIGGER IF EXISTS update_memory_updated_at ON memory;` before CREATE TRIGGER for the same reason.  
+**Files Modified:** `scripts/supabase_schema.sql`
 
 ---
 

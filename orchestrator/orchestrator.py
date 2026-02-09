@@ -13,7 +13,7 @@ Enforces:
 """
 
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Dict, Optional
 from uuid import UUID, uuid4
 
@@ -141,7 +141,7 @@ class Orchestrator:
         task = Task(
             task_id=task_id,
             source=source,
-            created_at=datetime.utcnow(),
+            created_at=datetime.now(timezone.utc),
         )
 
         if not self._task_queue.enqueue(task):
@@ -234,7 +234,7 @@ class Orchestrator:
         task = Task(
             task_id=task_id,
             source=TaskSource.USER_PARSED,
-            created_at=datetime.utcnow(),
+            created_at=datetime.now(timezone.utc),
         )
 
         # Store tool request with task (Phase 5: extend Task if needed)
@@ -284,9 +284,11 @@ class Orchestrator:
         if not action:
             raise ValueError("Intent output missing action field")
 
-        # Get tool schema to determine permission level and confirmation requirement
+        # Get tool schema to determine permission level, confirmation, capability_domain (24.1), side_effect_scope (24.2b)
         requires_confirmation = False
         permission_level = "NONE"
+        capability_domain = None
+        side_effect_scope = None
 
         if self._mcp:
             tool_registry = self._mcp.get_tool_registry()
@@ -295,12 +297,14 @@ class Orchestrator:
                 if tool_schema:
                     requires_confirmation = tool_schema.requires_confirmation
                     permission_level = tool_schema.permission_level.value
+                    capability_domain = tool_schema.capability_domain
+                    side_effect_scope = tool_schema.side_effect_scope
 
-        # Create tool request
+        # Create tool request (matches system_schema.json tool_request; capability_domain optional 24.1, side_effect_scope optional 24.2b)
         tool_request = {
             "type": "tool_request",
             "request_id": str(uuid4()),
-            "timestamp": datetime.utcnow().isoformat() + "Z",
+            "timestamp": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
             "tool_name": action,
             "arguments": arguments,
             "requires_confirmation": requires_confirmation,
@@ -308,6 +312,10 @@ class Orchestrator:
             "source": "user_parsed",
             "intent_parsing_output_id": intent_output.get("request_id"),
         }
+        if capability_domain is not None:
+            tool_request["capability_domain"] = capability_domain
+        if side_effect_scope is not None:
+            tool_request["side_effect_scope"] = side_effect_scope
 
         return tool_request
 

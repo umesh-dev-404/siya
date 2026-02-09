@@ -8,7 +8,7 @@ Per DIP Phase 3: Implement memory tagging, confidence, lineage.
 """
 
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Dict, List, Optional
 
 from memory.database import Database
@@ -61,7 +61,7 @@ class MemorySummarizer:
             Phase 3: Basic summarization (creates summary entries)
             In later phases, actual summarization logic will be implemented
         """
-        cutoff_date = datetime.utcnow() - timedelta(days=older_than_days)
+        cutoff_date = datetime.now(timezone.utc) - timedelta(days=older_than_days)
         cutoff_iso = cutoff_date.isoformat() + "Z"
 
         conn = self._database.get_connection()

@@ -12,7 +12,7 @@
 **Status:** Production Baseline Ready  
 **Date:** 2026-01-26
 
-**Platform & channel strategy (locked):** Interfaces today: CLI, HTTP API, Web, TUI. **Own Android app** planned; **no** third-party messaging (WhatsApp, Telegram, Discord, iMessage, Slack, etc.). **No Mac** in current plan (future only). See `docs/EVOLUTION_ROADMAP.md` §4.1. **OpenClaw-inspired adoption:** Siya adopts/adapts OpenClaw-inspired capabilities (setup wizard, operator UX, tooling) where law-aligned; product name remains Siya.
+**Platform & channel strategy (locked):** Interfaces today: CLI, HTTP API, Web, TUI. **Own Android app** planned; **no** third-party messaging (WhatsApp, Telegram, Discord, iMessage, Slack, etc.). **No Mac** in current plan (future only). See `docs/EVOLUTION_ROADMAP.md` §4.1. **OpenClaw-inspired adoption:** Siya adopts/adapts OpenClaw-inspired capabilities (setup wizard, operator UX, tooling) where law-aligned; product name remains Siya. **Evolution flow:** MODE A complete (§11 EVOLUTION_ROADMAP). Phase 24.1: MODE B/C/D complete (capability_domain). Phase 24.2: MODE B/C/D complete (§14, side_effect_scope schema + registry). Phase 24.2b: MODE B/C/D complete (§16, side_effect_scope in system_schema + orchestrator). Onboarding wizard first slice: MODE B/C complete (§18; cli/onboard.py, siya-onboard, SIYA_DATA_DIR). See `docs/PHASE_COMPLETION_REPORTS/PHASE_24.1_COMPLETION_STATUS.md`, `docs/PHASE_COMPLETION_REPORTS/PHASE_24.2_COMPLETION_STATUS.md`.
 
 ---
 
@@ -271,6 +271,24 @@
   - `tools/observability_tools.py`
   - Interface updates (CLI, Web, TUI)
 
+### Phase 24.1 — Capability Domain (Schema + Registry)
+- **Status:** ✅ COMPLETE (2026-01-26)
+- **Objective:** Add `capability_domain` to ToolSchema; populate from category; no execution/permission change
+- **Deliverables:** `mcp/tool_schema.py` (CAPABILITY_DOMAINS, validation), all tool registrations updated; `orchestrator/orchestrator.py` populates optional `capability_domain` on tool_request from registry; system_schema.json + Supabase schema + docs updated; tests pass. Same pass: datetime.utcnow() deprecation fixes.
+- **Report:** `docs/PHASE_COMPLETION_REPORTS/PHASE_24.1_COMPLETION_STATUS.md`
+
+### Phase 24.2 — Side-Effect Scope (Schema + Registry)
+- **Status:** ✅ COMPLETE (2026-01-26)
+- **Objective:** Add `side_effect_scope` to ToolSchema (READ_ONLY, WRITE, EXECUTE, EXTERNAL); populate from permission_level + semantics; schema and registry only
+- **Deliverables:** `mcp/tool_schema.py` (SIDE_EFFECT_SCOPES, validation), all tool registrations updated; tests pass
+- **Report:** `docs/PHASE_COMPLETION_REPORTS/PHASE_24.2_COMPLETION_STATUS.md`
+
+### Phase 24.2b — Side-Effect Scope in system_schema + Orchestrator
+- **Status:** ✅ COMPLETE (2026-01-26)
+- **Objective:** Add `side_effect_scope` to system_schema.json (definition + optional on tool_request); orchestrator populates from registry when building tool_request (EVOLUTION_ROADMAP §16)
+- **Deliverables:** `docs/system_schema.json` (side_effect_scope definition and tool_request property); `orchestrator/orchestrator.py` sets tool_request["side_effect_scope"] from tool_schema; tests pass
+- **Report:** `docs/PHASE_COMPLETION_REPORTS/PHASE_24.2_COMPLETION_STATUS.md` (§4)
+
 ---
 
 ## SYSTEM ARCHITECTURE
@@ -417,6 +435,7 @@
 - `docs/PHASE_COMPLETION_REPORTS/PHASE_9_COMPLETION_STATUS.md`
 - `docs/PHASE_COMPLETION_REPORTS/PHASE_10_IMPLEMENTATION_STATUS.md` (in progress)
 - `docs/PHASE_COMPLETION_REPORTS/PHASE_10_IMPLEMENTATION_CHECKLIST.md`
+- `docs/PHASE_COMPLETION_REPORTS/PHASE_24.1_COMPLETION_STATUS.md`
 
 ---
 
@@ -431,3 +450,6 @@
 **Phase 21 Status:** ✅ COMPLETE — Explicit User Intent Modes (LAW 21)  
 **Phase 22 Status:** ✅ COMPLETE — Memory Quality Control (LAW 22)  
 **Phase 23 Status:** ✅ COMPLETE — Operator Observability Dashboard (LAW 23)
+**Phase 24.1 Status:** ✅ COMPLETE — Capability Domain (schema + registry)  
+**Phase 24.2 Status:** ✅ COMPLETE — Side-Effect Scope (schema + registry)  
+**Phase 24.2b Status:** ✅ COMPLETE — side_effect_scope in system_schema + orchestrator

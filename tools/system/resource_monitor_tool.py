@@ -38,6 +38,8 @@ def make_resource_monitor_tool() -> ToolSchema:
         permission_level=PermissionLevel.READ,
         requires_confirmation=False,
         category="system",
+        capability_domain="system",
+        side_effect_scope="READ_ONLY",
     )
 
 
